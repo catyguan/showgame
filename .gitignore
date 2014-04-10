@@ -14,8 +14,18 @@
 *.la
 *.a
 *.lib
+Debug
+Debug.win32
+Release
+Release.win32
 
 # Executables
 *.exe
 *.out
 *.app
+
+# Project
+*.suo
+*.user
+*.sdf
+/showgame/*.opensdf

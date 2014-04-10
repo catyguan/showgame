@@ -1,0 +1,300 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="base">
+      <UniqueIdentifier>{d935b6f1-6977-4900-bba7-1daa358c6f31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="framework">
+      <UniqueIdentifier>{e19f5a84-3c31-44bb-896b-303c53fc7f9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="framework\sqlite">
+      <UniqueIdentifier>{9ad780e2-2740-408c-a3a0-ae6c60a10466}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="luaobj">
+      <UniqueIdentifier>{54f5d447-f001-478f-8390-907fcba857a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scenes">
+      <UniqueIdentifier>{5900df93-eaba-4963-a006-48e0db3960d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="framework\control">
+      <UniqueIdentifier>{1a8d2920-cd50-4b9a-af21-91207f591033}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Classes\CCEThread.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCESocket.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEAsynSocket.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEAction.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEActorCharacter.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEApplication.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEApplication4CreateObject.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEDirector.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCELuaApplication.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCESpriteFrameUtil.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCETest4Lua.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEUtil.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sqlite\SQLiteVFS.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCESQLiteVFSLuaLoader.cpp">
+      <Filter>framework\sqlite</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCO4File.cpp">
+      <Filter>luaobj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEFileUtilsVFS.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEAppUtil.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEButton.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEContainer.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEControl.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEDialog.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCELabelButton.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCELayerTouch.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCENarrate.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEPixelNode.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEScrollView.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCETouch.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCScale9Sprite.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEDialogue.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEScene.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCELayoutUtil.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCO4HttpClient.cpp">
+      <Filter>luaobj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCERectsNode.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEFSLuaLoader.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEDEVScene.cpp">
+      <Filter>scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCERootScene.cpp">
+      <Filter>scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEDEVUpgradeScene.cpp">
+      <Filter>scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\editbox\CCEditBox.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\editbox\CCEditBoxImplWin.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\editbox\Win32InputBox.cpp">
+      <Filter>framework\control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEDEVUpgradeConfigScene.cpp">
+      <Filter>scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEDEVAppConfigScene.cpp">
+      <Filter>scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCO4Audio.cpp">
+      <Filter>luaobj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEHttpClient.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCEUpgradeManager.cpp">
+      <Filter>framework</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Classes\CCEThread.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCESocket.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEAsynSocket.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEAction.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEActorCharacter.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEApplication.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEAppUtil.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEDirector.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCELuaApplication.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCESpriteFrameUtil.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCETest4Lua.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEUtil.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sqlite\SQLiteVFS.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCESQLiteVFSLuaLoader.h">
+      <Filter>framework\sqlite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCO4File.h">
+      <Filter>luaobj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEFileUtilsVFS.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEButton.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEContainer.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEControl.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEDialog.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCELabelButton.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCELayerTouch.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCENarrate.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEPixelNode.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEScrollView.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCETouch.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCScale9Sprite.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEDialogue.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEScene.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCELayoutUtil.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCO4HttpClient.h">
+      <Filter>luaobj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCERectsNode.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEFSLuaLoader.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEDEVScene.h">
+      <Filter>scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCERootScene.h">
+      <Filter>scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEDEVUpgradeScene.h">
+      <Filter>scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\editbox\CCEditBox.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\editbox\CCEditBoxImplWin.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\editbox\Win32InputBox.h">
+      <Filter>framework\control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEDEVUpgradeConfigScene.h">
+      <Filter>scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEDEVConst.h">
+      <Filter>scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEDEVAppConfigScene.h">
+      <Filter>scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCO4Audio.h">
+      <Filter>luaobj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\AppMacros.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEHttpClient.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCEUpgradeManager.h">
+      <Filter>framework</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

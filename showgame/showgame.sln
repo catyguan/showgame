@@ -1,0 +1,66 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Windows Desktop
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "liblua", "..\liblua\liblua.win32\liblua.vcxproj", "{DDC3E27F-004D-4DD4-9DD3-931A013D2159}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libsqlite", "..\libsqlite\libsqlite.win32\libsqlite.vcxproj", "{4FC9A490-9CFA-4493-A5D2-7353A31FCC4E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcocos2d", "..\..\cocos2d-x\cocos2d-x\cocos2dx\proj.win32\cocos2d.vcxproj", "{98A51BA8-FC3A-415B-AC8F-8C7BD464E93E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libCocosDenshion", "..\..\cocos2d-x\cocos2d-x\CocosDenshion\proj.win32\CocosDenshion.vcxproj", "{F8EDD7FA-9A51-4E80-BAEB-860825D2EAC6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libCocosExtension", "..\cocos2d-x\extension\proj.win32\CocosExtension.vcxproj", "{75B77E23-6828-4949-9493-E4985C13699E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sgclient", "..\sgclient\proj.win32\sgclient.vcxproj", "{62D08C11-7C6C-4FB7-97C1-BD5C2F105443}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Debug|Win32 = Debug|Win32
+		Release|ARM = Release|ARM
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DDC3E27F-004D-4DD4-9DD3-931A013D2159}.Debug|ARM.ActiveCfg = Debug|ARM
+		{DDC3E27F-004D-4DD4-9DD3-931A013D2159}.Debug|ARM.Build.0 = Debug|ARM
+		{DDC3E27F-004D-4DD4-9DD3-931A013D2159}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DDC3E27F-004D-4DD4-9DD3-931A013D2159}.Debug|Win32.Build.0 = Debug|Win32
+		{DDC3E27F-004D-4DD4-9DD3-931A013D2159}.Release|ARM.ActiveCfg = Release|ARM
+		{DDC3E27F-004D-4DD4-9DD3-931A013D2159}.Release|ARM.Build.0 = Release|ARM
+		{DDC3E27F-004D-4DD4-9DD3-931A013D2159}.Release|Win32.ActiveCfg = Release|Win32
+		{DDC3E27F-004D-4DD4-9DD3-931A013D2159}.Release|Win32.Build.0 = Release|Win32
+		{4FC9A490-9CFA-4493-A5D2-7353A31FCC4E}.Debug|ARM.ActiveCfg = Debug|Win32
+		{4FC9A490-9CFA-4493-A5D2-7353A31FCC4E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4FC9A490-9CFA-4493-A5D2-7353A31FCC4E}.Debug|Win32.Build.0 = Debug|Win32
+		{4FC9A490-9CFA-4493-A5D2-7353A31FCC4E}.Release|ARM.ActiveCfg = Release|Win32
+		{4FC9A490-9CFA-4493-A5D2-7353A31FCC4E}.Release|Win32.ActiveCfg = Release|Win32
+		{4FC9A490-9CFA-4493-A5D2-7353A31FCC4E}.Release|Win32.Build.0 = Release|Win32
+		{98A51BA8-FC3A-415B-AC8F-8C7BD464E93E}.Debug|ARM.ActiveCfg = Debug|Win32
+		{98A51BA8-FC3A-415B-AC8F-8C7BD464E93E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{98A51BA8-FC3A-415B-AC8F-8C7BD464E93E}.Debug|Win32.Build.0 = Debug|Win32
+		{98A51BA8-FC3A-415B-AC8F-8C7BD464E93E}.Release|ARM.ActiveCfg = Release|Win32
+		{98A51BA8-FC3A-415B-AC8F-8C7BD464E93E}.Release|Win32.ActiveCfg = Release|Win32
+		{98A51BA8-FC3A-415B-AC8F-8C7BD464E93E}.Release|Win32.Build.0 = Release|Win32
+		{F8EDD7FA-9A51-4E80-BAEB-860825D2EAC6}.Debug|ARM.ActiveCfg = Debug|Win32
+		{F8EDD7FA-9A51-4E80-BAEB-860825D2EAC6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F8EDD7FA-9A51-4E80-BAEB-860825D2EAC6}.Debug|Win32.Build.0 = Debug|Win32
+		{F8EDD7FA-9A51-4E80-BAEB-860825D2EAC6}.Release|ARM.ActiveCfg = Release|Win32
+		{F8EDD7FA-9A51-4E80-BAEB-860825D2EAC6}.Release|Win32.ActiveCfg = Release|Win32
+		{F8EDD7FA-9A51-4E80-BAEB-860825D2EAC6}.Release|Win32.Build.0 = Release|Win32
+		{75B77E23-6828-4949-9493-E4985C13699E}.Debug|ARM.ActiveCfg = Debug|Win32
+		{75B77E23-6828-4949-9493-E4985C13699E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{75B77E23-6828-4949-9493-E4985C13699E}.Debug|Win32.Build.0 = Debug|Win32
+		{75B77E23-6828-4949-9493-E4985C13699E}.Release|ARM.ActiveCfg = Release|Win32
+		{75B77E23-6828-4949-9493-E4985C13699E}.Release|Win32.ActiveCfg = Release|Win32
+		{75B77E23-6828-4949-9493-E4985C13699E}.Release|Win32.Build.0 = Release|Win32
+		{62D08C11-7C6C-4FB7-97C1-BD5C2F105443}.Debug|ARM.ActiveCfg = Debug|Win32
+		{62D08C11-7C6C-4FB7-97C1-BD5C2F105443}.Debug|Win32.ActiveCfg = Debug|Win32
+		{62D08C11-7C6C-4FB7-97C1-BD5C2F105443}.Debug|Win32.Build.0 = Debug|Win32
+		{62D08C11-7C6C-4FB7-97C1-BD5C2F105443}.Release|ARM.ActiveCfg = Release|Win32
+		{62D08C11-7C6C-4FB7-97C1-BD5C2F105443}.Release|Win32.ActiveCfg = Release|Win32
+		{62D08C11-7C6C-4FB7-97C1-BD5C2F105443}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
