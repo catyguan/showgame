@@ -1,0 +1,16 @@
+S1-Logo
+	backgroup image & music (Judgment Day)
+	Menu
+		Start -> A1
+		
+A1-New Or Load Game
+	if no data then 
+		init data
+	end
+	load data
+	-> S5
+		
+S5-Home
+	backgroup image & music (Temple)
+	ImageButton
+		God -> 
