@@ -314,11 +314,14 @@ bool CCEAsynSocket::threadServerRead()
 	}
 
 	int r = 0;
-	r = m_socket.read(m_readBuffer, m_readBufferSize, 1000);
+	r = m_socket.read(m_readBuffer, m_readBufferSize, 100);
 	if(r<=0) {
 		if(!m_socket.isOpen()) {
 			threadCloseSocket();
 		}
+		return false;
+	}
+	if(r==0) {
 		return false;
 	}
 	CCEAsynSocketEventRead* ev = new CCEAsynSocketEventRead(m_readBuffer, r);
