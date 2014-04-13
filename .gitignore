@@ -29,3 +29,6 @@ Release.win32
 *.user
 *.sdf
 /showgame/*.opensdf
+
+# tmp
+*.png

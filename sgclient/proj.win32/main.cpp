@@ -114,10 +114,12 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		len = ::GetPrivateProfileStringA("app", "path", "", buf, 1024, fileName);
 		buf[len] = 0;
 		std::string basedir;
+		std::string bindir = CCEConfig::get("dir").stringValue();
 		if(strlen(buf)==0) {
-			basedir = CCEConfig::get("dir").stringValue();
+			basedir =  bindir;
 		} else {
 			basedir = buf;
+			StringUtil::replaceAll(basedir, "DIR", bindir);
 		}	
 		if(true) {
 			std::string dirvar = basedir + "\\Resources\\";
@@ -134,10 +136,12 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		if(true) {
 			std::string dirvar = basedir + "\\Upgrade\\Scripts\\";
 			fs.addSearchPath(kLua, dirvar.c_str(), false);
+			CCLOG("luapath => %s", dirvar.c_str());
 		}
 		if(true) {
 			std::string dirvar = basedir + "\\Scripts\\";
 			fs.addSearchPath(kLua, dirvar.c_str(), true);
+			CCLOG("luapath => %s", dirvar.c_str());
 		}
 	}
 
