@@ -10,8 +10,18 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libCocosDenshion", "..\..\cocos2d-x\cocos2d-x\CocosDenshion\proj.win32\CocosDenshion.vcxproj", "{F8EDD7FA-9A51-4E80-BAEB-860825D2EAC6}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libCocosExtension", "..\cocos2d-x\extension\proj.win32\CocosExtension.vcxproj", "{75B77E23-6828-4949-9493-E4985C13699E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DDC3E27F-004D-4DD4-9DD3-931A013D2159} = {DDC3E27F-004D-4DD4-9DD3-931A013D2159}
+		{4FC9A490-9CFA-4493-A5D2-7353A31FCC4E} = {4FC9A490-9CFA-4493-A5D2-7353A31FCC4E}
+		{98A51BA8-FC3A-415B-AC8F-8C7BD464E93E} = {98A51BA8-FC3A-415B-AC8F-8C7BD464E93E}
+		{F8EDD7FA-9A51-4E80-BAEB-860825D2EAC6} = {F8EDD7FA-9A51-4E80-BAEB-860825D2EAC6}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sgclient", "..\sgclient\proj.win32\sgclient.vcxproj", "{62D08C11-7C6C-4FB7-97C1-BD5C2F105443}"
+	ProjectSection(ProjectDependencies) = postProject
+		{75B77E23-6828-4949-9493-E4985C13699E} = {75B77E23-6828-4949-9493-E4985C13699E}
+		{98A51BA8-FC3A-415B-AC8F-8C7BD464E93E} = {98A51BA8-FC3A-415B-AC8F-8C7BD464E93E}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

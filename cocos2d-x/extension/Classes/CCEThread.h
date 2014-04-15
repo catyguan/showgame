@@ -64,6 +64,7 @@ protected:
 
 	bool processCommands(int wait);
 	CCEThreadCommand* peekCommand();
+
 	virtual bool processCommand(CCEThreadCommand* cmd);
 	
 protected:

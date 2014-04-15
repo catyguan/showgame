@@ -51,5 +51,5 @@ protected:
 	void* m_handle;
 };
 
-#endif // __CCE_SOCKET_H__
+#endif // __CCE_HTTPCLIENT_H__
 

@@ -7,6 +7,7 @@
 #include "CCEAppUtil.h"
 #include "CCEUtil.h"
 #include "CCEHttpClient.h"
+#include "esnp\CCEESNP.h"
 
 #include "CCEFSLuaLoader.h"
 static CCEFSLuaLoader fsLoader;
@@ -19,6 +20,7 @@ AppDelegate::AppDelegate() {
 
 AppDelegate::~AppDelegate() 
 {
+	CCEESNP::purgeSharedESNP();
 	CCEHttpClient::purgeSharedHttpClient();	
 	CCEDirector::purgeSharedDirector();
 	CCEApplication::purgeSharedApp();	
@@ -111,6 +113,14 @@ bool AppDelegate::applicationDidFinishLaunching() {
 		CCO4HttpClient* o = new CCO4HttpClient();
 		luaHost->addObject("httpclient", o);
 		o->release();
+	}
+	if(true) {
+		CCEESNP* ep = CCEESNP::sharedESNP();
+		addRunnable(2, CCEESNP::appRunnable, ep);
+		ep->addHost("172.19.16.78", 1080);
+		if(!ep->start()) {
+			return false;
+		}
 	}
 	if(true) {
 		luaHost->addCreateObjectFunction(&MGRCreateObject);

@@ -32,3 +32,5 @@ Release.win32
 
 # tmp
 *.png
+/sgclient/vld.bin
+/sgclient/package.cmd

@@ -19,6 +19,9 @@
     <Filter Include="framework\control">
       <UniqueIdentifier>{1a8d2920-cd50-4b9a-af21-91207f591033}</UniqueIdentifier>
     </Filter>
+    <Filter Include="esnp">
+      <UniqueIdentifier>{fb7e9633-b445-421b-a140-76a2c662129f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Classes\CCEThread.cpp">
@@ -155,6 +158,15 @@
     </ClCompile>
     <ClCompile Include="..\Classes\CCEUpgradeManager.cpp">
       <Filter>framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\esnp\Buffer.cpp">
+      <Filter>esnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\esnp\Coder.cpp">
+      <Filter>esnp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\esnp\CCEESNP.cpp">
+      <Filter>esnp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -295,6 +307,15 @@
     </ClInclude>
     <ClInclude Include="..\Classes\CCEUpgradeManager.h">
       <Filter>framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\esnp\Buffer.h">
+      <Filter>esnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\esnp\Coder.h">
+      <Filter>esnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\esnp\CCEESNP.h">
+      <Filter>esnp</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

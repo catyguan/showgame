@@ -24,8 +24,10 @@ public:
 	virtual ~CCESocket();
 
 	void createFakeFD();
-	bool open(const char* host,int port);
+	bool connect(const char* host,int port,int time);
 	bool isOpen(){return m_sockfd!=0;};
+	bool isConnect(){return m_connect;};
+	bool checkConnect(int time);
 	bool write(const char* buf, int len);
 	int read(char* buf,int len, int time);
 	void close();
@@ -34,6 +36,7 @@ public:
 	void wakeup();
 protected:
 	int m_sockfd;
+	bool m_connect;
 	int m_fakefd_w;
 	int m_fakefd_r;
 };

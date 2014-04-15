@@ -19,14 +19,16 @@ std::string CCEAsynSocketEvent::format(const char* format, ...)
 class OpenCommand : public CCEThreadCommand
 {
 public:
-	OpenCommand(const char* hostname,int p) {
+	OpenCommand(const char* hostname,int p,int tm) {
 		host = hostname;
 		port = p;
+		timeout = tm;
 	}
 	virtual ~OpenCommand(){};
 	
 	std::string host;
 	int port;
+	int timeout;
 };
 
 class SendCommand : public CCEThreadCommand
@@ -89,9 +91,9 @@ bool CCEAsynSocket::isOpen()
 	return r;
 }
 
-bool CCEAsynSocket::open(const char* hostname, int p)
+bool CCEAsynSocket::open(const char* hostname, int p, int timeout)
 {
-	OpenCommand* cmd = new OpenCommand(hostname,p);
+	OpenCommand* cmd = new OpenCommand(hostname,p, timeout);
 	sendCommand(cmd);
 	return true;
 }
@@ -226,7 +228,7 @@ bool CCEAsynSocket::processCommand(CCEThreadCommand* th)
 	if(true) {
 		OpenCommand* cmd = dynamic_cast<OpenCommand*>(th);
 		if(cmd!=NULL) {
-			threadConnect(cmd->host.c_str(), cmd->port);
+			threadConnect(cmd->host.c_str(), cmd->port, cmd->timeout);
 			return true;
 		}
 	}
@@ -247,29 +249,47 @@ bool CCEAsynSocket::processCommand(CCEThreadCommand* th)
 	return CCEThread::processCommand(th);
 }
 
-void CCEAsynSocket::threadConnect(const char* host, int port)
+void CCEAsynSocket::threadConnectEvent() {
+	if(m_socket.isConnect()) {
+		pthread_mutex_lock(&m_thisLock);	
+		m_socketOpen = true;
+		pthread_mutex_unlock(&m_thisLock); 
+
+		CCEAsynSocketEventOpen* ev = new CCEAsynSocketEventOpen(true,true);
+		threadSendEvent(ev);
+	} else if(!m_socket.isOpen()) {
+		CCEAsynSocketEventOpen* ev = new CCEAsynSocketEventOpen(false, true);
+		threadSendEvent(ev);
+	}	
+}
+
+void CCEAsynSocket::threadConnect(const char* host, int port, int tm)
 {
 	if(m_socket.isOpen()) {
 		threadCloseSocket();
 	}
-	CCLOG("connecting %s : %d", host, port);
-	if(!m_socket.open(host, port)) {
-		CCEAsynSocketEventOpen* ev = new CCEAsynSocketEventOpen(false, true);
-		threadSendEvent(ev);
-		return;
+	m_checkNum = 0;
+	m_timeout = tm;
+	if(m_socket.connect(host, port,10)) {
+		threadConnectEvent();
 	}
-	CCLOG("connected  %s : %d",host, port);
-	pthread_mutex_lock(&m_thisLock);	
-	m_socketOpen = true;
-	pthread_mutex_unlock(&m_thisLock); 
-
-	CCEAsynSocketEventOpen* ev = new CCEAsynSocketEventOpen(true,true);
-	threadSendEvent(ev);
+	
 }
 
 void CCEAsynSocket::threadCheckServer()
 {	
 	if(!m_socket.isOpen()) {
+		return;
+	}
+	if(!m_socket.isConnect()) {
+		if(!m_socket.checkConnect(10)) {
+			m_checkNum++;
+			if(m_checkNum*10<m_timeout) {
+				return;
+			}
+			m_socket.close();
+		}
+		threadConnectEvent();
 		return;
 	}
 	while(threadServerRead()) {
@@ -278,7 +298,7 @@ void CCEAsynSocket::threadCheckServer()
 
 bool CCEAsynSocket::threadServerWrite(int id, const char* buf,int len)
 {
-	if(!m_socket.isOpen()) {
+	if(!m_socket.isConnect()) {
 		if(id>0) {
 			CCEAsynSocketEventWrite* ev = new CCEAsynSocketEventWrite(id, false);
 			threadSendEvent(ev);
@@ -305,7 +325,7 @@ bool CCEAsynSocket::threadServerWrite(int id, const char* buf,int len)
 
 bool CCEAsynSocket::threadServerRead()
 {
-	if(!m_socket.isOpen()) {
+	if(!m_socket.isConnect()) {
 		return false;
 	}
 
@@ -314,7 +334,7 @@ bool CCEAsynSocket::threadServerRead()
 	}
 
 	int r = 0;
-	r = m_socket.read(m_readBuffer, m_readBufferSize, 100);
+	r = m_socket.read(m_readBuffer, m_readBufferSize, 10);
 	if(r<=0) {
 		if(!m_socket.isOpen()) {
 			threadCloseSocket();

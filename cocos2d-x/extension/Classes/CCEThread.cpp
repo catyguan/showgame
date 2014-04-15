@@ -95,7 +95,7 @@ void CCEThreadEvent::close()
 // CCEThread
 CCEThread::CCEThread()
 	: m_valid(false)
-{
+{	
 	memset(&m_thread,0,sizeof(m_thread));
 }
 
@@ -151,6 +151,8 @@ void CCEThread::stop()
 
 	StopCommand* cmd = new StopCommand();
 	sendCommand(cmd);
+
+	CCLOG("wait thread exit...");
 	void* r;
 	pthread_join(m_thread, &r);
 }
@@ -163,7 +165,6 @@ bool CCEThread::sendCommand(CCEThreadCommand* cmd)
 
 	m_event.lock();
 	m_commands.push_back(cmd);
-	wakeup();
 	m_event.sign();
 	m_event.unlock();	
 	wakeup();

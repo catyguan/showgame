@@ -28,6 +28,7 @@ USING_NS_CC;
 // CCESocket
 CCESocket::CCESocket()
 	: m_sockfd(0)
+	, m_connect(false)
 	, m_fakefd_w(0)
 	, m_fakefd_r(0)
 {
@@ -85,7 +86,7 @@ void CCESocket::createFakeFD()
 	int err;
 	// u_long iMode = 1;
 	// ioctlsocket(tmpfdw, FIONBIO, &iMode);
-	if ( ( connect ( tmpfdw,  &addr, addrlen ) ) < 0 ) {
+	if ( ( ::connect ( tmpfdw,  &addr, addrlen ) ) < 0 ) {
 		err = errno;
 		closesocket(tmpfdw);
 		closesocket(tmpfd);		
@@ -102,7 +103,7 @@ void CCESocket::createFakeFD()
 	m_fakefd_r = tmpfdr;
 }
 
-bool CCESocket::open(const char* host,int port)
+bool CCESocket::connect(const char* host,int port, int time)
 {
 #if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32)
 	// linux must:
@@ -129,13 +130,51 @@ bool CCESocket::open(const char* host,int port)
     server.sin_port = htons(port);  
     server.sin_addr = *((struct in_addr *) he->h_addr);  
 	
-	CCLOG("connect %s : %d ...",host, port);
-	if ( ( connect ( m_sockfd,  (struct sockaddr*) &server, sizeof(server) ) ) < 0 ) {
-		CCLOG("network client connect failure %d", errno);
-        close ();
+	CCLOG("connecting %s : %d ...",host, port);
+	u_long iMode = 1;
+	ioctlsocket(m_sockfd, FIONBIO, &iMode);
+	m_connect = false;
+	int ret = ::connect ( m_sockfd,  (struct sockaddr*) &server, sizeof(server) );
+	int err = errno;
+	if( ret==0 ) {
+		CCLOG("connected %s : %s", host, port);
+		m_connect = true;
+		return true;
+	}
+	return checkConnect(time);
+}
+
+bool CCESocket::checkConnect(int time) {
+	if(m_sockfd==NULL) {
 		return false;
 	}
-	return true;
+	fd_set fdS;
+	struct  timeval tm;
+	tm.tv_sec = time/1000;
+	tm.tv_usec = time%1000*1000;
+	FD_ZERO(&fdS);
+	FD_SET(m_sockfd, &fdS);
+	int ret = select(m_sockfd+1, NULL, &fdS, NULL, &tm);
+	if(ret<0) {
+		CCLOG("checkConnect fail, %d", errno);
+		close();
+		return true;
+	}
+	if(ret==0) {
+		//timeout
+		return false;
+	}
+	int error;
+	int len = sizeof(int);
+	getsockopt(m_sockfd, SOL_SOCKET, SO_ERROR,(char *) &error, &len);
+	if(error==0) {
+		CCLOG("check connect done");
+		m_connect = true;
+		return true;
+	}
+	CCLOG("connect fail - %d", error);
+	m_connect = false;
+	return true;	
 }
 
 bool CCESocket::write(const char* buf,int len)
@@ -202,6 +241,7 @@ int CCESocket::read(char* buf,int len,int time)
 void CCESocket::close()
 {
 	if(m_sockfd) {
+		m_connect = false;
 		closesocket(m_sockfd);
 		m_sockfd = 0;
 	}

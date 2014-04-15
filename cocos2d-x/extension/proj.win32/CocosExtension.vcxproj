@@ -56,6 +56,9 @@
     <ClInclude Include="..\Classes\editbox\CCEditBox.h" />
     <ClInclude Include="..\Classes\editbox\CCEditBoxImplWin.h" />
     <ClInclude Include="..\Classes\editbox\Win32InputBox.h" />
+    <ClInclude Include="..\Classes\esnp\Buffer.h" />
+    <ClInclude Include="..\Classes\esnp\CCEESNP.h" />
+    <ClInclude Include="..\Classes\esnp\Coder.h" />
     <ClInclude Include="..\sqlite\SQLiteVFS.h" />
   </ItemGroup>
   <ItemGroup>
@@ -103,6 +106,9 @@
     <ClCompile Include="..\Classes\editbox\CCEditBox.cpp" />
     <ClCompile Include="..\Classes\editbox\CCEditBoxImplWin.cpp" />
     <ClCompile Include="..\Classes\editbox\Win32InputBox.cpp" />
+    <ClCompile Include="..\Classes\esnp\Buffer.cpp" />
+    <ClCompile Include="..\Classes\esnp\CCEESNP.cpp" />
+    <ClCompile Include="..\Classes\esnp\Coder.cpp" />
     <ClCompile Include="..\sqlite\SQLiteVFS.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -153,7 +159,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\cocos2dx;$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\cocos2dx\include;$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\cocos2dx\kazmath\include;$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\cocos2dx\platform\win32;$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\cocos2dx\platform\third_party\win32\OGLES;$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\cocos2dx\platform\third_party\win32\pthread;$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\cocos2dx\support;$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\CocosDenshion\include;..\Classes;$(ProjectDir)..\..\..\liblua\lua;$(ProjectDir)..\..\..\libcurl\curl;D:\Program Files\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\cocos2dx;$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\cocos2dx\include;$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\cocos2dx\kazmath\include;$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\cocos2dx\platform\win32;$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\cocos2dx\platform\third_party\win32\OGLES;$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\cocos2dx\platform\third_party\win32\pthread;$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\cocos2dx\support;$(ProjectDir)..\..\..\..\cocos2d-x\cocos2d-x\CocosDenshion\include;..\Classes;$(ProjectDir)..\..\..\liblua\lua;$(ProjectDir)..\..\..\libcurl\curl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;CURL_STATICLIB;COCOS2D_DEBUG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>

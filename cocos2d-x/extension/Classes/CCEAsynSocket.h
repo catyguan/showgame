@@ -33,10 +33,10 @@ public:
 	virtual ~CCEAsynSocketEventOpen(){};
 	
 	bool isOpen(){return m_open;};
-	bool isConnect(){return m_connect;};
+	bool isOnConnect(){return m_connect;};
 
 	virtual std::string debugString() {
-		return format("EventOpen - %s, %s", m_open?"open":"close", m_connect?"connect":"");
+		return format("EventOpen - %s, %s", m_open?"open":"close", m_connect?"onConnect":"");
 	}
 
 protected:
@@ -132,7 +132,7 @@ public:
 
 	// main API
 	bool isOpen();
-	bool open(const char* host,int port);	
+	bool open(const char* host,int port,int timeout);	
 	bool write(int id, const char* buf, int len);
 	void close();
 
@@ -155,7 +155,8 @@ protected:
 	void mainProcessEvents();
 
 	// thread helper
-	void threadConnect(const char* host, int port);
+	void threadConnectEvent();
+	void threadConnect(const char* host, int port,int tm);
 	void threadCheckServer();
 	bool threadServerWrite(int id, const char* buf,int len);
 	bool threadServerRead();
@@ -176,6 +177,8 @@ protected:
 	
 	pthread_mutex_t m_thisLock;
 	bool m_socketOpen;
+	int m_checkNum;
+	int m_timeout;
 
 	char* m_readBuffer;
 	int m_readBufferSize;
