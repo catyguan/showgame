@@ -168,6 +168,9 @@
     <ClCompile Include="..\Classes\esnp\CCEESNP.cpp">
       <Filter>esnp</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\esnp\CCO4ESNP.cpp">
+      <Filter>esnp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Classes\CCEThread.h">
@@ -315,6 +318,9 @@
       <Filter>esnp</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\esnp\CCEESNP.h">
+      <Filter>esnp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\esnp\CCO4ESNP.h">
       <Filter>esnp</Filter>
     </ClInclude>
   </ItemGroup>

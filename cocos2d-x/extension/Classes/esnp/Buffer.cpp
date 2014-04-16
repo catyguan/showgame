@@ -1,18 +1,24 @@
 #include "Buffer.h"
 #include <string.h>
 
-Buffer::Buffer(void)
+ESNPBuffer::ESNPBuffer(void)
 {
 	buffer = NULL;
-	pos = len = glen = 0;
+	pos = dlen = len = glen = 0;
 }
 
-Buffer::~Buffer(void)
+ESNPBuffer::~ESNPBuffer(void)
 {
 	Clear();	
 }
 
-void Buffer::Clear() {
+void ESNPBuffer::Reset()
+{
+	pos = 0;
+	dlen = 0;
+}
+
+void ESNPBuffer::Clear() {
 	if(buffer!=NULL && own!=0) {
 		delete []buffer;
 		buffer = NULL;
@@ -20,7 +26,7 @@ void Buffer::Clear() {
 	}
 }
 
-void Buffer::Init(int len, int glen) {
+void ESNPBuffer::Init(int len, int glen) {
 	buffer = new uint8_t[len];
 	pos = 0;
 	this->len = len;
@@ -29,7 +35,7 @@ void Buffer::Init(int len, int glen) {
 	own = 1;
 }
 
-void Buffer::Init(Buffer* ptr, int pos) {
+void ESNPBuffer::Init(ESNPBuffer* ptr, int pos) {
 	buffer = ptr->buffer;
 	this->pos = pos;
 	this->len = ptr->len;
@@ -38,7 +44,7 @@ void Buffer::Init(Buffer* ptr, int pos) {
 	own = 0;	
 }
 
-int Buffer::Write(char v) {
+int ESNPBuffer::Write(char v) {
 	if(pos+1>=len) {
 		if(own==0) {
 			return 0;
@@ -59,7 +65,7 @@ int Buffer::Write(char v) {
 	return 1;
 }
 
-int Buffer::WriteBytes(const char* buf, int c) {
+int ESNPBuffer::WriteBytes(const char* buf, int c) {
 	if(pos+c>=len) {
 		if(own==0) {
 			return 0;
@@ -84,7 +90,7 @@ int Buffer::WriteBytes(const char* buf, int c) {
 	return c;
 }
 
-int Buffer::Read() {
+int ESNPBuffer::Read() {
 	if(pos<dlen) {
 		uint8_t c = buffer[pos];
 		pos++;
@@ -93,7 +99,7 @@ int Buffer::Read() {
 	return -1;
 }
 
-int Buffer::ReadBytes(char* buf, int c) {
+int ESNPBuffer::ReadBytes(char* buf, int c) {
 	int rm = Remain();
 	int l = rm<c?rm:c;
 	if(l>0) {
@@ -103,7 +109,7 @@ int Buffer::ReadBytes(char* buf, int c) {
 	return l;
 }
 
-int Buffer::Remain() {
+int ESNPBuffer::Remain() {
 	int r = this->dlen - this->pos;
 	if(r<=0) {
 		return 0;
@@ -111,7 +117,15 @@ int Buffer::Remain() {
 	return r;
 }
 
-std::string Buffer::Dump() {
+int ESNPBuffer::Rewrite(int p, const char* buf, int c) {
+	if(p+c>=len) {
+		return -1;
+	}
+	memcpy_s(buffer+p, len, buf, c);
+	return c;
+}
+
+std::string ESNPBuffer::Dump() {
 	const static char bin2hex_lookup[] = "0123456789abcdef";
     unsigned int t=0,i=0,leng=dlen;
     std::string r;

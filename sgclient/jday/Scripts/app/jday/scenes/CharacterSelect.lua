@@ -64,7 +64,12 @@ function Class:create()
 							fontName = CONFIG.UI.FontName,
 							fontSize = CONFIG.UI.ButtonFontSize
 						},						
-						layout = {align="middle", valign="center"}
+						layout = {align="middle", valign="center"},
+						onEvent = {
+							tap = function()
+								print("tap!")								
+							end
+						}
 					}
 				}
 			},			

@@ -10,11 +10,17 @@ CONFIG.Log = {
 -- 启动自动加载的服务
 CONFIG.Services = {
 	"bma.host.c2dx.Service",
-	"bma.http.client.host.Service"
+	"bma.http.client.host.Service",
+	"bma.esnp.host.Service",
 }
 -- 其他模块的配置
 CONFIG.LuaHost = {
 	LogClosure = false
+}
+CONFIG.ESNP = {
+	Hosts = {
+		{ host="172.19.16.78", port=1080 },
+	}
 }
 -- APP
 CONFIG.UI = {

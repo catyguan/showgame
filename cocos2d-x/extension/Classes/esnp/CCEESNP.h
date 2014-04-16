@@ -4,11 +4,13 @@
 #include <stdint.h>
 #include "cocos2d.h"
 #include "../CCEAsynSocket.h"
+#include "Buffer.h"
 
 USING_NS_CC;
 
 typedef struct _ESNPMessage {
 	uint64_t mid;
+	uint64_t smid;
 	std::string service;
 	std::string method;	
 	
@@ -22,6 +24,7 @@ typedef struct _ESNPReq {
 	int id;
 	uint64_t mid;
 	ESNPMessage* message;
+	long tick;
 	int timeout;	// MS
 	CCValue callback;
 	bool send;
@@ -49,8 +52,10 @@ public:
 	static void purgeSharedESNP(void);
 
 	static void CALLBACK appRunnable(void* data, long mstick);
+	static std::string midStr(uint64_t id);
 	static CCValue toval(ESNPMessage* msg);
-	static bool tomsg(CCValue val, ESNPMessage* msg);
+	static bool tomsg(CCValue& val, ESNPMessage* msg);
+	static int encode(ESNPBuffer* buf, ESNPMessage* msg);
 
 	bool start();
 	void reset();
@@ -71,7 +76,9 @@ public:
 protected:	
 	void delreq(ESNPReq* req);
 
-	void cleanup();	
+	void run(long mstick);
+	void cleanup();
+	void cleanReqs();
 
 protected:
 	int m_idSeq;
@@ -82,10 +89,14 @@ protected:
 	bool m_canconn;
 	bool m_connected;
 
+	long m_lastTick;
 	std::vector<ESNPReq*> m_reqs;
 	CCEAsynSocket* m_socket;
 	CCEESNPHandler* m_handler;
 	CCValue m_dispatcher;
+
+	ESNPBuffer m_wbuf;
+	ESNPBuffer m_rbuf;
 };
 
 #endif // __CCE_ESNP_H__

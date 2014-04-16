@@ -1,4 +1,5 @@
-#pragma once
+#ifndef  __ESNP_CODER_H__
+#define  __ESNP_CODER_H__
 
 #include <stdint.h>
 #include <string>
@@ -26,7 +27,7 @@
 #define VVT_LEN_STRING	24
 #define VVT_STRING		24
 
-class VarValue
+class ESNPVarValue
 {
 public:
 	bool IsType(int t) {
@@ -34,98 +35,98 @@ public:
 	}	
 	void Clear();
 
-	static VarValue* vvNull() {
-		return new VarValue();
+	static ESNPVarValue* vvNull() {
+		return new ESNPVarValue();
 	}
-	static VarValue* vvBool(bool v) {
-		VarValue* r = new VarValue();
+	static ESNPVarValue* vvBool(bool v) {
+		ESNPVarValue* r = new ESNPVarValue();
 		r->type = VVT_BOOLEAN;
 		r->b=v;
 		return r;
 	}
-	static VarValue* vvInt8(int8_t v) {
-		VarValue* r = new VarValue();
+	static ESNPVarValue* vvInt8(int8_t v) {
+		ESNPVarValue* r = new ESNPVarValue();
 		r->type = VVT_INT8;
 		r->i8 = v;
 		return r;
 	}
-	static VarValue* vvInt16(int16_t v) {
-		VarValue* r = new VarValue();
+	static ESNPVarValue* vvInt16(int16_t v) {
+		ESNPVarValue* r = new ESNPVarValue();
 		r->type = VVT_INT16;
 		r->i16 = v;
 		return r;
 	}
-	static VarValue* vvInt32(int32_t v) {
-		VarValue* r = new VarValue();
+	static ESNPVarValue* vvInt32(int32_t v) {
+		ESNPVarValue* r = new ESNPVarValue();
 		r->type = VVT_INT32;
 		r->i32 = v;
 		return r;
 	}
-	static VarValue* vvInt(int v) {
+	static ESNPVarValue* vvInt(int v) {
 		return vvInt32((int32_t)v);
 	}
-	static VarValue* vvInt64(int64_t v) {
-		VarValue* r = new VarValue();
+	static ESNPVarValue* vvInt64(int64_t v) {
+		ESNPVarValue* r = new ESNPVarValue();
 		r->type = VVT_INT64;
 		r->i64 = v;
 		return r;
 	}
-	static VarValue* vvUint8(uint8_t v) {
-		VarValue* r = new VarValue();
+	static ESNPVarValue* vvUint8(uint8_t v) {
+		ESNPVarValue* r = new ESNPVarValue();
 		r->type = VVT_UINT8;
 		r->ui8 = v;
 		return r;
 	}
-	static VarValue* vvUint16(uint16_t v) {
-		VarValue* r = new VarValue();
+	static ESNPVarValue* vvUint16(uint16_t v) {
+		ESNPVarValue* r = new ESNPVarValue();
 		r->type = VVT_UINT16;
 		r->ui16 = v;
 		return r;
 	}
-	static VarValue* vvUint32(uint32_t v) {
-		VarValue* r = new VarValue();
+	static ESNPVarValue* vvUint32(uint32_t v) {
+		ESNPVarValue* r = new ESNPVarValue();
 		r->type = VVT_UINT32;
 		r->ui32 = v;
 		return r;
 	}
-	static VarValue* vvUint64(uint64_t v) {
-		VarValue* r = new VarValue();
+	static ESNPVarValue* vvUint64(uint64_t v) {
+		ESNPVarValue* r = new ESNPVarValue();
 		r->type = VVT_UINT64;
 		r->ui64 = v;
 		return r;
 	}
-	static VarValue* vvFloat32(float v) {
-		VarValue* r = new VarValue();
+	static ESNPVarValue* vvFloat32(float v) {
+		ESNPVarValue* r = new ESNPVarValue();
 		r->type = VVT_FLOAT32;
 		r->f32 = v;
 		return r;
 	}
-	static VarValue* vvFloat64(double v) {
-		VarValue* r = new VarValue();
+	static ESNPVarValue* vvFloat64(double v) {
+		ESNPVarValue* r = new ESNPVarValue();
 		r->type = VVT_FLOAT64;
 		r->f64 = v;
 		return r;
 	}
-	static VarValue* vvString(std::string v) {
-		VarValue* r = new VarValue();
+	static ESNPVarValue* vvString(std::string v) {
+		ESNPVarValue* r = new ESNPVarValue();
 		r->type = VVT_LEN_STRING;
 		r->s = v;
 		return r;
 	}
-	static VarValue* vvList() {
-		VarValue* r = new VarValue();
+	static ESNPVarValue* vvList() {
+		ESNPVarValue* r = new ESNPVarValue();
 		r->type = VVT_LIST;
 		return r;
 	}
-	static VarValue* vvMap() {
-		VarValue* r = new VarValue();
+	static ESNPVarValue* vvMap() {
+		ESNPVarValue* r = new ESNPVarValue();
 		r->type = VVT_MAP;
 		return r;
 	}
 
 public:
-	VarValue();
-	~VarValue();
+	ESNPVarValue();
+	~ESNPVarValue();
 
 public:
 	int type;
@@ -142,86 +143,108 @@ public:
 		float f32;
 		double f64;
 	};
-	std::vector<VarValue*> l;
-	std::map<std::string, VarValue*> m;
+	std::vector<ESNPVarValue*> l;
+	std::map<std::string, ESNPVarValue*> m;
 	std::string s;
 };
 
-class Coder
+class ESNPCoder
 {
 public:
-	static bool readBool(Buffer* buf, int* err);
-	static int writeBool(Buffer* buf, bool v);
+	static bool readBool(ESNPBuffer* buf, int* err);
+	static int writeBool(ESNPBuffer* buf, bool v);
 
-	static int8_t readFixInt8(Buffer *buf, int* err);
-	static int writeFixInt8(Buffer *buf, int8_t v);
+	static int8_t readFixInt8(ESNPBuffer *buf, int* err);
+	static int writeFixInt8(ESNPBuffer *buf, int8_t v);
 
-	static int16_t readFixInt16(Buffer *buf, int* err);
-	static int writeFixInt16(Buffer *buf, int16_t v);
+	static int16_t readFixInt16(ESNPBuffer *buf, int* err);
+	static int writeFixInt16(ESNPBuffer *buf, int16_t v);
 
-	static int32_t readFixInt32(Buffer *buf, int* err);
-	static int writeFixInt32(Buffer *buf, int32_t v);
+	static int32_t readFixInt32(ESNPBuffer *buf, int* err);
+	static int writeFixInt32(ESNPBuffer *buf, int32_t v);
 
-	static int64_t readFixInt64(Buffer *buf, int* err);
-	static int writeFixInt64(Buffer *buf, int64_t v);
+	static int64_t readFixInt64(ESNPBuffer *buf, int* err);
+	static int writeFixInt64(ESNPBuffer *buf, int64_t v);
 
-	static uint8_t readFixUint8(Buffer *buf, int* err) {
+	static uint8_t readFixUint8(ESNPBuffer *buf, int* err) {
 		return (uint8_t) readFixInt8(buf, err);
 	}
-	static int writeFixUint8(Buffer *buf, uint8_t v) {
+	static int writeFixUint8(ESNPBuffer *buf, uint8_t v) {
 		return writeFixInt8(buf, (int8_t) v);
 	}
 
-	static uint16_t readFixUint16(Buffer *buf, int* err) {
+	static uint16_t readFixUint16(ESNPBuffer *buf, int* err) {
 		return (uint16_t) readFixInt16(buf, err);
 	}
-	static int writeFixUint16(Buffer *buf, uint16_t v) {
+	static int writeFixUint16(ESNPBuffer *buf, uint16_t v) {
 		return writeFixInt16(buf, (int16_t) v);
 	}
-	static uint32_t readFixUint32(Buffer *buf, int* err) {
+	static uint32_t readFixUint32(ESNPBuffer *buf, int* err) {
 		return (uint32_t) readFixInt32(buf, err);
 	}
-	static int writeFixUint32(Buffer *buf, uint32_t v) {
+	static int writeFixUint32(ESNPBuffer *buf, uint32_t v) {
 		return writeFixInt32(buf, (int32_t) v);
 	}
-	static uint64_t readFixUint64(Buffer *buf, int* err) {
+	static uint64_t readFixUint64(ESNPBuffer *buf, int* err) {
 		return (uint64_t) readFixInt64(buf, err);
 	}
-	static int writeFixUint64(Buffer *buf, uint64_t v) {
+	static int writeFixUint64(ESNPBuffer *buf, uint64_t v) {
 		return writeFixInt64(buf, (int64_t) v);
 	}
 
-	static float readFloat32(Buffer* buf, int* err);
-	static int writeFloat32(Buffer* buf, float v);
+	static float readFloat32(ESNPBuffer* buf, int* err);
+	static int writeFloat32(ESNPBuffer* buf, float v);
 
-	static double readFloat64(Buffer* buf, int* err);
-	static int writeFloat64(Buffer* buf, double v);
+	static double readFloat64(ESNPBuffer* buf, int* err);
+	static int writeFloat64(ESNPBuffer* buf, double v);
 
-	static uint16_t readUint16(Buffer *buf, int* err);
-	static int writeUint16(Buffer *buf, uint16_t v);
+	static uint16_t readUint16(ESNPBuffer *buf, int* err);
+	static int writeUint16(ESNPBuffer *buf, uint16_t v);
 
-	static uint32_t readUint32(Buffer *buf, int* err);
-	static int writeUint32(Buffer *buf, uint32_t v);
+	static uint32_t readUint32(ESNPBuffer *buf, int* err);
+	static int writeUint32(ESNPBuffer *buf, uint32_t v);
 
-	static uint64_t readUint64(Buffer *buf, int* err);
-	static int writeUint64(Buffer *buf, uint64_t v);
+	static uint64_t readUint64(ESNPBuffer *buf, int* err);
+	static int writeUint64(ESNPBuffer *buf, uint64_t v);
 
-	static int16_t readInt16(Buffer *buf, int* err);
-	static int writeInt16(Buffer *buf, int16_t v);
+	static int16_t readInt16(ESNPBuffer *buf, int* err);
+	static int writeInt16(ESNPBuffer *buf, int16_t v);
 
-	static int32_t readInt32(Buffer *buf, int* err);
-	static int writeInt32(Buffer *buf, int32_t v);
+	static int32_t readInt32(ESNPBuffer *buf, int* err);
+	static int writeInt32(ESNPBuffer *buf, int32_t v);
 
-	static int64_t readInt64(Buffer *buf, int* err);
-	static int writeInt64(Buffer *buf, int64_t v);
+	static int64_t readInt64(ESNPBuffer *buf, int* err);
+	static int writeInt64(ESNPBuffer *buf, int64_t v);
 
-	static std::string readString(Buffer *buf, int* err);	
-	static int writeString(Buffer* buf, std::string v);
+	static std::string readString(ESNPBuffer *buf, int* err);	
+	static int writeString(ESNPBuffer* buf, std::string v);
 
-	static std::string readLenString(Buffer *buf, int* err);
-	static int writeLenString(Buffer* buf, std::string v);
+	static std::string readLenString(ESNPBuffer *buf, int* err);
+	static int writeLenString(ESNPBuffer* buf, std::string v);
 
-	static VarValue* readVar(Buffer *buf, int* err);
-	static int writeVar(Buffer* buf, VarValue* v);
+	static ESNPVarValue* readVar(ESNPBuffer *buf, int* err);
+	static int writeVar(ESNPBuffer* buf, ESNPVarValue* v);
+
+	static void header(char* buf, int mt, int sz);
 };
 
+#define MT_END					0x00
+#define MT_MESSAGE_ID			0x11
+#define MT_SOURCE_MESSAGE_ID	0x12
+#define MT_HEADER				0x14
+#define MT_DATA					0x15
+#define MT_PAYLOAD				0x16
+#define MT_ADDRESS				0x17
+#define MT_ERROR				0x1D
+#define MT_FLAG					0x1E
+
+#define ADDRESS_SERVICE			30
+#define ADDRESS_OP				20
+
+#define FLAG_TRACE		1
+#define FLAG_RESP		3
+#define FLAG_REQUEST 	4
+#define FLAG_INFO		5
+#define FLAG_EVENT 		6
+
+#endif

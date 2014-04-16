@@ -1,30 +1,30 @@
 #include "Coder.h"
 #include <string.h>
 
-// VarValue
-VarValue::VarValue() {
+// ESNPVarValue
+ESNPVarValue::ESNPVarValue() {
 	type = VVT_NULL;
 }
 
-VarValue::~VarValue() {
+ESNPVarValue::~ESNPVarValue() {
 	Clear();	
 }
 
-void VarValue::Clear() {
+void ESNPVarValue::Clear() {
 	switch(type) {
 	case VVT_LIST: {
-			std::vector<VarValue*>::const_iterator it;
+			std::vector<ESNPVarValue*>::const_iterator it;
 			for(it=l.begin();it!=l.end();it++) {
-				VarValue* p = *it;
+				ESNPVarValue* p = *it;
 				delete p;
 			}
 			l.clear();
 		}
 		break;
 	case VVT_MAP: {
-			std::map<std::string, VarValue*>::const_iterator it;
+			std::map<std::string, ESNPVarValue*>::const_iterator it;
 			for(it=m.begin();it!=m.end();it++) {
-				VarValue* p = it->second;
+				ESNPVarValue* p = it->second;
 				delete p;
 			}
 			m.clear();
@@ -37,8 +37,8 @@ void VarValue::Clear() {
 	type = VVT_NULL;
 }
 
-// Coder
-bool Coder::readBool(Buffer* buf, int* err)
+// ESNPCoder
+bool ESNPCoder::readBool(ESNPBuffer* buf, int* err)
 {
 	int c = buf->Read();
 	if(c<0) {
@@ -48,13 +48,13 @@ bool Coder::readBool(Buffer* buf, int* err)
 	return c!=0;
 }
 
-int Coder::writeBool(Buffer* buf, bool v)
+int ESNPCoder::writeBool(ESNPBuffer* buf, bool v)
 {
 	buf->Write(v?1:0);
 	return 1;
 }
 
-int8_t Coder::readFixInt8(Buffer *buf, int* err)
+int8_t ESNPCoder::readFixInt8(ESNPBuffer *buf, int* err)
 {	
 	int c;	
 	c = buf->Read();
@@ -65,13 +65,13 @@ int8_t Coder::readFixInt8(Buffer *buf, int* err)
 	return (int8_t) c;
 }
 
-int Coder::writeFixInt8(Buffer *buf, int8_t v)
+int ESNPCoder::writeFixInt8(ESNPBuffer *buf, int8_t v)
 {
 	buf->Write((char) (v));
 	return 1;
 }
 
-int16_t Coder::readFixInt16(Buffer *buf, int* err)
+int16_t ESNPCoder::readFixInt16(ESNPBuffer *buf, int* err)
 {	
 	int16_t v = 0;
 	int c;	
@@ -90,14 +90,14 @@ int16_t Coder::readFixInt16(Buffer *buf, int* err)
 	return v;
 }
 
-int Coder::writeFixInt16(Buffer *buf, int16_t v)
+int ESNPCoder::writeFixInt16(ESNPBuffer *buf, int16_t v)
 {
 	buf->Write((char) (v >> 8));
 	buf->Write((char) (v));
 	return 2;
 }
 
-int32_t Coder::readFixInt32(Buffer *buf, int* err)
+int32_t ESNPCoder::readFixInt32(ESNPBuffer *buf, int* err)
 {	
 	int32_t v = 0;
 	int c;	
@@ -128,7 +128,7 @@ int32_t Coder::readFixInt32(Buffer *buf, int* err)
 	return v;
 }
 
-int Coder::writeFixInt32(Buffer *buf, int32_t v)
+int ESNPCoder::writeFixInt32(ESNPBuffer *buf, int32_t v)
 {
 	buf->Write((char) (v >> 24));
 	buf->Write((char) (v >> 16));
@@ -137,7 +137,7 @@ int Coder::writeFixInt32(Buffer *buf, int32_t v)
 	return 4;
 }
 
-int64_t Coder::readFixInt64(Buffer *buf, int* err)
+int64_t ESNPCoder::readFixInt64(ESNPBuffer *buf, int* err)
 {	
 	int64_t v = 0;
 	int c;	
@@ -192,7 +192,7 @@ int64_t Coder::readFixInt64(Buffer *buf, int* err)
 	return v;
 }
 
-int Coder::writeFixInt64(Buffer *buf, int64_t v)
+int ESNPCoder::writeFixInt64(ESNPBuffer *buf, int64_t v)
 {
 	buf->Write((char) (v >> 56));
 	buf->Write((char) (v >> 48));
@@ -205,7 +205,7 @@ int Coder::writeFixInt64(Buffer *buf, int64_t v)
 	return 8;
 }
 
-float Coder::readFloat32(Buffer* buf, int* err)
+float ESNPCoder::readFloat32(ESNPBuffer* buf, int* err)
 {
 	uint32_t y = readFixUint32(buf, err);
 	float x;
@@ -213,7 +213,7 @@ float Coder::readFloat32(Buffer* buf, int* err)
 	return x;
 }
 
-int Coder::writeFloat32(Buffer* buf, float v)
+int ESNPCoder::writeFloat32(ESNPBuffer* buf, float v)
 {
 	uint32_t y;
     memcpy_s(&y, 4, &v, 4);
@@ -221,7 +221,7 @@ int Coder::writeFloat32(Buffer* buf, float v)
 	return 4;
 }
 
-double Coder::readFloat64(Buffer* buf, int* err)
+double ESNPCoder::readFloat64(ESNPBuffer* buf, int* err)
 {
 	uint64_t y = readFixUint64(buf, err);
 	double x;
@@ -229,7 +229,7 @@ double Coder::readFloat64(Buffer* buf, int* err)
 	return x;
 }
 
-int Coder::writeFloat64(Buffer* buf, double v)
+int ESNPCoder::writeFloat64(ESNPBuffer* buf, double v)
 {
 	uint64_t y;
     memcpy_s(&y, 8, &v, 8);
@@ -237,23 +237,23 @@ int Coder::writeFloat64(Buffer* buf, double v)
 	return 8;
 }
 
-uint16_t Coder::readUint16(Buffer *buf, int* err) {
+uint16_t ESNPCoder::readUint16(ESNPBuffer *buf, int* err) {
 	return (uint16_t) readUint64(buf, err);
 }
 
-int Coder::writeUint16(Buffer *buf, uint16_t v) {
+int ESNPCoder::writeUint16(ESNPBuffer *buf, uint16_t v) {
 	return writeUint64(buf, (uint64_t) v);
 }
 
-uint32_t Coder::readUint32(Buffer *buf, int* err) {
+uint32_t ESNPCoder::readUint32(ESNPBuffer *buf, int* err) {
 	return (uint32_t) readUint64(buf, err);
 }
 
-int Coder::writeUint32(Buffer *buf, uint32_t v) {
+int ESNPCoder::writeUint32(ESNPBuffer *buf, uint32_t v) {
 	return writeUint64(buf, (uint64_t) v);
 }
 
-uint64_t Coder::readUint64(Buffer *buf, int* err) {
+uint64_t ESNPCoder::readUint64(ESNPBuffer *buf, int* err) {
 	int64_t s = 0;
 	int b;
 	int w = 0;
@@ -280,7 +280,7 @@ uint64_t Coder::readUint64(Buffer *buf, int* err) {
 	return 0;
 }
 
-int Coder::writeUint64(Buffer *buf, uint64_t v) {
+int ESNPCoder::writeUint64(ESNPBuffer *buf, uint64_t v) {
 	int i = 0;
 	while(v >= 0x80){		
 		buf->Write((char) (v | 0x80)) ;
@@ -291,23 +291,23 @@ int Coder::writeUint64(Buffer *buf, uint64_t v) {
 	return i + 1;
 }
 
-int16_t Coder::readInt16(Buffer *buf, int* err) {
+int16_t ESNPCoder::readInt16(ESNPBuffer *buf, int* err) {
 	return (int16_t) readInt64(buf, err);
 }
 
-int Coder::writeInt16(Buffer *buf, int16_t v) {
+int ESNPCoder::writeInt16(ESNPBuffer *buf, int16_t v) {
 	return writeInt64(buf, (int64_t) v);
 }
 
-int32_t Coder::readInt32(Buffer *buf, int* err) {
+int32_t ESNPCoder::readInt32(ESNPBuffer *buf, int* err) {
 	return (int32_t) readInt64(buf, err);
 }
 
-int Coder::writeInt32(Buffer *buf, int32_t v) {
+int ESNPCoder::writeInt32(ESNPBuffer *buf, int32_t v) {
 	return writeInt64(buf, (int64_t) v);
 }
 
-int64_t Coder::readInt64(Buffer *buf, int* err) {
+int64_t ESNPCoder::readInt64(ESNPBuffer *buf, int* err) {
 	uint64_t l = readUint64(buf, err);
 	int64_t l2 = (int64_t) (l >> 1);
 	if((l & 1) != 0){
@@ -316,7 +316,7 @@ int64_t Coder::readInt64(Buffer *buf, int* err) {
 	return l2;
 }
 
-int Coder::writeInt64(Buffer *buf, int64_t v) {
+int ESNPCoder::writeInt64(ESNPBuffer *buf, int64_t v) {
 	uint64_t l1 = v << 1;
 	if(v < 0){
 		l1 = ~l1;
@@ -324,7 +324,7 @@ int Coder::writeInt64(Buffer *buf, int64_t v) {
 	return writeUint64(buf, l1);
 }
 
-std::string Coder::readString(Buffer *buf, int* err) {
+std::string ESNPCoder::readString(ESNPBuffer *buf, int* err) {
 	int c = buf->Remain();
 	if(c==0) {
 		return std::string();
@@ -335,11 +335,11 @@ std::string Coder::readString(Buffer *buf, int* err) {
 	return s;
 }
 
-int Coder::writeString(Buffer* buf, std::string v) {
+int ESNPCoder::writeString(ESNPBuffer* buf, std::string v) {
 	return buf->WriteBytes(v.c_str(), v.length());
 }
 
-std::string Coder::readLenString(Buffer *buf, int* err) {
+std::string ESNPCoder::readLenString(ESNPBuffer *buf, int* err) {
 	int32_t l = readInt32(buf, err);
 	if(l==0) {
 		return std::string();
@@ -354,12 +354,12 @@ std::string Coder::readLenString(Buffer *buf, int* err) {
 	return s;
 }
 
-int Coder::writeLenString(Buffer* buf, std::string v) {
+int ESNPCoder::writeLenString(ESNPBuffer* buf, std::string v) {
 	int l = writeInt32(buf, v.length());
 	return writeString(buf, v)+l;	
 }
 
-VarValue* Coder::readVar(Buffer *buf, int* err) {
+ESNPVarValue* ESNPCoder::readVar(ESNPBuffer *buf, int* err) {
 	int ty = buf->Read();
 	if(ty<0) {
 		if(err!=NULL)*err=ty;
@@ -371,81 +371,81 @@ VarValue* Coder::readVar(Buffer *buf, int* err) {
 	case VVT_BOOLEAN: {
 			bool v = readBool(buf, perr);
 			if(*perr!=0)return NULL;
-			return VarValue::vvBool(v);
+			return ESNPVarValue::vvBool(v);
 		}
 		break;	
 	case VVT_INT:
 	case VVT_INT32: {
 			int32_t v = readInt32(buf, perr);
 			if(*perr!=0)return NULL;
-			return VarValue::vvInt32(v);
+			return ESNPVarValue::vvInt32(v);
 		}
 		break;
 	case VVT_INT8: {
 			int8_t v = readFixInt8(buf, perr);
 			if(*perr!=0)return NULL;
-			return VarValue::vvInt8(v);
+			return ESNPVarValue::vvInt8(v);
 		}
 		break;
 	case VVT_UINT8:{
 			uint8_t v = readFixUint8(buf, perr);
 			if(*perr!=0)return NULL;
-			return VarValue::vvUint8(v);
+			return ESNPVarValue::vvUint8(v);
 		}
 		break;
 	case VVT_INT16:{
 			int16_t v = readInt16(buf, perr);
 			if(*perr!=0)return NULL;
-			return VarValue::vvInt16(v);
+			return ESNPVarValue::vvInt16(v);
 		}
 		break;
 	case VVT_INT64:{
 			int64_t v = readInt64(buf, perr);
 			if(*perr!=0)return NULL;
-			return VarValue::vvInt64(v);
+			return ESNPVarValue::vvInt64(v);
 		}
 		break;
 	case VVT_UINT16:{
 			uint16_t v = readUint16(buf, perr);
 			if(*perr!=0)return NULL;
-			return VarValue::vvUint16(v);
+			return ESNPVarValue::vvUint16(v);
 		}
 		break;
 	case VVT_UINT32:{
 			uint32_t v = readUint32(buf, perr);
 			if(*perr!=0)return NULL;
-			return VarValue::vvUint32(v);
+			return ESNPVarValue::vvUint32(v);
 		}
 		break;
 	case VVT_UINT64:{
 			uint64_t v = readUint64(buf, perr);
 			if(*perr!=0)return NULL;
-			return VarValue::vvUint64(v);
+			return ESNPVarValue::vvUint64(v);
 		}
 		break;
 	case VVT_FLOAT32:{
 			float v = readFloat32(buf, perr);
 			if(*perr!=0)return NULL;
-			return VarValue::vvFloat32(v);
+			return ESNPVarValue::vvFloat32(v);
 		}
 		break;
 	case VVT_FLOAT64:{
 			double v = readFloat64(buf, perr);
 			if(*perr!=0)return NULL;
-			return VarValue::vvFloat64(v);
+			return ESNPVarValue::vvFloat64(v);
 		}
 		break;
 	case VVT_MAP: {
 			int32_t c = readInt32(buf, perr);
 			if(*perr!=0)return NULL;
-			VarValue* r = VarValue::vvMap();
+			ESNPVarValue* r = ESNPVarValue::vvMap();
 			for(int32_t i=0;i<c;i++) {
 				std::string key = readLenString(buf, perr);
 				if(*perr!=0) {
 					delete r;
 					return NULL;
 				}
-				VarValue* v = readVar(buf, perr);
+				ESNPVarValue* v = readVar(buf, perr);
 				if(*perr!=0) {
 					delete r;
 					return NULL;
@@ -458,9 +458,9 @@ VarValue* Coder::readVar(Buffer *buf, int* err) {
 	case VVT_LIST: {
 			int32_t c = readInt32(buf, perr);
 			if(*perr!=0)return NULL;
-			VarValue* r = VarValue::vvList();
+			ESNPVarValue* r = ESNPVarValue::vvList();
 			for(int32_t i=0;i<c;i++) {
-				VarValue* v = readVar(buf, perr);
+				ESNPVarValue* v = readVar(buf, perr);
 				if(*perr!=0) {
 					delete r;
 					return NULL;
@@ -473,14 +473,14 @@ VarValue* Coder::readVar(Buffer *buf, int* err) {
 	case VVT_LEN_STRING:	{
 			std::string s = readString(buf, perr);
 			if(*perr!=0)return NULL;
-			return VarValue::vvString(s);
+			return ESNPVarValue::vvString(s);
 		}
 		break;
 	}
 	return NULL;
 }
 
-int Coder::writeVar(Buffer* buf, VarValue* v) {
+int ESNPCoder::writeVar(ESNPBuffer* buf, ESNPVarValue* v) {
 	if(v==NULL) {
 		return buf->Write(VVT_NULL);
 	}
@@ -524,7 +524,7 @@ int Coder::writeVar(Buffer* buf, VarValue* v) {
 	case VVT_MAP: {
 			int c = v->m.size();
 			l2 = writeInt32(buf, (int32_t) c);
-			std::map<std::string, VarValue*>::const_iterator it;
+			std::map<std::string, ESNPVarValue*>::const_iterator it;
 			for(it=v->m.begin();it!=v->m.end();it++) {
 				l2 += writeLenString(buf, it->first);
 				l2 += writeVar(buf, it->second);
@@ -534,7 +534,7 @@ int Coder::writeVar(Buffer* buf, VarValue* v) {
 	case VVT_LIST: {
 			int c = v->l.size();
 			l2 = writeInt32(buf, (int32_t) c);
-			std::vector<VarValue*>::const_iterator it;
+			std::vector<ESNPVarValue*>::const_iterator it;
 			for(it=v->l.begin();it!=v->l.end();it++) {
 				l2 += writeVar(buf, *it);
 			}
@@ -545,4 +545,11 @@ int Coder::writeVar(Buffer* buf, VarValue* v) {
 		break;
 	}
 	return l1+l2;
+}
+
+void ESNPCoder::header(char* buf, int mt, int sz) {
+	buf[0] = (char) mt;
+	buf[1] = (char) (sz >> 16);
+	buf[2] = (char) (sz >> 8);
+	buf[3] = (char) (sz);
 }

@@ -25,7 +25,8 @@ end
 function Class:doStart()
 	-- self:runScene("TestActivity")
 	-- self:runScene("CloudConnect")
-	self:runScene("CharacterSelect")
+	-- self:runScene("CharacterSelect")
+	self:runScene("TestESNP")
 end
 
 function Class:sceneCloudConnectEnd()

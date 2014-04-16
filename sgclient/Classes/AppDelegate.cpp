@@ -45,6 +45,7 @@ void AppDelegate::applicationWillEnterForeground() {
 
 #include "CCO4File.h"
 #include "CCO4HttpClient.h"
+#include "esnp\CCO4ESNP.h"
 #include "CCO4Audio.h"
 #include "CCEDEVScene.h"
 
@@ -117,10 +118,13 @@ bool AppDelegate::applicationDidFinishLaunching() {
 	if(true) {
 		CCEESNP* ep = CCEESNP::sharedESNP();
 		addRunnable(2, CCEESNP::appRunnable, ep);
-		ep->addHost("172.19.16.78", 1080);
 		if(!ep->start()) {
 			return false;
 		}
+
+		CCO4ESNP* o = new CCO4ESNP();
+		luaHost->addObject("esnp", o);
+		o->release();
 	}
 	if(true) {
 		luaHost->addCreateObjectFunction(&MGRCreateObject);
@@ -144,6 +148,8 @@ void AppDelegate::resetCloseApplication()
 	CCLOG("reset closing application");
 
 	m_started = false;	
+
+	CCEESNP::sharedESNP()->reset();
 
 	CocosDenshion::SimpleAudioEngine::sharedEngine()->stopAll();
 

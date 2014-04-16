@@ -58,6 +58,7 @@
     <ClInclude Include="..\Classes\editbox\Win32InputBox.h" />
     <ClInclude Include="..\Classes\esnp\Buffer.h" />
     <ClInclude Include="..\Classes\esnp\CCEESNP.h" />
+    <ClInclude Include="..\Classes\esnp\CCO4ESNP.h" />
     <ClInclude Include="..\Classes\esnp\Coder.h" />
     <ClInclude Include="..\sqlite\SQLiteVFS.h" />
   </ItemGroup>
@@ -108,6 +109,7 @@
     <ClCompile Include="..\Classes\editbox\Win32InputBox.cpp" />
     <ClCompile Include="..\Classes\esnp\Buffer.cpp" />
     <ClCompile Include="..\Classes\esnp\CCEESNP.cpp" />
+    <ClCompile Include="..\Classes\esnp\CCO4ESNP.cpp" />
     <ClCompile Include="..\Classes\esnp\Coder.cpp" />
     <ClCompile Include="..\sqlite\SQLiteVFS.cpp" />
   </ItemGroup>
