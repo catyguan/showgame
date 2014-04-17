@@ -303,8 +303,7 @@ int ESNPCoder::writeString(ESNPBuffer* buf, std::string v) {
 	return buf->WriteBytes(v.c_str(), v.length());
 }
 
-std::string ESNPCoder::readLenString(ESNPBuffer *buf, int* err) {
-	int32_t l = readInt32(buf, err);
+std::string ESNPCoder::readStringL(ESNPBuffer *buf,int l, int* err) {
 	if(l==0) {
 		return std::string();
 	}
@@ -316,6 +315,11 @@ std::string ESNPCoder::readLenString(ESNPBuffer *buf, int* err) {
 	s.resize(l);
 	buf->ReadBytes(&s[0], l);
 	return s;
+}
+
+std::string ESNPCoder::readLenString(ESNPBuffer *buf, int* err) {
+	int32_t l = readInt32(buf, err);
+	return readStringL(buf, l, err);
 }
 
 int ESNPCoder::writeLenString(ESNPBuffer* buf, std::string v) {

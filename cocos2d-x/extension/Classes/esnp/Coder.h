@@ -99,6 +99,7 @@ public:
 	static std::string readString(ESNPBuffer *buf, int* err);	
 	static int writeString(ESNPBuffer* buf, std::string v);
 
+	static std::string readStringL(ESNPBuffer *buf, int len, int* err);
 	static std::string readLenString(ESNPBuffer *buf, int* err);
 	static int writeLenString(ESNPBuffer* buf, std::string v);
 

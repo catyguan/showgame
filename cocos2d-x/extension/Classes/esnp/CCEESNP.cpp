@@ -79,6 +79,13 @@ int encode(ESNPBuffer* buf, ESNPMessage* msg)
 			buf->Rewrite(p, h, 4);
 		}
 	}
+	if(!msg->error.empty()) {
+		int p = buf->Reserve(4);
+		int sz = 0;
+		sz += ESNPCoder::writeString(buf, msg->error);
+		ESNPCoder::header(h, MT_ERROR, sz);
+		buf->Rewrite(p, h, 4);
+	}
 	// end frame
 	buf->WriteBytes(endframe, 4);
 	return buf->WritePos();
@@ -144,6 +151,10 @@ bool decode(ESNPBuffer* buf, ESNPMessage* msg) {
 				CCValue root;
 				sb.build(&root);
 				msg->values[key] = root;
+			}
+			break;
+		case MT_ERROR: {
+				msg->error = ESNPCoder::readStringL(buf, sz, NULL);
 			}
 			break;
 		default:
@@ -270,6 +281,9 @@ CCValue CCEESNP::toval(ESNPMessage* msg) {
 	if(!msg->values.empty()) {
 		m["values"] = CCValue::mapValue(msg->values);
 	}
+	if(!msg->error.empty()) {
+		m["error"] = CCValue::stringValue(msg->error);
+	}
 	return CCValue::mapValue(m);
 }
 
@@ -327,6 +341,10 @@ bool CCEESNP::tomsg(CCValue& val, ESNPMessage* msg) {
 			msg->values = *vs;
 		}
 	}
+	it = m->find("error");
+	if(it!=m->end()) {
+		msg->error = it->second.stringValue();
+	}
 	return true;
 }
 
@@ -375,14 +393,28 @@ void CCEESNP::defaultDispatch(ESNPMessage* msg) {
 			ESNPReq* req = (*it);
 			if(req->mid==msg->smid) {
 				CCLOG("response -> " F64U, msg->smid);
+				
+				int reqid = req->id;
+				uint64_t reqmid = req->mid;
 				CCValue cb = req->callback;
 				cb.retain();
+				
 				m_reqs.erase(it);
 				delreq(req);
+				
 				if(cb.canCall()) {
 					CCValueArray ps;
-					ps.push_back(CCValue::booleanValue(true));
-					ps.push_back(toval(msg));
+					if(msg->error.empty()) {
+						ps.push_back(CCValue::booleanValue(true));
+						ps.push_back(toval(msg));
+					} else {
+						CCValueMap res;
+						res["id"] = CCValue::intValue(reqid);
+						res["messageId"] = CCValue::stringValue(midStr(reqmid));
+						res["error"] = CCValue::stringValue(msg->error);
+						ps.push_back(CCValue::booleanValue(false));
+						ps.push_back(CCValue::mapValue(res));
+					}
 					cb.call(ps, false);
 					return;
 				}

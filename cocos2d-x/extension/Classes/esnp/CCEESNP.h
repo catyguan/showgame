@@ -18,6 +18,7 @@ typedef struct _ESNPMessage {
 	bool resp;
 	CCValueMap headers;
 	CCValueMap values;
+	std::string error;
 } ESNPMessage;
 
 typedef struct _ESNPReq {
