@@ -55,8 +55,7 @@ public:
 	static std::string midStr(uint64_t id);
 	static CCValue toval(ESNPMessage* msg);
 	static bool tomsg(CCValue& val, ESNPMessage* msg);
-	static int encode(ESNPBuffer* buf, ESNPMessage* msg);
-
+	
 	bool start();
 	void reset();
 	void stop();
@@ -97,6 +96,7 @@ protected:
 
 	ESNPBuffer m_wbuf;
 	ESNPBuffer m_rbuf;
+	ESNPMessage m_reading;
 };
 
 #endif // __CCE_ESNP_H__

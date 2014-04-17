@@ -15,6 +15,145 @@
 
 USING_NS_CC;
 
+// util
+char endframe[] = {0,0,0,0};
+int encode(ESNPBuffer* buf, ESNPMessage* msg)
+{
+	char h[4];
+	buf->Reset();
+	if(true) {
+		ESNPCoder::header(h, MT_MESSAGE_ID, 8);
+		buf->WriteBytes(h, 4);
+		ESNPCoder::writeFixUint64(buf, msg->mid);
+	}
+	if(msg->smid>0) {
+		ESNPCoder::header(h, MT_SOURCE_MESSAGE_ID, 8);
+		buf->WriteBytes(h, 4);
+		ESNPCoder::writeFixUint64(buf, msg->smid);
+	}
+	if(!msg->service.empty()) {
+		int p = buf->Reserve(4);
+		int sz = 0;
+		sz += ESNPCoder::writeInt32(buf, ADDRESS_SERVICE);
+		sz += ESNPCoder::writeLenString(buf, msg->service);
+		ESNPCoder::header(h, MT_ADDRESS, sz);
+		buf->Rewrite(p, h, 4);
+	}
+	if(!msg->method.empty()) {
+		int p = buf->Reserve(4);
+		int sz = 0;
+		sz += ESNPCoder::writeInt32(buf, ADDRESS_OP);
+		sz += ESNPCoder::writeLenString(buf, msg->method);
+		ESNPCoder::header(h, MT_ADDRESS, sz);
+		buf->Rewrite(p, h, 4);
+	}
+	if(msg->type!=0) {
+		ESNPCoder::header(h, MT_FLAG, 1);
+		buf->WriteBytes(h, 4);
+		ESNPCoder::writeInt32(buf, msg->type);
+	}
+	if(msg->resp) {
+		ESNPCoder::header(h, MT_FLAG, 1);
+		buf->WriteBytes(h, 4);
+		ESNPCoder::writeInt32(buf, FLAG_RESP);
+	}
+	if(!msg->headers.empty()) {
+		CCValueMapIterator it = msg->headers.begin();
+		for(;it!=msg->headers.end();it++) {			
+			int p = buf->Reserve(4);
+			int sz = 0;
+			sz += ESNPCoder::writeLenString(buf, it->first);
+			sz += ESNPCoder::writeVar(buf, (CCValue&) it->second);
+			ESNPCoder::header(h, MT_HEADER, sz);
+			buf->Rewrite(p, h, 4);
+		}
+	}
+	if(!msg->values.empty()) {
+		CCValueMapIterator it = msg->values.begin();
+		for(;it!=msg->values.end();it++) {
+			int p = buf->Reserve(4);
+			int sz = 0;
+			sz += ESNPCoder::writeLenString(buf, it->first);
+			sz += ESNPCoder::writeVar(buf, (CCValue&) it->second);
+			ESNPCoder::header(h, MT_DATA, sz);
+			buf->Rewrite(p, h, 4);
+		}
+	}
+	// end frame
+	buf->WriteBytes(endframe, 4);
+	return buf->WritePos();
+}
+
+bool decode(ESNPBuffer* buf, ESNPMessage* msg) {
+	for(;;) {
+		int mt, sz;
+		int p = buf->ReadPos();
+		if(!ESNPCoder::header(buf, &mt, &sz)) {
+			buf->ResetRead(p);
+			return false;
+		}
+		switch(mt) {
+		case MT_END:
+			return true;
+		case MT_MESSAGE_ID:
+			msg->mid = ESNPCoder::readFixUint64(buf, NULL);			
+			break;
+		case MT_SOURCE_MESSAGE_ID:
+			msg->smid = ESNPCoder::readFixUint64(buf, NULL);
+			break;
+		case MT_ADDRESS: {
+				int addrt = ESNPCoder::readInt32(buf,NULL);
+				std::string s = ESNPCoder::readLenString(buf, NULL);
+				switch(addrt) {
+				case ADDRESS_SERVICE:
+					msg->service = s;
+					break;
+				case ADDRESS_OP:
+					msg->method = s;
+					break;
+				}
+			}
+			break;
+		case MT_FLAG: {
+				int32_t flag = ESNPCoder::readInt32(buf, NULL);
+				switch(flag) {
+				case FLAG_RESP:
+					msg->resp = true;
+					break;
+				case FLAG_REQUEST:
+				case FLAG_INFO:
+				case FLAG_EVENT:
+					msg->type = flag;
+					break;
+				}
+			}
+			break;
+		case MT_HEADER: {
+				std::string key = ESNPCoder::readLenString(buf, NULL);
+				CCValueBuilder sb;
+				ESNPCoder::readVar(buf, &sb, NULL);
+				CCValue root;
+				sb.build(&root);
+				msg->headers[key] = root;
+			}
+			break;
+		case MT_DATA: {
+				std::string key = ESNPCoder::readLenString(buf, NULL);
+				CCValueBuilder sb;
+				ESNPCoder::readVar(buf, &sb, NULL);
+				CCValue root;
+				sb.build(&root);
+				msg->values[key] = root;
+			}
+			break;
+		default:
+			// skip unknow frame
+			buf->SkipRead(sz);
+			break;
+		}
+	}
+}
+
 // CCEESNP
 CCEESNP g_sharedESNP;
 CCEESNP::CCEESNP()
@@ -110,7 +249,7 @@ CCValue CCEESNP::toval(ESNPMessage* msg) {
 	if(msg->mid!=0) {
 		m["messageId"] = CCValue::stringValue(midStr(msg->mid));
 	}
-	if(msg->mid!=0) {
+	if(msg->smid!=0) {
 		m["sourceMessageId"] = CCValue::stringValue(midStr(msg->smid));
 	}
 	if(!msg->service.empty()) {
@@ -129,7 +268,7 @@ CCValue CCEESNP::toval(ESNPMessage* msg) {
 		m["headers"] = CCValue::mapValue(msg->headers);
 	}
 	if(!msg->values.empty()) {
-		m["values"] = CCValue::mapValue(msg->headers);
+		m["values"] = CCValue::mapValue(msg->values);
 	}
 	return CCValue::mapValue(m);
 }
@@ -191,132 +330,7 @@ bool CCEESNP::tomsg(CCValue& val, ESNPMessage* msg) {
 	return true;
 }
 
-ESNPVarValue* tovv(CCValue& val) {
-	switch(val.getType()) {
-	case CCValueTypeInt:
-		return ESNPVarValue::vvInt(val.intValue());
-	case CCValueTypeNumber:
-		return ESNPVarValue::vvFloat64(val.numberValue());
-		break;
-	case CCValueTypeBoolean:
-		return ESNPVarValue::vvBool(val.booleanValue());
-	case CCValueTypeString:
-		return ESNPVarValue::vvString(val.stringValue());
-	case CCValueTypeMap: {
-			CCValueMap* m = val.mapValue();
-			if(m->empty()) {
-				return NULL;
-			}
-			ESNPVarValue* vm = ESNPVarValue::vvMap();
-			CCValueMapIterator it = m->begin();
-			for(;it!=m->end();it++) {
-				ESNPVarValue* v = tovv((CCValue&) it->second);
-				if(v!=NULL) {
-					vm->m[it->first] = v;
-				}
-			}
-			return vm;
-		}
-	case CCValueTypeArray: {
-			CCValueArray* a = val.arrayValue();
-			if(a->empty()) {
-				return NULL;
-			}
-			ESNPVarValue* va = ESNPVarValue::vvList();
-			CCValueArrayIterator it = a->begin();
-			for(;it!=a->end();it++) {
-				ESNPVarValue* v = tovv((CCValue&) *it);
-				if(v!=NULL) {
-					va->l.push_back(v);
-				}
-			}
-			return va;
-		}
-	default:
-		break;
-	}
-	return NULL;
-}
 
-char endframe[] = {0,0,0,0};
-int CCEESNP::encode(ESNPBuffer* buf, ESNPMessage* msg)
-{
-	char h[4];
-	buf->Reset();
-	if(true) {
-		ESNPCoder::header(h, MT_MESSAGE_ID, 8);
-		buf->WriteBytes(h, 4);
-		ESNPCoder::writeFixUint64(buf, msg->mid);
-	}
-	if(msg->smid>0) {
-		ESNPCoder::header(h, MT_SOURCE_MESSAGE_ID, 8);
-		buf->WriteBytes(h, 4);
-		ESNPCoder::writeFixUint64(buf, msg->smid);
-	}
-	if(!msg->service.empty()) {
-		int p = buf->Pos();
-		buf->WriteBytes(h, 4);		
-		int sz = 0;
-		sz += ESNPCoder::writeInt32(buf, ADDRESS_SERVICE);
-		sz += ESNPCoder::writeLenString(buf, msg->service);
-		ESNPCoder::header(h, MT_ADDRESS, sz);
-		buf->Rewrite(p, h, 4);
-	}
-	if(!msg->method.empty()) {
-		int p = buf->Pos();
-		buf->WriteBytes(h, 4);		
-		int sz = 0;
-		sz += ESNPCoder::writeInt32(buf, ADDRESS_OP);
-		sz += ESNPCoder::writeLenString(buf, msg->method);
-		ESNPCoder::header(h, MT_ADDRESS, sz);
-		buf->Rewrite(p, h, 4);
-	}
-	if(msg->type!=0) {
-		ESNPCoder::header(h, MT_FLAG, 1);
-		buf->WriteBytes(h, 4);
-		ESNPCoder::writeInt32(buf, msg->type);
-	}
-	if(msg->resp) {
-		ESNPCoder::header(h, MT_FLAG, 1);
-		buf->WriteBytes(h, 4);
-		ESNPCoder::writeInt32(buf, FLAG_RESP);
-	}
-	if(!msg->headers.empty()) {
-		CCValueMapIterator it = msg->headers.begin();
-		for(;it!=msg->headers.end();it++) {
-			ESNPVarValue* vv = tovv((CCValue&) it->second);
-			if(vv==NULL)continue;
-
-			int p = buf->Pos();
-			buf->WriteBytes(h, 4);		
-			int sz = 0;
-			sz += ESNPCoder::writeLenString(buf, it->first);
-			sz += ESNPCoder::writeVar(buf, vv);
-			ESNPCoder::header(h, MT_HEADER, sz);
-			buf->Rewrite(p, h, 4);
-			delete vv;
-		}
-	}
-	if(!msg->values.empty()) {
-		CCValueMapIterator it = msg->values.begin();
-		for(;it!=msg->values.end();it++) {
-			ESNPVarValue* vv = tovv((CCValue&) it->second);
-			if(vv==NULL)continue;
-
-			int p = buf->Pos();
-			buf->WriteBytes(h, 4);		
-			int sz = 0;
-			sz += ESNPCoder::writeLenString(buf, it->first);
-			sz += ESNPCoder::writeVar(buf, vv);
-			ESNPCoder::header(h, MT_DATA, sz);
-			buf->Rewrite(p, h, 4);
-			delete vv;
-		}
-	}
-	// end frame
-	buf->WriteBytes(endframe, 4);
-	return buf->Pos();
-}
 
 bool CCEESNP::start() {
 	if(m_socket==NULL) {
@@ -359,14 +373,15 @@ void CCEESNP::defaultDispatch(ESNPMessage* msg) {
 		std::vector<ESNPReq*>::const_iterator it = m_reqs.begin();
 		for(;it!=m_reqs.end();it++) {
 			ESNPReq* req = (*it);
-			if(req->mid==msg->mid) {
-				CCLOG("response -> " F64U, msg->mid);
+			if(req->mid==msg->smid) {
+				CCLOG("response -> " F64U, msg->smid);
 				CCValue cb = req->callback;
 				cb.retain();
 				m_reqs.erase(it);
 				delreq(req);
 				if(cb.canCall()) {
 					CCValueArray ps;
+					ps.push_back(CCValue::booleanValue(true));
 					ps.push_back(toval(msg));
 					cb.call(ps, false);
 					return;
@@ -452,7 +467,7 @@ void CCEESNP::cleanup()
 		m_socket = NULL;
 	}
 	cleanReqs();
-	m_dispatcher.cleanup();
+	m_dispatcher.cleanup();	
 }
 
 void CCEESNP::cleanReqs() {
@@ -501,6 +516,24 @@ bool CCEESNP::handleUpstream(CCEAsynSocketEvent* e) {
 	if(true) {
 		CCEAsynSocketEventRead* ev = dynamic_cast<CCEAsynSocketEventRead*>(e);
 		if(ev!=NULL) {
+			m_rbuf.WriteBytes(ev->getData(), ev->getSize());
+			if(decode(&m_rbuf, &m_reading)) {
+				m_rbuf.Optimize();
+				if(m_handler!=NULL) {
+					m_handler->handleIncome(&m_reading);
+				} else {
+					defaultDispatch(&m_reading);
+				}
+				// reset m_reading
+				m_reading.method.clear();				
+				m_reading.mid =0;
+				m_reading.resp = false;
+				m_reading.service.clear();
+				m_reading.smid = 0;
+				m_reading.type = 0;
+				m_reading.headers.clear();
+				m_reading.values.clear();
+			}
 			return true;
 		}
 	}

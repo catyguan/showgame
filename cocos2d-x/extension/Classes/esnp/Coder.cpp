@@ -1,42 +1,6 @@
 #include "Coder.h"
 #include <string.h>
 
-// ESNPVarValue
-ESNPVarValue::ESNPVarValue() {
-	type = VVT_NULL;
-}
-
-ESNPVarValue::~ESNPVarValue() {
-	Clear();	
-}
-
-void ESNPVarValue::Clear() {
-	switch(type) {
-	case VVT_LIST: {
-			std::vector<ESNPVarValue*>::const_iterator it;
-			for(it=l.begin();it!=l.end();it++) {
-				ESNPVarValue* p = *it;
-				delete p;
-			}
-			l.clear();
-		}
-		break;
-	case VVT_MAP: {
-			std::map<std::string, ESNPVarValue*>::const_iterator it;
-			for(it=m.begin();it!=m.end();it++) {
-				ESNPVarValue* p = it->second;
-				delete p;
-			}
-			m.clear();
-		}
-		break;
-	case VVT_LEN_STRING:
-		s.clear();
-		break;
-	}	
-	type = VVT_NULL;
-}
-
 // ESNPCoder
 bool ESNPCoder::readBool(ESNPBuffer* buf, int* err)
 {
@@ -359,192 +323,193 @@ int ESNPCoder::writeLenString(ESNPBuffer* buf, std::string v) {
 	return writeString(buf, v)+l;	
 }
 
-ESNPVarValue* ESNPCoder::readVar(ESNPBuffer *buf, int* err) {
+bool ESNPCoder::readVar(ESNPBuffer *buf,CCValueBuilder* vb, int* err) {
 	int ty = buf->Read();
 	if(ty<0) {
 		if(err!=NULL)*err=ty;
-		return 0;
+		return false;
 	}
 	int merr = 0;
 	int *perr = err==NULL?&merr:err;
 	switch(ty) {
 	case VVT_BOOLEAN: {
 			bool v = readBool(buf, perr);
-			if(*perr!=0)return NULL;
-			return ESNPVarValue::vvBool(v);
+			if(*perr!=0)return false;
+			vb->beBoolean(v);
+			return true;
 		}
 		break;	
 	case VVT_INT:
 	case VVT_INT32: {
 			int32_t v = readInt32(buf, perr);
-			if(*perr!=0)return NULL;
-			return ESNPVarValue::vvInt32(v);
+			if(*perr!=0)return false;
+			vb->beInt(v);
+			return true;
 		}
 		break;
 	case VVT_INT8: {
 			int8_t v = readFixInt8(buf, perr);
-			if(*perr!=0)return NULL;
-			return ESNPVarValue::vvInt8(v);
+			if(*perr!=0)return false;
+			vb->beInt(v);
+			return true;
 		}
 		break;
 	case VVT_UINT8:{
 			uint8_t v = readFixUint8(buf, perr);
-			if(*perr!=0)return NULL;
-			return ESNPVarValue::vvUint8(v);
+			if(*perr!=0)return false;
+			vb->beInt(v);
+			return true;
 		}
 		break;
 	case VVT_INT16:{
 			int16_t v = readInt16(buf, perr);
-			if(*perr!=0)return NULL;
-			return ESNPVarValue::vvInt16(v);
+			if(*perr!=0)return false;
+			vb->beInt(v);
+			return true;
 		}
 		break;
 	case VVT_INT64:{
 			int64_t v = readInt64(buf, perr);
-			if(*perr!=0)return NULL;
-			return ESNPVarValue::vvInt64(v);
+			if(*perr!=0)return false;
+			// TODO
+			vb->beInt(v);
+			return true;
 		}
 		break;
 	case VVT_UINT16:{
 			uint16_t v = readUint16(buf, perr);
-			if(*perr!=0)return NULL;
-			return ESNPVarValue::vvUint16(v);
+			if(*perr!=0)return false;
+			// TODO
+			vb->beInt(v);
+			return true;
 		}
 		break;
 	case VVT_UINT32:{
 			uint32_t v = readUint32(buf, perr);
-			if(*perr!=0)return NULL;
-			return ESNPVarValue::vvUint32(v);
+			if(*perr!=0)return false;
+			vb->beInt(v);
+			return true;
 		}
 		break;
 	case VVT_UINT64:{
 			uint64_t v = readUint64(buf, perr);
-			if(*perr!=0)return NULL;
-			return ESNPVarValue::vvUint64(v);
+			if(*perr!=0)return false;
+			vb->beInt(v);
+			return true;
 		}
 		break;
 	case VVT_FLOAT32:{
 			float v = readFloat32(buf, perr);
-			if(*perr!=0)return NULL;
-			return ESNPVarValue::vvFloat32(v);
+			if(*perr!=0)return false;
+			vb->beNumber(v);
+			return true;
 		}
 		break;
 	case VVT_FLOAT64:{
 			double v = readFloat64(buf, perr);
-			if(*perr!=0)return NULL;
-			return ESNPVarValue::vvFloat64(v);
+			if(*perr!=0)return false;
+			vb->beNumber(v);
+			return true;
 		}
 		break;
 	case VVT_MAP: {
 			int32_t c = readInt32(buf, perr);
-			if(*perr!=0)return NULL;
-			ESNPVarValue* r = ESNPVarValue::vvMap();
+			if(*perr!=0)return false;
+			vb->mapBegin();			
 			for(int32_t i=0;i<c;i++) {
 				std::string key = readLenString(buf, perr);
 				if(*perr!=0) {
-					delete r;
-					return NULL;
+					vb->mapEnd();
+					return false;
+				}				
+				if(!readVar(buf, vb, perr)) {
+					vb->mapEnd();
+					return false;
 				}
-				ESNPVarValue* v = readVar(buf, perr);
-				if(*perr!=0) {
-					delete r;
-					return NULL;
-				}
-				r->m[key] = v;
+				vb->addMap(key.c_str());
 			}
-			return r;
+			vb->mapEnd();
+			return true;
 		}
 		break;
 	case VVT_LIST: {
 			int32_t c = readInt32(buf, perr);
-			if(*perr!=0)return NULL;
-			ESNPVarValue* r = ESNPVarValue::vvList();
+			if(*perr!=0)return false;
+			vb->arrayBegin();			
 			for(int32_t i=0;i<c;i++) {
-				ESNPVarValue* v = readVar(buf, perr);
-				if(*perr!=0) {
-					delete r;
-					return NULL;
+				if(!readVar(buf, vb, perr)) {
+					vb->arrayEnd();
+					return false;
 				}
-				r->l.push_back(v);
+				vb->addArray();
 			}
-			return r;
+			vb->arrayEnd();
+			return true;
 		}
 		break;
 	case VVT_LEN_STRING:	{
 			std::string s = readString(buf, perr);
-			if(*perr!=0)return NULL;
-			return ESNPVarValue::vvString(s);
+			if(*perr!=0)return false;
+			vb->beString(s);
+			return true;
 		}
 		break;
 	}
-	return NULL;
+	return false;
 }
 
-int ESNPCoder::writeVar(ESNPBuffer* buf, ESNPVarValue* v) {
-	if(v==NULL) {
-		return buf->Write(VVT_NULL);
-	}
-	int l1 = buf->Write((char) v->type);
-	int l2 = 0;
-	switch(v->type) {
-	case VVT_BOOLEAN:
-		l2 = writeBool(buf, v->b);
-		break;	
-	case VVT_INT:
-	case VVT_INT32:
-		l2 = writeInt32(buf, v->i32);
+int ESNPCoder::writeVar(ESNPBuffer* buf, CCValue& val) {
+	int l1,l2;
+	l1 = l2 = 0;
+	switch(val.getType()) {
+	case CCValueTypeInt:
+		l1 = buf->Write(VVT_INT32);
+		l2 = writeInt32(buf, val.intValue());
+		return l1+l2;
+	case CCValueTypeNumber:
+		l1 = buf->Write(VVT_INT32);
+		l2 = writeFloat64(buf, val.numberValue());
+		return l1+l2;
 		break;
-	case VVT_INT8:
-		l2 = writeFixInt8(buf, v->i8);
-		break;
-	case VVT_UINT8:
-		l2 = writeFixUint8(buf, v->ui8);
-		break;
-	case VVT_INT16:
-		l2 = writeInt16(buf, v->i16);
-		break;
-	case VVT_INT64:
-		l2 = writeInt64(buf, v->i64);
-		break;
-	case VVT_UINT16:
-		l2 = writeUint16(buf, v->ui16);
-		break;
-	case VVT_UINT32:
-		l2 = writeUint32(buf, v->i32);
-		break;
-	case VVT_UINT64:
-		l2 = writeUint64(buf, v->i64);
-		break;
-	case VVT_FLOAT32:
-		l2 = writeFloat32(buf, v->f32);
-		break;
-	case VVT_FLOAT64:
-		l2 = writeFloat64(buf, v->f64);
-		break;
-	case VVT_MAP: {
-			int c = v->m.size();
+	case CCValueTypeBoolean:
+		l1 = buf->Write(VVT_BOOLEAN);
+		l2 = writeBool(buf, val.booleanValue());
+		return l1+l2;		
+	case CCValueTypeString:
+		l1 = buf->Write(VVT_LEN_STRING);
+		l2 = writeLenString(buf, val.stringValue());
+		return l1+l2;		
+	case CCValueTypeMap: {
+		CCValueMap* m = val.mapValue();
+		if(!m->empty()) {
+			l1 = buf->Write(VVT_MAP);
+			int c = m->size();
 			l2 = writeInt32(buf, (int32_t) c);
-			std::map<std::string, ESNPVarValue*>::const_iterator it;
-			for(it=v->m.begin();it!=v->m.end();it++) {
+			CCValueMapIterator it;
+			for(it=m->begin();it!=m->end();it++) {
 				l2 += writeLenString(buf, it->first);
-				l2 += writeVar(buf, it->second);
-			}			
+				l2 += writeVar(buf, (CCValue&) *it);
+			}
+			return l1+l2;
 		}
-		break;
-	case VVT_LIST: {
-			int c = v->l.size();
-			l2 = writeInt32(buf, (int32_t) c);
-			std::vector<ESNPVarValue*>::const_iterator it;
-			for(it=v->l.begin();it!=v->l.end();it++) {
-				l2 += writeVar(buf, *it);
+	}
+	case CCValueTypeArray: {
+			CCValueArray* a = val.arrayValue();
+			if(!a->empty()) {
+				l1 = buf->Write(VVT_LIST);
+				int c = a->size();
+				l2 = writeInt32(buf, (int32_t) c);
+				CCValueArrayIterator it;
+				for(it=a->begin();it!=a->end();it++) {
+					l2 += writeVar(buf, (CCValue&) *it);
+				}
+				return l1+l2;
 			}
 		}
-		break;
-	case VVT_LEN_STRING:	
-		l2 = writeLenString(buf, v->s);
+	default:
 		break;
 	}
-	return l1+l2;
+	return buf->Write(VVT_NULL);
 }
 
 void ESNPCoder::header(char* buf, int mt, int sz) {
@@ -552,4 +517,20 @@ void ESNPCoder::header(char* buf, int mt, int sz) {
 	buf[1] = (char) (sz >> 16);
 	buf[2] = (char) (sz >> 8);
 	buf[3] = (char) (sz);
+}
+
+bool ESNPCoder::header(ESNPBuffer* buf, int* mt, int* sz) {
+	if(buf->Remain()<4) {
+		return false;
+	}
+	*mt = buf->Read();
+	int v = 0;
+	v +=(buf->Read() & 0xFF) << 16;
+	v +=(buf->Read() & 0xFF) << 8;
+	v +=(buf->Read() & 0xFF);
+	if(buf->Remain()<v) {
+		return false;
+	}
+	*sz = v;	
+	return true;
 }
