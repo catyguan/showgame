@@ -34,3 +34,6 @@ Release.win32
 *.png
 /sgclient/vld.bin
 /sgclient/package.cmd
+/arena/glua/runtime
+/arena/arena.sublime-project
+/arena/arena.sublime-workspace
