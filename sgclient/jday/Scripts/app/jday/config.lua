@@ -19,7 +19,8 @@ CONFIG.LuaHost = {
 }
 CONFIG.ESNP = {
 	Hosts = {
-		{ host="172.19.16.78", port=1080 },
+		-- { host="172.19.16.78", port=1080 },
+		{ host="127.0.0.1", port=1080 },
 	}
 }
 -- APP

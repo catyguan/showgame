@@ -16,6 +16,12 @@ function Class:start()
 	if class.instance("bma.http.client.Service") then
 		self:beforeRunScene(self:createHttpClientStatusFunction())
 	end
+	if class.instance("bma.esnp.Service") then
+		self:beforeRunScene(function()
+			local s = class.instance("bma.esnp.Service")
+			s:cancelTag("scene")
+		end)
+	end
 	self:deployActivity("@bma.mgr.activities.GlobalActivity")
 	self:deployActivity("CloudActivity")
 	self:deployActivity("GameActivity")
