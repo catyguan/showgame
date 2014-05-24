@@ -165,6 +165,11 @@ bool decode(ESNPBuffer* buf, ESNPMessage* msg) {
 	}
 }
 
+void tores(CCValueMap& res,int id, uint64_t mid) {
+	res["id"] = CCValue::intValue(id);
+	res["messageId"] = CCValue::stringValue(CCEESNP::midStr(mid));
+}
+
 // CCEESNP
 CCEESNP g_sharedESNP;
 CCEESNP::CCEESNP()
@@ -225,8 +230,7 @@ void CCEESNP::run(long mstick) {
 					CCLOG("esnp message[%d] tiemout", req->id);
 					if(req->callback.canCall()) {						
 						CCValueMap res;
-						res["id"] = CCValue::intValue(req->id);
-						res["messageId"] = CCValue::stringValue(midStr(req->mid));
+						tores(res, req->id, req->mid);
 						res["error"] = CCValue::stringValue("timeout");
 						CCValueArray ps;
 						ps.push_back(CCValue::booleanValue(false));
@@ -240,9 +244,21 @@ void CCEESNP::run(long mstick) {
 			}
 			// send?
 			if(m_connected && !req->send) {
-				if(req->message!=NULL) {
-					int sz = encode(&m_wbuf, req->message);
-					m_socket->write(req->id, (const char *) m_wbuf.Buffer(), sz);
+				int sz = encode(&m_wbuf, req->message);
+				m_socket->write(req->id, (const char *) m_wbuf.Buffer(), sz);
+				if(req->message->resp) {
+					if(req->callback.canCall()) {
+						CCValueMap res;
+						tores(res, req->id, req->mid);
+						res["message"] = CCValue::stringValue("sended");
+						CCValueArray ps;
+						ps.push_back(CCValue::booleanValue(true));
+						ps.push_back(CCValue::mapValue(res));
+						req->callback.call(ps,false);
+					}
+					delreq(req);
+					it = m_reqs.erase(it);
+					continue;
 				}
 				req->send = true;
 			}
@@ -404,13 +420,13 @@ void CCEESNP::defaultDispatch(ESNPMessage* msg) {
 				
 				if(cb.canCall()) {
 					CCValueArray ps;
+					CCValueMap res;
+					tores(res, reqid, reqmid);
 					if(msg->error.empty()) {
+						res["content"] = toval(msg);
 						ps.push_back(CCValue::booleanValue(true));
-						ps.push_back(toval(msg));
-					} else {
-						CCValueMap res;
-						res["id"] = CCValue::intValue(reqid);
-						res["messageId"] = CCValue::stringValue(midStr(reqmid));
+						ps.push_back(CCValue::mapValue(res));
+					} else {						
 						res["error"] = CCValue::stringValue(msg->error);
 						ps.push_back(CCValue::booleanValue(false));
 						ps.push_back(CCValue::mapValue(res));
@@ -445,7 +461,7 @@ void CCEESNP::addHost(std::string host, int port) {
 	m_hosts.push_back(o);
 }
 
-int CCEESNP::process(ESNPMessage* msg, CCValue callback, int timeout)
+int CCEESNP::process(ESNPMessage* msg, CCValue callback, int timeout, std::string tag)
 {
 	if(m_socket==NULL) {
 		CCLOG("ESNP not start!!!");
@@ -466,6 +482,7 @@ int CCEESNP::process(ESNPMessage* msg, CCValue callback, int timeout)
 
 	ESNPReq* req = new ESNPReq();
 	req->id = id;
+	req->tag = tag;
 	req->mid = msg->mid;
 	req->message = msg;
 	req->tick = m_lastTick;
@@ -519,20 +536,29 @@ int CCEESNP::queryRunningCount()
 
 bool CCEESNP::cancel(int reqId)
 {
-	ESNPReq* req = NULL;
 	std::vector<ESNPReq*>::iterator it = m_reqs.begin();
 	for(;it!=m_reqs.end();it++) {
 		if((*it)->id==reqId) {
-			req = (*it);
+			ESNPReq* req = (*it);
+			delreq(req);
 			m_reqs.erase(it);
-			break;
+			return true;
 		}
 	}
-	if(req!=NULL) {
-		delreq(req);
-		return true;
-	}
 	return false;
+}
+
+void CCEESNP::cancelTag(std::string tag)
+{
+	CCLOG("esnp::cancelTag(%s)", tag.c_str());
+	std::vector<ESNPReq*>::iterator it = m_reqs.begin();
+	for(;it!=m_reqs.end();it++) {
+		if((*it)->tag.compare(tag)==0) {
+			ESNPReq* req = (*it);
+			delreq(req);
+			it = m_reqs.erase(it);
+		}
+	}
 }
 
 bool CCEESNP::handleUpstream(CCEAsynSocketEvent* e) {

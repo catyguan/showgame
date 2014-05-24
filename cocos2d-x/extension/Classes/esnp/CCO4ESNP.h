@@ -13,6 +13,7 @@ class CCO4ESNP : public CCObject
 	CC_DECLARE_CALL(addHost)
 	CC_DECLARE_CALL(send)
 	CC_DECLARE_CALL(cancel)
+	CC_DECLARE_CALL(cancelTag)
 	CC_DECLARE_CALL(runningCount)	
 	CC_DECLARE_CALLS_END
 };

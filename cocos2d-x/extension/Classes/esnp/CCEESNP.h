@@ -23,6 +23,7 @@ typedef struct _ESNPMessage {
 
 typedef struct _ESNPReq {
 	int id;
+	std::string tag;
 	uint64_t mid;
 	ESNPMessage* message;
 	long tick;
@@ -67,9 +68,10 @@ public:
 	void setHandler(CCEESNPHandler* handler);
 
 	void addHost(std::string host, int port);
-	int process(ESNPMessage* msg, CCValue callback, int timeout);
+	int process(ESNPMessage* msg, CCValue callback, int timeout, std::string tag);
 	int queryRunningCount();	
 	bool cancel(int reqId);
+	void cancelTag(std::string tag);
 
 	virtual bool handleUpstream(CCEAsynSocketEvent* e);
 
