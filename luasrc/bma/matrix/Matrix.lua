@@ -1,5 +1,5 @@
 -- bma/maxtrix/Matrix.lua
-require("bma.persistent.PersistentEntity")
+require("bma.lang.Class")
 require("bma.lang.ext.Dump")
 require("bma.lang.ext.Table")
 
@@ -59,6 +59,9 @@ end
 function Matrix:isBegin()
 	return self._prop.begin
 end
+function Matrix:isEnd()
+    return self:prop("end")
+end
 
 function Matrix:dumpTime()
     return self.timeLabelFun(self._prop.time, self._prop.startTime)
@@ -97,8 +100,8 @@ function Matrix:addObject(o)
         LOG:debug(LTAG,"%s(%d) >> object[%s] enter",self:dumpTime(), self._prop.time, oid)
     end
     self._prop.objects[oid] = o
-    if V(self:isBegin(), false) and o.onMatrixStart then    
-        o:onMatrixStart(false)
+    if V(self:isBegin(), false) then    
+        ecall.call(o, "onMatrixStart", false)
     end
     return o
 end
@@ -109,9 +112,7 @@ function Matrix:removeObject(oid)
         if LDEBUG then
             LOG:debug(LTAG,"%s(%d) >> object(%s) leave",self:dumpTime(), self._prop.time, oid)
         end
-        if o.onMatrixKill ~= nil then
-            o:onMatrixKill(true)
-        end
+        ecall.call(o, "onMatrixKill", true)
         self._prop.objects[oid] = nil 
         return true
     end
@@ -170,6 +171,7 @@ function Matrix:process(step)
     
     local et = self._prop.time + step
     while #self.actions>0 do
+        if self:isEnd() then break end
         if self.hasNewAction then            
             table.sort(self.actions, function(e1,e0)
                 return e1.t < e0.t
@@ -184,6 +186,8 @@ function Matrix:process(step)
             break     
         end
     end    
+    _G._MATRIX_ = nil
+
     self:prop("time", et)
     return self._prop.time
 
@@ -233,13 +237,21 @@ function Matrix:removeAction(f)
 end
 
 -- <<setup & begin>>
-function Matrix:setup(startTime, time)
-    self:prop("startTime", startTime)
-    self:prop("time", time)
+function Matrix:doSetup(startTime, time)
+    if startTime~=nil then
+        self:prop("startTime", startTime)
+    end
+    if time~=nil then
+        self:prop("time", time)
+    end
     _G._MATRIX_ = self    
 end
 
-function Matrix:begin()
+function Matrix:endSetup()
+    _G._MATRIX_ = nil
+end
+
+function Matrix:doBegin()
     self:prop("begin",true)
     _G._MATRIX_ = self
     
@@ -248,8 +260,11 @@ function Matrix:begin()
     end
     
     for k,o in pairs(self._prop.objects) do
-        if o.onMatrixStart~= nil then
-            o:onMatrixStart(false)
-        end
+        ecall.call(o, "onMatrixStart", false)
     end
+    _G._MATRIX_ = nil
+end
+
+function Matrix:doEnd()
+    self:prop("end",true)
 end

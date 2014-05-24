@@ -1,0 +1,176 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Arena - Index</title>
+<script src="jquery-2.1.1.js"></script>
+</head>
+<body>
+
+<button id="resetButton">Reset</button>
+<hr>
+
+ArenaNo:<span id="ano">??</span>
+<button id="newArenaButton">NewArena</button>
+<button id="beginArenaButton">BeginArena</button>
+<button id="runArenaButton">RunArena</button>
+<button id="closeArenaButton">CloseArena</button>
+<hr>
+
+<button onclick="plan1()">Plan1</button>
+<hr>
+
+<input type="text" id="va" size=5/> + <input id="vb" type="text" size=5/> = <span id="ask">??</span>
+<button id="addButton">Do It!</button>
+<button id="testButton">JustTest</button>
+<hr>
+
+<!-- JavaScript for interactivity. -->
+<script>
+var sURL = "http://127.0.0.1:1080/i/";
+var arenaId = ""
+
+function initAdd() {
+	var button = document.querySelector( "#addButton" );
+	
+	button.addEventListener( "click", function( ev ) {
+		var va = $("#va").val()
+		var vb = $("#vb").val()
+		if(va=="" || vb=="") {
+			return
+		}
+		$.ajax({
+			url: sURL+"arena/add",
+			data: {
+				a: va,
+				b: vb
+			},		
+			type: "GET",
+			dataType : "json",
+			success: function( json ) {
+				$( "#ask" ).text( json.c );
+			}
+		});
+	}, false);
+
+}
+function initTest() {
+	var button = document.querySelector( "#testButton" );
+	
+	button.addEventListener( "click", function( ev ) {
+		$.ajax({
+			url: sURL+"arena/test",
+			data: {
+			},		
+			type: "GET",
+			dataType : "text",
+			success: function( rs ) {
+				alert(rs)
+			}
+		});
+	}, false);
+
+}
+function plan1() {
+	$.ajax({
+		url: sURL+"arena/plan",
+		data: {
+			aid : arenaId,
+			p : "char1"
+		},
+		type: "GET",
+		dataType : "text",
+		success: function( rs ) {
+			alert(rs)
+		}
+	});
+}
+$(document).ready(function(){
+	$( document ).ajaxError(function(ev, xhr, status, errorThrown) {
+		alert( "Sorry, there was a problem!" );
+		console.log( "Error: " + errorThrown );
+		console.log( "Status: " + status );
+	});
+
+	var resetButton = document.querySelector( "#resetButton" );
+	resetButton.addEventListener( "click", function( ev ) {
+		$.ajax({
+			url: sURL+"reset",		
+			data: {
+				g: "arena"
+			},		
+			type: "GET",
+			dataType : "text",
+			success: function( rs ) {
+				alert(rs)
+			}
+		});
+	}, false);
+
+	var newArenaButton = document.querySelector( "#newArenaButton" );
+	newArenaButton.addEventListener( "click", function( ev ) {
+		$.ajax({
+			url: sURL+"arena/new",		
+			data: {
+			},		
+			type: "GET",
+			dataType : "text",
+			success: function( rs ) {
+				arenaId = rs
+				$( "#ano" ).text( arenaId );
+			}
+		});
+	}, false);
+
+	var beginArenaButton = document.querySelector( "#beginArenaButton" );
+	beginArenaButton.addEventListener( "click", function( ev ) {
+		$.ajax({
+			url: sURL+"arena/begin",
+			data: {
+				aid : arenaId
+			},
+			type: "GET",
+			dataType : "text",
+			success: function( rs ) {
+				alert(rs)
+			}
+		});
+	}, false);
+
+	var runArenaButton = document.querySelector( "#runArenaButton" );
+	runArenaButton.addEventListener( "click", function( ev ) {
+		$.ajax({
+			url: sURL+"arena/run",
+			data: {
+				aid : arenaId
+			},
+			type: "GET",
+			dataType : "text",
+			success: function( rs ) {
+				alert(rs)
+			}
+		});
+	}, false);
+
+	var closeArenaButton = document.querySelector( "#closeArenaButton" );
+	closeArenaButton.addEventListener( "click", function( ev ) {
+		$.ajax({
+			url: sURL+"arena/close",		
+			data: {
+				aid : arenaId
+			},		
+			type: "GET",
+			dataType : "text",
+			success: function( rs ) {
+				arenaId = ""
+				$( "#ano" ).text( "??" );
+				alert(rs)
+			}
+		});
+	}, false);
+	
+	// initAdd();
+	initTest();
+});
+</script>
+</body>
+</html>

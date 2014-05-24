@@ -239,6 +239,36 @@ function enum( tbl )
 	return ret
 end
 
+-- ecall
+ecall = {}
+function ecall.add( o, n, f )
+	local vf = o[n]
+	if vf==nil then
+		o[n] = f
+	end
+	if type(vf)=="function" then
+		o[n] = {vf, f}
+	end
+	if type(vf)=="table" then
+		table.insert(vf, f)
+	end
+end
+
+function ecall.call(o, n, ... )
+	local f = o[n]
+	if f==nil then
+		return
+	end
+	if type(f)=="function" then
+		return f(o, ...)
+	end
+	if type(f)=="table" then
+		for _,vf in ipairs(f) do
+			vf(o, ...)
+		end
+	end
+end
+
 -- aicall
 aicall = {}
 function aicall.done(cb, err, ...)
