@@ -8,7 +8,7 @@
 	},
 	"gluaService" : {
 		"GLua" : {
-			"arena" : {
+			"cok" : {
 				"Paths" : ["${CWD}/luasrc", "${CWD}/../luasrc", "${CWD}/../../luasrc"],
 				"Preloads" : ["initall"]
 			}

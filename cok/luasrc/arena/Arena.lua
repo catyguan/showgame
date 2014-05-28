@@ -22,6 +22,7 @@ function Class:ctor()
     self.eventId = 0
 
     self.map = arena.Map.new()
+    self.events = class.new("bma.lang.Events")
 end
 
 function Class:rand(ver, pos)
@@ -55,3 +56,4 @@ function Class:addObjectProp( prop )
 	return true
 end
 
+require("arena.ArenaWorld")

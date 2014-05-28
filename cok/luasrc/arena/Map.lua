@@ -29,7 +29,7 @@ function MPosClass:ctor(g,x,y)
 	self.g = g
 	self.x = x
 	self.y = y
-	self.index = (x-1)*3 + y
+	self.index = string.format("I%d", (x-ARENA_MAP_X_MIN)*ARENA_MAP_Y_MAX + y)
 end
 
 function MPosClass:key()
@@ -50,7 +50,7 @@ end
 
 -- <<Map>>
 function MClass:ctor()
-	self.units = {A={}, B={}}
+	self.units = {A={n=0}, B={n=0}}
 end
 
 function MClass:getUnit(pos)
@@ -85,7 +85,8 @@ function MClass:set(mapUnit)
 		return false
 	end
 	g[pos.index] = mapUnit
-	if LOG:debugEnabled() then
+	g.n = g.n + 1
+	if LDEBUG then
 		LOG:debug(LTAG,"<%s> in  %s",pos:key(), mapUnit:dstr())
 	end
 	return true
@@ -95,19 +96,26 @@ function MClass:unset(mapUnit)
 	if type(mapUnit)=="string" then mapUnit = OBJ(mapUnit) end
 	local pos = mapUnit:prop("pos")
 	if pos==nil then
+		LOG:warn(LTAG,"%s pos invalid",mapUnit:id())
 		return false
 	end
 	local g = self.units[pos.g]	
 	if g==nil then 
-		LOG:warn(LTAG,"%s pos group invalid",pos:key())
+		LOG:warn(LTAG,"%s[%s] group invalid",mapUnit:id(), pos:key())
 		return false
 	end
 	local old = g[pos.index]
-	if old~=mapUint then
+	if old==nil then
+		LOG:debug(LTAG,"%s[%s] unset empty",mapUnit:id(), pos:key())
 		return false
-	end
+	end	
+	if old:id()~=mapUnit:id() then
+		LOG:warn(LTAG,"%s[%s] can't unset other[%s]",mapUnit:id(), pos:key(), old:id())
+		return false
+	end	
 	g[pos.index] = nil
-	if LOG:debugEnabled() then
+	g.n = g.n - 1
+	if LDEBUG then
 		LOG:debug(LTAG,"<%s> out %s",pos:key(), mapUnit:dstr())
 	end
 	return true
@@ -122,4 +130,10 @@ function MClass:group(gn)
 		end
 	end
 	return r
+end
+
+function MClass:checkEmpty()
+	local ea = self.units.A.n == 0
+	local eb = self.units.B.n == 0
+	return ea, eb
 end

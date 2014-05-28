@@ -62,6 +62,10 @@ function Class:clear()
 	end
 end
 
+function Class:Valid()
+	return #self.listeners>0
+end
+
 function Class:fire(...)
 	local r = nil
 	local rmlist = nil
@@ -69,7 +73,7 @@ function Class:fire(...)
 		local r1,r2 = lis.f(...)
 		if r1 then
 			if rmlist == nil then rmlist = {} end
-			table.insert(rmlist,i)
+			table.insert(rmlist,1,i)
 		end
 		if r2 ~= nil then
 			r = r2

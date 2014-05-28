@@ -1,0 +1,131 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<title>COK - Index</title>
+<script src="jquery-2.1.1.js"></script>
+</head>
+<body>
+
+<div id="mbox"></div>
+<hr>
+
+<button onclick="doReset()">Reset</button>
+<button onclick="doInitWorld()">InitWorld</button>
+<button onclick="doTest()">JustTest</button>
+<hr>
+
+<div id="gcontent"></div>
+<hr>
+
+<!-- JavaScript for interactivity. -->
+<script type="text/javascript">
+Date.prototype.Format = function(fmt)   
+{ //author: meizz   
+  var o = {   
+    "M+" : this.getMonth()+1,                 //月份   
+    "d+" : this.getDate(),                    //日   
+    "h+" : this.getHours(),                   //小时   
+    "m+" : this.getMinutes(),                 //分   
+    "s+" : this.getSeconds(),                 //秒   
+    "q+" : Math.floor((this.getMonth()+3)/3), //季度   
+    "S"  : this.getMilliseconds()             //毫秒   
+  };   
+  if(/(y+)/.test(fmt))   
+    fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));   
+  for(var k in o)   
+    if(new RegExp("("+ k +")").test(fmt))   
+  fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));   
+  return fmt;   
+}	
+</script>
+<script>
+var appId = "cok";
+var sURL = "http://127.0.0.1:1080/i/";
+var aURL = sURL+appId+"/";
+var worldId = "test";
+
+function showMessage(msg) {
+	var nowf = (new Date()).Format("yyyy-MM-dd hh:mm:ss.S");
+	$( "#mbox" ).text(nowf + " >> " + msg );
+}
+
+var contentManager;
+var contentId = "";
+function loadContent(cid) {
+	if(contentManager!=null) {
+		contentManager.Close();
+		contentManager = null;
+	}
+	contentId = cid;
+	var msg = "loading content '"+cid+"'";
+	$( "#gcontent" ).text(msg);	
+	var cb = function(responseText,status, jqXHR ) {
+ 		if ( status != "error" ) {
+ 			showMessage("load content done");
+			if(contentManager!=null) {
+				contentManager.Init();
+			}
+		}
+	};
+	$( "#gcontent" ).load(cid+".htm", {tm:Math.random()}, cb);
+}
+
+//////////////////////////
+function doReset() {
+	$.ajax({
+		url: sURL+"reset",		
+		data: {
+			g: appId
+		},		
+		type: "GET",
+		dataType : "text",
+		success: function( rs ) {
+			showMessage(rs);
+		}
+	});
+}
+
+function doInitWorld() {
+	$.ajax({
+		url: aURL+"init",		
+		data: {
+			id : worldId
+		},		
+		type: "GET",
+		dataType : "text",
+		success: function( rs ) {
+			showMessage(rs);
+			loadContent("home")
+		}
+	});
+}
+
+
+function doTest() {
+	$.ajax({
+		url: aURL+"status",
+		data: {
+			id : worldId
+		},		
+		type: "GET",
+		dataType : "text",
+		success: function( rs ) {
+			showMessage(rs);
+		}
+	});
+}
+
+function doExplore() {
+	loadContent("explore");
+}
+
+$(document).ready(function(){
+	$( document ).ajaxError(function(ev, xhr, status, errorThrown) {
+		alert( "Sorry, there was a problem!" );
+		console.log( "Error: " + errorThrown );
+		console.log( "Status: " + status );
+	});
+});
+</script>
+</body>
+</html>
