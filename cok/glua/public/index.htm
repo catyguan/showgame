@@ -11,6 +11,7 @@
 
 <button onclick="doReset()">Reset</button>
 <button onclick="doInitWorld()">InitWorld</button>
+<button onclick="reloadScene()">ReloadScene</button>
 <button onclick="doTest()">JustTest</button>
 <hr>
 
@@ -69,6 +70,46 @@ function loadContent(cid) {
 	};
 	$( "#gcontent" ).load(cid+".htm", {tm:Math.random()}, cb);
 }
+//////////////////////////
+function s2h(n) {
+	if(n=="idle")return "home";
+	return n
+}
+function reloadScene() {
+	$.ajax({
+		url: aURL+"scene",		
+		data: {
+			id : worldId
+		},		
+		type: "GET",
+		dataType : "text",
+		success: function( rs ) {
+			showMessage(rs);
+			var sid = s2h(rs);			
+			loadContent(sid);
+		}
+	});
+}
+
+function enterScene(n) {
+	$.ajax({
+		url: aURL+"enter",		
+		data: {
+			id : worldId,
+			n : n
+		},		
+		type: "GET",
+		dataType : "text",
+		success: function( rs ) {
+			showMessage(rs);
+			if(rs!="true") {
+				return
+			}
+			var sid = s2h(n);
+			loadContent(sid)
+		}
+	});
+}
 
 //////////////////////////
 function doReset() {
@@ -95,7 +136,7 @@ function doInitWorld() {
 		dataType : "text",
 		success: function( rs ) {
 			showMessage(rs);
-			loadContent("home")
+			reloadScene()			
 		}
 	});
 }
@@ -103,7 +144,7 @@ function doInitWorld() {
 
 function doTest() {
 	$.ajax({
-		url: aURL+"status",
+		url: aURL+"test",
 		data: {
 			id : worldId
 		},		

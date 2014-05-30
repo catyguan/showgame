@@ -1,5 +1,5 @@
 -- world/World.lua
-local Class = class.define("world.World")
+local Class = class.define("world.World", {"world.SceneManager"})
 
 local LDEBUG = LOG:debugEnabled()
 local LTAG = "World"
@@ -7,7 +7,7 @@ local LTAG = "World"
 function Class:ctor()
 	self.id = ""
 	self._prop = {
-		status = {"Idle"}
+		scenes = {"idle"}
 	}
 end
 
@@ -19,6 +19,7 @@ function Class:loadWorld(callback)
 	local ss = class.instance("service.StoreService")
 	local wid = self.id
 	local cb = function(done, data)
+		self._prop = data
 		callback(done, wid)
 	end
 	ss:load("world", wid, cb)
@@ -72,96 +73,23 @@ function Class:removeProp(nlist)
 	end
 end
 
-local smcls = function(self, lvl)
-	local st = self._prop.status
-	if #st < lvl then
-		return nil, ""
-	end
-	local n = ""
-	for i,v in ipairs(st) do
-		if i>lvl then
-			break
-		end
-		if n~="" then
-			n = n .. "."
-		end
-		n = n .. v
-	end
-	local clsn = "world.sm."..n
-	return class.forName(clsn), clsn
+function Class:hasRunv(n)
+	if self._runv == nil then return false end
+	return self._runv[n]~=nil
 end
 
-function Class:getStatus(lvl)
-	local st = self._prop.status
-	if lvl==nil then
-		local r = {}
-		for _,v in ipairs(st) do
-			table.insert(r, v)
-		end
-		return r
-	end	
-	if #st < lvl then
-		return ""
-	end
-	return st[lvl]
+function Class:removeRunv(n)
+	if self._runv==nil then return end	
+	self._runv[n] = nil
 end
 
-function Class:canEnterSM(lvl, n)
-	local c = smcls(self, lvl)
-	if c==nil then
-		if LDEBUG then
-			LOG:debug(LTAG, "SM[%d] invalid", lvl)
-		end
-		return false
+function Class:runv(p1,p2)
+	if p2==nil then
+		if self._runv == nil then return nil end
+		return self._runv[p1]
+	else
+		if self._runv == nil then self._runv = {} end
+		self._runv[p1] = p2
+		return p2
 	end
-	return c.canEnterSM(self, n)
-end
-
-function  Class:enterSM(lvl, n)
-	local c = smcls(self, lvl)
-	if not c.canEnterSM(self, n) then
-		return false
-	end
-	local st = self._prop.status
-	while #st >= lvl do
-		local cx, tmpn = smcls(self, #st)
-		table.remove(st, #st)
-		if cx~=nil then
-			if LDEBUG then
-				LOG:debug(LTAG, "leave SM[%s]", tmpn)
-			end
-			cx:leaveSM(self)
-		end
-	end
-
-	local nsm = n
-	local nlvl = lvl
-	while nsm~=nil do
-		st[nlvl] = nsm
-		local cn,tmpn = smcls(self, nlvl)
-		if LDEBUG then
-			LOG:debug(LTAG, "enter SM[%s]", tmpn)
-		end
-		nsm = cn:enterSM(self)
-		nlvl = nlvl + 1
-	end
-	return true
-end
-
-function Class:doAction(lvl, cmd, ...)
-	local c = smcls(self, lvl)
-	if c==nil then
-		if LDEBUG then
-			LOG:debug(LTAG, "doAction(%d, %s) invalidSM", lvl, cmd)
-		end
-		return
-	end
-	local f = c["do"..cmd]
-	if f==nil then
-		if LDEBUG then
-			LOG:debug(LTAG, "doAction(%d, %s) invalid action", lvl, cmd)
-		end
-		return
-	end
-	return f(self, ...)
 end
