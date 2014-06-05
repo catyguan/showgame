@@ -1,5 +1,5 @@
 -- world/World.lua
-local Class = class.define("world.World", {"world.SceneManager"})
+local Class = class.define("world.World", {"world.UIManager"})
 
 local LDEBUG = LOG:debugEnabled()
 local LTAG = "World"
@@ -9,6 +9,14 @@ function Class:ctor()
 	self._prop = {
 		scenes = {"idle"}
 	}
+end
+
+function Class:begin()
+	_G.WORLD = self
+end
+
+function Class:finish()
+	if _G.WORLD==self then _G.WORLD = nil end
 end
 
 function Class:loadWorld(callback)

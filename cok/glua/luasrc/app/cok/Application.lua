@@ -1,6 +1,9 @@
 -- app/cok/Application.lua
 local Class = class.define("app.cok.Application",{AppClass})
-print(AppClass.className)
+
+PDDict = {
+	event = "cmod.event.common.Event",
+}
 
 function Class:ctor()
 	self.packageName = "app.cok"

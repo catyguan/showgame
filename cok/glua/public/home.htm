@@ -11,14 +11,21 @@
 
 <script>
 contentManager = {
-	Init : function() {
+	Init : function(viewData) {
+		
+	},
+	Update : function(viewData) {
 		
 	},
 	Close : function() {
 
 	},
 	doTown : function() {
-		enterScene("town")
+		var cb = function(data) {
+			console.log(data)
+			return true
+		}
+		doUIAction("Test",[],cb)
 	},
 	doAdventure : function() {
 		enterScene("adventure")

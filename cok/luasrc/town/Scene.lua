@@ -13,7 +13,8 @@ town: {
 }
 runv:
 ]]
-function Class.getTown(world, tid)
+function Class.getTown(tid)
+	local world = WORLD
 	local ts = world:prop({"town", "towns"})
 	if ts==nil then
 		return nil
@@ -26,7 +27,7 @@ function Class.getTown(world, tid)
 	return ts[tid]
 end
 
-function Class.doList(world, tid)
-	local ts = Class.getTown(world, tid)
+function Class.doList(tid)
+	local ts = Class.getTown(tid)
 	return ts
 end

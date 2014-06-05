@@ -9,7 +9,7 @@ CONFIG.Log = {
 }
 -- 启动自动加载的服务
 CONFIG.Services = {
-	"app.cok.StoreServiceImpl",
+	"app.cok.StoreServiceImpl"
 }
 -- 其他模块的配置
 CONFIG.LuaHost = {

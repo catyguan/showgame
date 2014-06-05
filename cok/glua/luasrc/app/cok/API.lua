@@ -10,32 +10,28 @@ function service_init(ctx, res)
 	local o = wm:newWorld(wid)
 	o:loadWorld()
 
+	if o:getView(-1)==nil then
+		o:createView("home", {}, "ui.Home")
+	end
+
 	glua_setString(res, "Content", ""..o.id)
 	return true
 end
 
-function service_scene( ctx, res )	
+function service_viewinfo( ctx, res )	
 	local wid = glua_getString(ctx, "id")
 	local o = WORLD_MANAGER:getWorld(wid)
 	if o~=nil then
-		local r = o:getScene(-1)
-		-- glua_setString(res, "Content", table.json(r))
-		glua_setString(res, "Content", r)
-	else
-		glua_setString(res, "Content", "InvalidWorld")
-	end	
-	return true
-end
-
-function service_enter( ctx, res )	
-	local wid = glua_getString(ctx, "id")
-	local n = glua_getString(ctx, "n")
-	local o = WORLD_MANAGER:getWorld(wid)
-	if o~=nil then
-		local ok = o:enterScene(n)
-		local r = "true"
-		if not ok then r = "false" end
-		glua_setString(res, "Content", r)
+		local r = {}
+		local vo = o:getView(-1)
+		if vo==nil then
+			r.name = "home"
+		else
+			r.name = vo.name
+			r.data = vo.data
+		end
+		glua_setString(res, "Content", table.json(r))
+		-- glua_setString(res, "Content", r)
 	else
 		glua_setString(res, "Content", "InvalidWorld")
 	end	
@@ -56,23 +52,59 @@ function service_action( ctx, res )
 
 	local o = WORLD_MANAGER:getWorld(wid)
 	if o~=nil then
-		local r = o:doAction(cmd, unpack(param))
-		glua_setString(res, "Content", lang.Json.encode(r))
+		local r = {}
+		o:begin()
+		local resp = o:uiAction(cmd, unpack(param))
+		o:finish()
+		r.result = resp
+
+		local vo = o:getView(-1)
+		if vo==nil then
+			r.name = "home"
+		else
+			r.name = vo.name
+			r.data = vo.data
+		end
+		var_dump(r)
+		glua_setString(res, "Content", table.json(r))
 	else
 		glua_setString(res, "Content", "InvalidWorld")
 	end	
 	return true
 end
 
+local testClass = class.define("test.Class1")
+function testClass.add(data, a, b)
+	print(a, b, a+b)
+end
+
 function service_test( ctx, res )	
-	local wid = glua_getString(ctx, "id")
-	local o = WORLD_MANAGER:getWorld(wid)
-	if o~=nil then
-		o:enterScene("adventure")
-		glua_setString(res, "Content", "OK")
-	else
-		glua_setString(res, "Content", "InvalidWorld")
-	end	
+	require("world.PDVM")
+	local data = {
+		_p = "event",
+		main = {
+	        content = "Are you OK?",
+	        options = {
+                {
+                    content="Yes",
+                    action="end",
+                },
+                {
+                	content="No, I'm sick!",
+                	action="sub",
+                	data = "sick",
+            	}
+	    	}
+		},
+		sick = {
+
+		}
+	}
+	local o = WORLD_MANAGER:getWorld("test")
+	o:begin()
+	PDCall(data, "activeEvent")
+	o:finish()
+	glua_setString(res, "Content", "OK")	
 	return true
 end
 

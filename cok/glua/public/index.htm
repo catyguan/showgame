@@ -11,7 +11,7 @@
 
 <button onclick="doReset()">Reset</button>
 <button onclick="doInitWorld()">InitWorld</button>
-<button onclick="reloadScene()">ReloadScene</button>
+<button onclick="reloadView()">ReloadView</button>
 <button onclick="doTest()">JustTest</button>
 <hr>
 
@@ -52,7 +52,7 @@ function showMessage(msg) {
 
 var contentManager;
 var contentId = "";
-function loadContent(cid) {
+function loadContent(cid, viewData) {
 	if(contentManager!=null) {
 		contentManager.Close();
 		contentManager = null;
@@ -64,49 +64,41 @@ function loadContent(cid) {
  		if ( status != "error" ) {
  			showMessage("load content done");
 			if(contentManager!=null) {
-				contentManager.Init();
+				contentManager.Init(viewData);
 			}
 		}
 	};
 	$( "#gcontent" ).load(cid+".htm", {tm:Math.random()}, cb);
 }
 //////////////////////////
-function s2h(n) {
-	if(n=="idle")return "home";
+function s2h(n) {	
 	return n
 }
-function reloadScene() {
+function updateView(rs) {
+	var sid = s2h(rs.name);
+	if(sid!=contentId) {
+		loadContent(sid, rs.data);
+	} else {
+		if(contentManager!=null) {
+			contentManager.Update(rs.data)
+		}
+	}
+}
+function loadView(rs) {
+	var sid = s2h(rs.name);
+	loadContent(sid, rs.data);
+}
+function reloadView() {
 	$.ajax({
-		url: aURL+"scene",		
+		url: aURL+"viewinfo",		
 		data: {
 			id : worldId
-		},		
+		},
 		type: "GET",
-		dataType : "text",
+		dataType : "json",
 		success: function( rs ) {
-			showMessage(rs);
-			var sid = s2h(rs);			
-			loadContent(sid);
-		}
-	});
-}
-
-function enterScene(n) {
-	$.ajax({
-		url: aURL+"enter",		
-		data: {
-			id : worldId,
-			n : n
-		},		
-		type: "GET",
-		dataType : "text",
-		success: function( rs ) {
-			showMessage(rs);
-			if(rs!="true") {
-				return
-			}
-			var sid = s2h(n);
-			loadContent(sid)
+			console.log(rs);
+			loadView(rs)
 		}
 	});
 }
@@ -136,11 +128,32 @@ function doInitWorld() {
 		dataType : "text",
 		success: function( rs ) {
 			showMessage(rs);
-			reloadScene()			
+			reloadView()			
 		}
 	});
 }
 
+function doUIAction(cmd, p, callback) {
+	$.ajax({
+		url: aURL+"action",		
+		data: {
+			id : worldId,
+			cmd : cmd,
+			p : JSON.stringify(p)
+		},		
+		type: "GET",
+		dataType : "json",
+		success: function( rs ) {
+			console.log(rs);
+			if(callback!=null) {
+				if(!callback(rs.result)) {
+					return
+				}
+			}
+			updateView(rs)			
+		}
+	});
+}
 
 function doTest() {
 	$.ajax({
@@ -154,10 +167,6 @@ function doTest() {
 			showMessage(rs);
 		}
 	});
-}
-
-function doExplore() {
-	loadContent("explore");
 }
 
 $(document).ready(function(){
