@@ -42,6 +42,7 @@ function service_action( ctx, res )
 	local wid = glua_getString(ctx, "id")
 	local cmd = glua_getString(ctx, "cmd")
 	local p = glua_getString(ctx, "p")
+	LOG:debug("API", "%s, %s(%s)", wid, cmd, p)
 	local param = {}
 	if p~=nil and p~="" then
 		local data = string.json(p)
@@ -55,6 +56,7 @@ function service_action( ctx, res )
 		local r = {}
 		o:begin()
 		local resp = o:uiAction(cmd, unpack(param))
+		o:pdprocess()
 		o:finish()
 		r.result = resp
 
@@ -65,7 +67,7 @@ function service_action( ctx, res )
 			r.name = vo.name
 			r.data = vo.data
 		end
-		var_dump(r)
+		var_dump(o._prop)
 		glua_setString(res, "Content", table.json(r))
 	else
 		glua_setString(res, "Content", "InvalidWorld")

@@ -1,5 +1,5 @@
 -- world/World.lua
-local Class = class.define("world.World", {"world.UIManager"})
+local Class = class.define("world.World", {"world.UIManager", "world.PDVM"})
 
 local LDEBUG = LOG:debugEnabled()
 local LTAG = "World"

@@ -22,13 +22,25 @@ function Class:getView(lvl)
 	return scs[lvl]
 end
 
-function  Class:changeView(viewName, viewData, ctrl)
+function Class:updateViewData(viewName, viewData)
+	local vo = self:getView(-1)
+	if vo==nil then
+		error("view stack empty")
+	end
+	if vo.name~=viewName then
+		return false
+	end
+	vo.data = viewData
+	return true
+end
+
+function  Class:changeView(viewName, viewData, ctrl, ctx)
 	local vo = self:getView(-1)
 	if vo==nil then
 		error("view stack empty")
 	end
 	local sc = class.forName(vo.control)
-	if not sc.canClose() then
+	if not sc.canClose(vo.context) then
 		if LDEBUG then
 			LOG:debug(LTAG, "changeView(%s) fail - can't close view[%s]", viewName, vo.name)
 		end
@@ -38,12 +50,13 @@ function  Class:changeView(viewName, viewData, ctrl)
 	if LDEBUG then
 		LOG:debug(LTAG, "close view[%s]", vo.name)
 	end
-	sc:onClose()
+	sc:onClose(vo.context)
 
 	vo = {
 		name = viewName,
 		data = viewData,
 		control = ctrl,
+		context = ctx,
 	}
 	local scs = self._prop.views
 	scs[#scs] = vo
@@ -52,15 +65,15 @@ function  Class:changeView(viewName, viewData, ctrl)
 		LOG:debug(LTAG, "enter view[%s]", viewName)
 	end
 	local nsc = class.forName(ctrl)
-	nsc:onEnter()
+	nsc:onEnter(ctx)
 	return true
 end
 
-function  Class:createView(viewName, viewData, ctrl)
+function  Class:createView(viewName, viewData, ctrl, ctx)
 	local vo = self:getView(-1)
 	if vo~=nil then
 		local sc = class.forName(vo.control)
-		if not sc.canPause() then
+		if not sc.canPause(vo.context) then
 			if LDEBUG then
 				LOG:debug(LTAG, "createView(%s) fail - can't pause view[%s]", viewName, vo.name)
 			end
@@ -70,13 +83,14 @@ function  Class:createView(viewName, viewData, ctrl)
 		if LDEBUG then
 			LOG:debug(LTAG, "pause view[%s]", vo.name)
 		end
-		sc.onPause()
+		sc.onPause(vo.context)
 	end
 
 	vo = {
 		name = viewName,
 		data = viewData,
 		control = ctrl,
+		context = ctx,
 	}
 	local scs = self._prop.views
 	table.insert(scs, vo)
@@ -86,7 +100,7 @@ function  Class:createView(viewName, viewData, ctrl)
 	end
 
 	local nsc = class.forName(ctrl)
-	nsc.onEnter()
+	nsc.onEnter(ctx)
 	return true
 end
 
@@ -103,7 +117,7 @@ function  Class:closeView(viewName)
 		return false
 	end
 	local sc = class.forName(vo.control)
-	if not sc.canClose() then
+	if not sc.canClose(vo.context) then
 		if LDEBUG then
 			LOG:debug(LTAG, "closeView(%s) fail - can't close view", vo.name)
 		end
@@ -113,7 +127,7 @@ function  Class:closeView(viewName)
 	if LDEBUG then
 		LOG:debug(LTAG, "close view[%s]", vo.name)
 	end
-	sc.onClose()
+	sc.onClose(vo.context)
 
 	local scs = self._prop.views
 	table.remove(scs, #scs)
@@ -124,12 +138,12 @@ function  Class:closeView(viewName)
 			LOG:debug(LTAG, "resume view[%s]", vo.name)
 		end
 		local nsc = class.forName(vo.control)
-		nsc.onResume()
+		nsc.onResume(vo.context)
 	end
 	return true
 end
 
-function Class:uiAction(cmd, ...)
+function Class:uiAction(cmd, param)
 	local vo = self:getView(-1)
 	if vo==nil then
 		error("view stack empty")
@@ -142,6 +156,6 @@ function Class:uiAction(cmd, ...)
 		end
 		error("invalid "..cmd)
 	end
-	return f(...)
+	return f(vo.context, param)
 end
 

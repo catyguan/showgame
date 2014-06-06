@@ -71,22 +71,33 @@ function loadContent(cid, viewData) {
 	$( "#gcontent" ).load(cid+".htm", {tm:Math.random()}, cb);
 }
 //////////////////////////
-function s2h(n) {	
-	return n
-}
-function updateView(rs) {
-	var sid = s2h(rs.name);
-	if(sid!=contentId) {
-		loadContent(sid, rs.data);
-	} else {
-		if(contentManager!=null) {
-			contentManager.Update(rs.data)
+function doView(rs, update) {
+	var sid = rs.name;
+	if(sid=="mbox") {
+		var res = true;
+		var msg = rs.data.message;
+		if(rs.data.confirm) {
+			res = confirm(msg);
+		} else {
+			alert(msg);
+		}
+		doUIAction("Click",[res],null);
+		return
+	}
+	if(update) {
+		if(sid==contentId && contentManager!=null) {
+			contentManager.Update(rs.data);
+			return
 		}
 	}
+	loadContent(sid, rs.data);	
+}
+function updateView(rs) {
+	doView(rs, true)
+	
 }
 function loadView(rs) {
-	var sid = s2h(rs.name);
-	loadContent(sid, rs.data);
+	doView(rs, false)
 }
 function reloadView() {
 	$.ajax({
@@ -102,7 +113,27 @@ function reloadView() {
 		}
 	});
 }
-
+function doUIAction(cmd, p, callback) {
+	$.ajax({
+		url: aURL+"action",		
+		data: {
+			id : worldId,
+			cmd : cmd,
+			p : JSON.stringify(p)
+		},		
+		type: "GET",
+		dataType : "json",
+		success: function( rs ) {
+			console.log(rs);
+			if(callback!=null) {
+				if(!callback(rs.result)) {
+					return
+				}
+			}
+			updateView(rs)			
+		}
+	});
+}
 //////////////////////////
 function doReset() {
 	$.ajax({
@@ -133,27 +164,7 @@ function doInitWorld() {
 	});
 }
 
-function doUIAction(cmd, p, callback) {
-	$.ajax({
-		url: aURL+"action",		
-		data: {
-			id : worldId,
-			cmd : cmd,
-			p : JSON.stringify(p)
-		},		
-		type: "GET",
-		dataType : "json",
-		success: function( rs ) {
-			console.log(rs);
-			if(callback!=null) {
-				if(!callback(rs.result)) {
-					return
-				}
-			}
-			updateView(rs)			
-		}
-	});
-}
+
 
 function doTest() {
 	$.ajax({

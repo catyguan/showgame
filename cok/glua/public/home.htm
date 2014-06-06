@@ -5,8 +5,7 @@
 </head>
 <body>
 [Home] - 
-<button onclick="contentManager.doTown()">Town</button>
-<button onclick="contentManager.doAdventure()">Adventure</button>
+<button onclick="contentManager.doTest()">Test</button>
 <br>
 
 <script>
@@ -20,15 +19,12 @@ contentManager = {
 	Close : function() {
 
 	},
-	doTown : function() {
+	doTest : function() {
 		var cb = function(data) {
 			console.log(data)
 			return true
 		}
-		doUIAction("Test",[],cb)
-	},
-	doAdventure : function() {
-		enterScene("adventure")
+		doUIAction("Test2",[],cb)
 	},
 }
 </script>
