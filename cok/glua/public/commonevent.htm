@@ -1,0 +1,47 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Event</title>
+</head>
+<body>
+[Event]
+<div id="econtent"></div>
+<div id="eselect"></div>
+<br>
+
+<script>
+contentManager = {
+	Init : function(viewData) {
+		contentManager.BuildView(viewData)
+	},
+	Update : function(viewData) {
+		contentManager.BuildView(viewData)	
+	},
+	BuildView : function(viewData) {		
+		$( "#econtent" ).html(viewData.content);
+		var opts = viewData.options;
+		contentManager.options = opts
+
+		var str = "";
+		for (var i = 0; i < opts.length; i++) {
+			var opt = opts[i];
+			str += (i+1)+" <button onclick='contentManager.doSelect("+i+")'>"+opt.title+"</button><br>";
+		};
+		$( "#eselect" ).html(str);
+	},
+	Close : function() {
+
+	},
+	doSelect : function(idx) {
+		var cb = function(data) {
+			console.log(data)
+			return true
+		}
+		var opt = contentManager.options[idx];
+		doUIAction("Select",[opt.id],cb)
+	},
+}
+</script>
+
+</body>
+</html>

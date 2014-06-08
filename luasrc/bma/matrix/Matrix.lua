@@ -144,8 +144,10 @@ local handleAction = function(self, a)
         return
     end
             
-    if LDEBUG and LACTDEBUG then
-        LOG:debug(LTAG,"%s(%d) >> take[%s]",self:dumpTime(), self._prop.time,actstr(a))
+    if LDEBUG then
+        if LACTDEBUG or a.a.LDEBUG then
+            LOG:debug(LTAG,"%s(%d) >> take[%s]",self:dumpTime(), self._prop.time,actstr(a))
+        end
     end                                
     local done,r,stt = pcall(function()
         if type(a.a)=="function" then
@@ -174,6 +176,9 @@ function Matrix:process(step)
         if self:isEnd() then break end
         if self.hasNewAction then            
             table.sort(self.actions, function(e1,e0)
+                if e1.t==e0.t then
+                    return V(e1.a.PRI, 0) > V(e0.a.PRI, 0)
+                end
                 return e1.t < e0.t
             end)
             self.hasNewAction = false

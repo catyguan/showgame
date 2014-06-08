@@ -1,0 +1,48 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Town - Main</title>
+</head>
+<body>
+[Town] - 
+<button onclick="contentManager.doBuild()">Build</button>
+<button onclick="contentManager.goback()">Home</button>
+<br>
+<br>
+-- buildings --
+<div id="buildings"></div>
+
+<script>
+contentManager = {
+	Init : function() {
+		contentManager.loadBuildings()
+	},
+	Close : function() {
+
+	},
+	doBuild : function() {
+		enterScene("build")
+	},
+	goback : function() {
+		enterScene("idle")
+	},
+	///////////////////////
+	loadBuildings : function() {
+		$.ajax({
+			url: aURL+"action",		
+			data: {
+				id : worldId,
+				cmd : "List"
+			},		
+			type: "GET",
+			dataType : "json",
+			success: function( rs ) {
+				showMessage(rs);
+			}
+		});
+	},
+}
+</script>
+
+</body>
+</html>
