@@ -143,6 +143,38 @@ function  Class:closeView(viewName)
 	return true
 end
 
+function  Class:endView(viewName)
+	local vo = self:getView(-1)
+	if vo==nil then
+		return true
+	end
+
+	if vo.name~=viewName then
+		if LDEBUG then
+			LOG:debug(LTAG, "endView(%s) fail - current view is '%s'", viewName, vo.name)
+		end
+		return false
+	end
+	local sc = class.forName(vo.control)
+	if LDEBUG then
+		LOG:debug(LTAG, "end view[%s]", vo.name)
+	end
+	sc.onClose(vo.context)
+
+	local scs = self._prop.views
+	table.remove(scs, #scs)
+
+	vo = self:getView(-1)
+	if vo~=nil then
+		if LDEBUG then
+			LOG:debug(LTAG, "resume view[%s]", vo.name)
+		end
+		local nsc = class.forName(vo.control)
+		nsc.onResume(vo.context)
+	end
+	return true
+end
+
 function Class:uiAction(cmd, param)
 	local vo = self:getView(-1)
 	if vo==nil then

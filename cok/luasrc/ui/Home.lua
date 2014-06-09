@@ -26,9 +26,17 @@ function Class.doTest2(ctx)
 		view = {
 			content="Let's play game",
 			options={
-				{ id="s1", title="OK!"},
-				{ id="s2", title="No..."},
-				{ id="s3", title="What?"},
+				{ id="s1", title="OK!", close=true},
+				{ id="s2", title="No...", close=true},
+				{ id="s3", title="What?",
+					content="play a sex game",
+					options={
+						{ id="s1", title="Fuck you", close=true,
+							op={ _p="ui.MessageBox", view = {message="Bye"}},
+						},
+						{ id="s2", title="Don't do that", close=true},
+					}
+				},
 			}
 		}
 	}
