@@ -34,6 +34,18 @@ function Class:updateViewData(viewName, viewData)
 	return true
 end
 
+function Class:updateViewProfile(viewName, viewProfile)
+	local vo = self:getView(-1)
+	if vo==nil then
+		error("view stack empty")
+	end
+	if vo.name~=viewName then
+		return false
+	end
+	vo.profile = viewProfile
+	return true
+end
+
 function  Class:changeView(viewName, viewData, ctrl, ctx)
 	local vo = self:getView(-1)
 	if vo==nil then
@@ -184,9 +196,12 @@ function Class:uiAction(cmd, param)
 	local f = sc["do"..cmd]
 	if f==nil then
 		if LDEBUG then
-			LOG:debug(LTAG, "view[%s] action(%s) invalid", vo.name, cmd)
+			LOG:debug(LTAG, "view[%s] action(%s) invalid", vo.control, cmd)
 		end
 		error("invalid "..cmd)
+	end
+	if LDEBUG then
+		LOG:debug(LTAG, "call view[%s] action(%s)", vo.control, cmd)
 	end
 	return f(vo.context, param)
 end

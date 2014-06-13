@@ -134,6 +134,24 @@ function doUIAction(cmd, p, callback) {
 		}
 	});
 }
+function queryViewProfile(callback) {
+	$.ajax({
+		url: aURL+"viewprofile",		
+		data: {
+			id : worldId
+		},		
+		type: "GET",
+		dataType : "json",
+		success: function( rs ) {
+			console.log(rs);
+			if(callback!=null) {
+				if(!callback(rs)) {
+					return
+				}
+			}
+		}
+	});
+}
 //////////////////////////
 function doReset() {
 	$.ajax({
