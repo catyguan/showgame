@@ -34,6 +34,18 @@ function Class:updateViewData(viewName, viewData)
 	return true
 end
 
+function Class:updateViewProfile(viewName, viewProfile)
+	local vo = self:getView(-1)
+	if vo==nil then
+		error("view stack empty")
+	end
+	if vo.name~=viewName then
+		return false
+	end
+	vo.profile = viewProfile
+	return true
+end
+
 function  Class:changeView(viewName, viewData, ctrl, ctx)
 	local vo = self:getView(-1)
 	if vo==nil then
@@ -143,6 +155,38 @@ function  Class:closeView(viewName)
 	return true
 end
 
+function  Class:endView(viewName)
+	local vo = self:getView(-1)
+	if vo==nil then
+		return true
+	end
+
+	if vo.name~=viewName then
+		if LDEBUG then
+			LOG:debug(LTAG, "endView(%s) fail - current view is '%s'", viewName, vo.name)
+		end
+		return false
+	end
+	local sc = class.forName(vo.control)
+	if LDEBUG then
+		LOG:debug(LTAG, "end view[%s]", vo.name)
+	end
+	sc.onClose(vo.context)
+
+	local scs = self._prop.views
+	table.remove(scs, #scs)
+
+	vo = self:getView(-1)
+	if vo~=nil then
+		if LDEBUG then
+			LOG:debug(LTAG, "resume view[%s]", vo.name)
+		end
+		local nsc = class.forName(vo.control)
+		nsc.onResume(vo.context)
+	end
+	return true
+end
+
 function Class:uiAction(cmd, param)
 	local vo = self:getView(-1)
 	if vo==nil then
@@ -152,9 +196,12 @@ function Class:uiAction(cmd, param)
 	local f = sc["do"..cmd]
 	if f==nil then
 		if LDEBUG then
-			LOG:debug(LTAG, "view[%s] action(%s) invalid", vo.name, cmd)
+			LOG:debug(LTAG, "view[%s] action(%s) invalid", vo.control, cmd)
 		end
 		error("invalid "..cmd)
+	end
+	if LDEBUG then
+		LOG:debug(LTAG, "call view[%s] action(%s)", vo.control, cmd)
 	end
 	return f(vo.context, param)
 end

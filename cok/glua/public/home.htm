@@ -5,6 +5,8 @@
 </head>
 <body>
 [Home] - 
+<button onclick="contentManager.doAdv()">ADV</button>
+<button onclick="contentManager.doTestCombatd()">TestCombatd</button>
 <button onclick="contentManager.doTest()">Test</button>
 <br>
 
@@ -19,12 +21,26 @@ contentManager = {
 	Close : function() {
 
 	},
+	doAdv : function() {
+		var cb = function(data) {
+			console.log(data)
+			return true
+		}
+		doUIAction("MenuAdv",[],cb)
+	},
 	doTest : function() {
 		var cb = function(data) {
 			console.log(data)
 			return true
 		}
 		doUIAction("Test2",[],cb)
+	},
+	doTestCombatd : function() {
+		var cb = function(data) {
+			console.log(data)
+			return true
+		}
+		doUIAction("Test3",[],cb)
 	},
 }
 </script>

@@ -17,7 +17,7 @@ context {
 	view : {
 		content : xxxx,
 		options : [
-			{id=xxx, title=xxxxx, close=true|false, op=PDCODE},
+			{id=xxx, title=xxxxx, close=true|false, op=PDCODE [subview]},
 			...
 		]
 	}
@@ -64,20 +64,21 @@ function Class.onEnter(ctx)
 end
 
 function Class.canClose(ctx)
-	if ctx~=nil then return ctx.closed end
-	return true
+	return false
 end
 
 function Class.doSelect(ctx, id)
 	local o = WORLD
-	local cv = Class.locate(ctx)
+	local cv = Class.locate(ctx.stage, ctx.view)	
 	if cv==nil then
 		error("invalid event current view")
 	end
 	local sopt = nil
-	for i,opt in ipairs(cv.options) do
+	local sidx = nil
+	for idx,opt in ipairs(cv.options) do
 		if opt.id==id then
 			sopt = opt
+			sidx = idx
 		end
 	end
 	if sopt==nil then
@@ -87,21 +88,16 @@ function Class.doSelect(ctx, id)
 		return
 	end
 	if LDEBUG then
-		LOG:debug(LTAG, "select option", id)
+		LOG:debug(LTAG, "select option %s", id)
 	end
 
-	if ctx~=nil then
-		ctx.closed = true
-	end
-	o:closeView(VIEW_NAME)
-	
-	if ctx==nil then return end
-
-	local pds = nil
-	if ok then
-		pds = ctx["ok"]
+	if sopt.close then
+		o:endView(VIEW_NAME)
 	else
-		pds = ctx["cancel"]
+		table.insert(ctx.stage, sidx)
+		Class.updateView(ctx)
 	end	
+	
+	local pds = sopt.op
 	pdcall(pds)
 end

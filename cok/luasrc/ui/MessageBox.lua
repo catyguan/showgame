@@ -18,8 +18,7 @@ local VIEW_NAME = "mbox"
 
 -- UI
 function Class.canClose(ctx)
-	if ctx~=nil then return ctx.closed end
-	return true
+	return false
 end
 function Class.onClose(ctx)
 	local o = WORLD
@@ -30,10 +29,7 @@ end
 
 function Class.doClick(ctx, ok)
 	local o = WORLD
-	if ctx~=nil then
-		ctx.closed = true
-	end
-	o:closeView(VIEW_NAME)
+	o:endView(VIEW_NAME)
 	
 	if ctx==nil then return end
 

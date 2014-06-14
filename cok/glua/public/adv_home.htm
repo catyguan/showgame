@@ -1,0 +1,62 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<title>home</title>
+</head>
+<body>
+[Adventure] - 
+<button onclick="contentManager.backHome()">Home</button>
+<br>
+<div id="regiondiv"></div>
+
+<script>
+contentManager = {
+	Init : function(viewData) {
+		contentManager.BuildView(viewData)
+	},
+	Update : function(viewData) {
+		contentManager.BuildView(viewData)	
+	},
+	BuildView : function(viewData) {		
+		var list = viewData.regions;
+		contentManager.regions = list
+
+		var str = "";
+		str += "<table><tr>";
+		for (var i = 0; i < list.length; i++) {
+			var region = list[i];
+			str += "<td width='200'>";
+			str += (i+1)+". "+region.title;
+			str += "<br>";
+			str += "<img width=200 src='"+region.pic+"'>";
+			str += "<br>";
+			str += "<span style='text-align:center; display:block;'><button onclick='contentManager.doSelect("+i+")'>Select</button></span>";
+			str += "<br>";
+			str += "</td>";
+		};
+		str += "</tr></table>";
+		$( "#regiondiv" ).html(str);
+	},
+	Close : function() {
+
+	},
+	doSelect : function(idx) {
+		var cb = function(data) {
+			console.log(data)
+			return true
+		}
+		var obj = contentManager.regions[idx];
+		doUIAction("Select",[obj.id],cb)
+	},
+	backHome : function() {
+		var cb = function(data) {
+			console.log(data)
+			return true
+		}
+		doUIAction("MenuHome",[],cb)
+	},
+}
+</script>
+
+</body>
+</html>

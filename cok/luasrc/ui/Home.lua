@@ -1,12 +1,7 @@
 -- ui/Home.lua
-local Class = class.define("ui.Home", {"world.UIControl"})
+local Class = class.define("ui.Home", {"world.UIControl", "ui.Menu"})
 
 local LTAG = "UI.home"
-
-function Class.onClose(ctx)
-	LOG:warn(LTAG, "can't close 'home' view")
-	return false
-end
 
 function Class.doTest(ctx)
 	local w = WORLD
@@ -26,12 +21,38 @@ function Class.doTest2(ctx)
 		view = {
 			content="Let's play game",
 			options={
-				{ id="s1", title="OK!"},
-				{ id="s2", title="No..."},
-				{ id="s3", title="What?"},
+				{ id="s1", title="OK!", close=true},
+				{ id="s2", title="No...", close=true},
+				{ id="s3", title="What?",
+					content="play a sex game",
+					options={
+						{ id="s1", title="Fuck you", close=true,
+							op={ _p="ui.MessageBox", view = {message="Bye"}},
+						},
+						{ id="s2", title="Don't do that", close=true},
+					}
+				},
 			}
 		}
 	}
 	w:createView("commonevent",{},"ui.CommonEvent", ctx)
+	return 0
+end
+
+function Class.doTest3(ctx)
+	local cbm = class.forName("adventure.Combatd")
+	local chm = class.forName("adventure.Char")
+	
+	local cb = cbm.newCombat()
+	local ch1 = chm.newChar({
+		HP=10*100, ATK=1*100, APS=30, mod=false, team=1, pos=1
+	})
+	cbm.addChar(cb, ch1)
+	local ch2 = chm.newChar({
+		HP=10*100, ATK=1*100, APS=30, SPD=5, team=2, pos=1
+	})
+	cbm.addChar(cb, ch2)
+
+	cbm.process(cb)	
 	return 0
 end

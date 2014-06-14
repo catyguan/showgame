@@ -38,6 +38,25 @@ function service_viewinfo( ctx, res )
 	return true
 end
 
+function service_viewprofile( ctx, res )
+	local wid = glua_getString(ctx, "id")
+	local o = WORLD_MANAGER:getWorld(wid)
+	if o~=nil then
+		local r = {}
+		local vo = o:getView(-1)
+		if vo==nil then
+			r.name = "home"
+		else
+			r.name = vo.name
+			r.profile = vo.profile
+		end
+		glua_setString(res, "Content", table.json(r))		
+	else
+		glua_setString(res, "Content", "InvalidWorld")
+	end	
+	return true
+end
+
 function service_action( ctx, res )	
 	local wid = glua_getString(ctx, "id")
 	local cmd = glua_getString(ctx, "cmd")
