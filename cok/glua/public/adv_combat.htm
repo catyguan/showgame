@@ -4,56 +4,47 @@
 <title>Combat</title>
 </head>
 <body>
-<div id="teamb">
+<div id="team2">
 	<table>
 		<tr>
-			<td width="120" height="65">
-			4
+			<td>
+				<table border="1">
+					<tr>
+						<td width="120" height="65" id="map_2_4">&nbsp;	</td>
+						<td width="120" height="65" id="map_2_5">&nbsp;</td>
+						<td width="120" height="65" id="map_2_6">&nbsp;</td>
+					</tr>
+					<tr>
+						<td width="120" height="65" id="map_2_1">&nbsp;</td>
+						<td width="120" height="65" id="map_2_2">&nbsp;</td>
+						<td width="120" height="65" id="map_2_3">&nbsp;</td>
+					</tr>
+				</table>
 			</td>
-			<td width="120" height="65">
-			5
-			</td>
-			<td width="120" height="65">
-			6
-			</td>
-		</tr>
-		<tr>
-			<td width="120" height="65">
-			1
-			</td>
-			<td width="120" height="65">
-			2
-			</td>
-			<td width="120" height="65">
-			3
-			</td>
+			<td id="teaminfo2" valign="top">&nbsp;</td>
 		</tr>
 	</table>
 </div>
 <hr>
-<div id="teama">
+<div id="ginfo"></div>
+<div id="team1">
 	<table>
 		<tr>
-			<td width="120" height="65">
-			1
+			<td>
+				<table border="1">
+					<tr>
+						<td width="120" height="65" id="map_1_1">&nbsp;</td>
+						<td width="120" height="65" id="map_1_2">&nbsp;</td>
+						<td width="120" height="65" id="map_1_3">&nbsp;</td>
+					</tr>
+					<tr>
+						<td width="120" height="65" id="map_1_4">&nbsp;</td>
+						<td width="120" height="65" id="map_1_5">&nbsp;</td>
+						<td width="120" height="65" id="map_1_6">&nbsp;</td>
+					</tr>
+				</table>
 			</td>
-			<td width="120" height="65">
-			2
-			</td>
-			<td width="120" height="65">
-			3
-			</td>
-		</tr>
-		<tr>
-			<td width="120" height="65">
-			4
-			</td>
-			<td width="120" height="65">
-			5
-			</td>
-			<td width="120" height="65">
-			6
-			</td>
+			<td id="teaminfo1" valign="top">&nbsp;</td>
 		</tr>
 	</table>
 </div>
@@ -62,29 +53,169 @@
 
 <script>
 contentManager = {
+	eid : 0,
+	selected : [0,0,0],
+	messages : [],
+
 	Init : function(viewData) {
 		queryViewProfile(function(viewProfile) {
-			contentManager.viewProfile = viewProfile
-			contentManager.BuildView(viewData)
+			contentManager.viewProfile = viewProfile;
+			contentManager.BuildView(viewData);
 		})		
 	},
 	Update : function(viewData) {
-		contentManager.BuildView(viewData)	
+		contentManager.BuildView(viewData);
 	},
-	BuildView : function(viewData) {		
-		
+	GetChar : function(id) {
+		return contentManager.viewProfile.profile.chars[id];
+	},
+	SkillDesc : function(skdesc, skprop) {
+		var str = theText(skdesc);
+		var word = "";
+		var mword = false;
+		var nstr = "";
+		for (var i = 0; i <str.length; i++) {
+			var s = str[i];
+			if(!mword) {
+				if(s=="{") {
+					mword = true;
+					word = "";
+					continue;
+				}
+				nstr += s;
+			} else {
+				if(s=="}") {
+					mword = false;
+					nstr += skprop[word]
+					continue;
+				}
+				word += s;
+			}
+		}
+		return nstr;
+	},
+	FocusOn : function(cid, focus) {
+		var chobj = contentManager.GetChar(cid);
+		var tid = chobj.team;
+		var pos = chobj.pos;
+		var old = contentManager.selected[tid];
+		if(old!=0 &&　old!=chobj.pos) {
+			$( "#tab_"+tid+"_"+old ).css("background-color", "");
+			contentManager.selected[tid] = 0;
+			$( "#teaminfo"+tid ).html("");
+		}
+		if(!focus)return;
+		$( "#tab_"+tid+"_"+pos ).css("background-color", "#E6E6FA");
+		contentManager.selected[tid] = pos;
+		// show detail
+		var html = "";
+		html += theText(chobj.title)+"<br>";
+		html += "HP:"+chobj.HP+",";
+		html += "ATK:"+chobj.ATK+",";
+		html += "DEF:"+chobj.DEF+",";
+		html += "SHD:"+chobj.SHD+",";
+		if(tid==1) {
+			html += "SKL:"+chobj.SKL+",";
+		}
+		if(chobj.effects.length>0) {
+			html += "<br>";
+			html += "效果:";
+			for (var i = 0; i < chobj.effects.length; i++) {
+				var efi = chobj.effects[i];
+				var ef = contentManager.viewProfile.profile.effects[efi.id];
+				html += " <span style='text-decoration:underline;' title='"+contentManager.SkillDesc(ef.desc, efi)+"'>"+theText(ef.title);
+				if(efi.LAST>0) {
+					html+="("+efi.LAST+")";
+				}
+				html += "</span>";
+			};
+		}
+		for (var i = 0; i < chobj.skills.length; i++) {
+			var skid = chobj.skills[i];
+			var sk = contentManager.viewProfile.profile.skills[skid];
+			html += "<br>";
+			if(tid==1) {
+				html += "<button onclick=\"contentManager.SelectSkill('"+chobj.id+"','"+skid+"')\">"+theText(sk.title)+" AP:"+sk.AP+" CD:"+sk.CD+"</button> ";
+			} else {
+				html += "["+theText(sk.title)+"] ";
+			}
+			html += contentManager.SkillDesc(sk.desc, chobj);
+		};
+		html += "<br>"
+		$( "#teaminfo"+tid ).html(html);
+	},
+	BuildView : function(viewData) {
+		contentManager.eid = viewData.eid;
+		for (var i = 0; i< viewData.chars.length; i++) {
+			var ch = viewData.chars[i];
+			var chobj = contentManager.GetChar(ch);
+			if(chobj==null)continue;
+			var html = "";
+			html += "<table id='tab_"+chobj.team+"_"+chobj.pos+"'><tr>";
+			html += "<td>";
+			html += "<img src='"+chobj.pic+"' width=60 height=60 onclick=\"contentManager.SelectChar('"+chobj.id+"')\">";
+			html += "</td><td>";
+			html += "HP:"+chobj.HP+"<br>";
+			html += "ATK:"+chobj.ATK+"<br>";
+			html += "SHD:"+chobj.SHD+"<br>";
+			html += "</td>";
+			html += "</tr></table>"
+			$( "#map_"+chobj.team+"_"+chobj.pos ).html(html);
+
+			if(contentManager.selected[chobj.team]==chobj.pos) {				
+				contentManager.FocusOn(chobj.id, true);
+			}
+
+			html = "";
+			html += "回合："+viewData.turn+" AP:"+viewData.APS;
+			$( "#ginfo" ).html(html);
+
+			contentManager.ShowMessage("ok", i==1);
+		}
+	},
+	ShowMessage : function(msg, iserr) {
+		var mbox = contentManager.messages;
+		mbox.push({t:new Date(), m:msg,err:iserr});
+		if(mbox.length>20) {
+			mbox.shift();
+		}
+		var html = "";
+		for (var i = mbox.length - 1; i >= 0; i--) {
+			var mi = mbox[i];
+			if(html!="") {
+				html += "<br>";
+			}
+			html += mi.t.Format("yyyy-MM-dd hh:mm:ss ");
+			if(mi.err) {
+				html += "<font color=red>"+theText(mi.m)+"</font>";
+			} else {
+				html += theText(mi.m);
+			}
+		};
+		$( "#msgdiv" ).html(html);
 	},
 	Close : function() {
 
 	},
-	doSelect : function(idx) {
+	SelectChar : function(cid) {
+		contentManager.FocusOn(cid, true);
+	},
+	SelectSkill : function(cid, skid) {
+		// contentManager.ShowMessage("SelectSkill "+cid+","+skid);
 		var cb = function(data) {
-			console.log(data)
+			var res = data.result;
+			if(res=="reload") {
+				reloadView();
+				return false;
+			}
+			if(res=="error") {
+				contentManager.ShowMessage(data.message, true);
+				return false;
+			}
 			return true
 		}
-		var obj = contentManager.regions[idx];
-		doUIAction("Select",[obj.id],cb)
-	},
+		doUIAction("SelectSkill",[contentManager.eid, cid, skid],cb)
+	}
 }
 </script>
 

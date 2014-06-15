@@ -71,6 +71,11 @@ function loadContent(cid, viewData) {
 	$( "#gcontent" ).load(cid+".htm", {tm:Math.random()}, cb);
 }
 //////////////////////////
+function theText(str) {
+	var idx = str.indexOf("::");
+	if(idx==-1)return str;
+	return str.substr(idx+2); 
+}
 function doView(rs, update) {
 	var sid = rs.name;
 	if(sid=="mbox") {

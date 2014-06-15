@@ -2,6 +2,18 @@ require("bma.lang.ext.Json")
 
 local wid = "test"
 
+local loader = function(name)
+	local ddir = "../data"
+	local fn = ddir.."/"..name..".json"
+	local file = io.open(fn, "r")
+	if file==nil then
+		return {}
+	end
+	local str = file:read("*all")
+	file:close()
+	return str:json()
+end
+
 function service_init(ctx, res)
 	local wid = glua_getString(ctx, "id")
 	local wm = WORLD_MANAGER
@@ -18,7 +30,13 @@ function service_init(ctx, res)
 	return true
 end
 
-function service_viewinfo( ctx, res )	
+function service_viewinfo( ctx, res )
+	if true then
+		local r = loader("combat_uitest")
+		glua_setString(res, "Content", table.json(r.view))
+		return true
+	end
+
 	local wid = glua_getString(ctx, "id")
 	local o = WORLD_MANAGER:getWorld(wid)
 	if o~=nil then
@@ -39,6 +57,12 @@ function service_viewinfo( ctx, res )
 end
 
 function service_viewprofile( ctx, res )
+	if true then
+		local r = loader("combat_uitest")
+		glua_setString(res, "Content", table.json(r.profile))
+		return true
+	end
+
 	local wid = glua_getString(ctx, "id")
 	local o = WORLD_MANAGER:getWorld(wid)
 	if o~=nil then
