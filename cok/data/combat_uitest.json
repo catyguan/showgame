@@ -1,0 +1,94 @@
+{
+	"view" : {
+		"name" : "adv_combat",
+		"data" : {
+			"turn": 1,
+			"eid" : 1,
+			"chars" : [ "c1","c2","c3" ],
+			"APS" : 6
+		}
+	},
+	"profile" : {
+		"name" : "adv_combat",
+		"profile" : {
+			"chars" : {
+				"c1" : {
+					"id" : "c1",
+					"title": "::战士红",
+					"pic": "images/head1.png",
+					"HP" : 4800,
+					"ATK": 700,
+					"DEF": 200,
+					"SHD": 150,
+					"SKL": 30,
+					"team": 1,
+					"pos": 2,
+					"skills" : ["s1","s2"],
+					"effects" : [
+						{
+							"id": "e1",
+							"XDEF": 150,
+							"LAST": 2
+						}
+					]
+				},
+				"c2" : {
+					"id" : "c2",
+					"title": "::敌人甲",
+					"pic": "images/head2.png",
+					"HP" : 4800,
+					"ATK": 700,
+					"DEF": 200,
+					"SHD": 150,
+					"SKL": 30,
+					"team": 2,
+					"pos": 1,
+					"skills" : ["s1","s2"],
+					"effects" : []
+				},
+				"c3" : {
+					"id" : "c3",
+					"title": "::敌人乙",
+					"pic": "images/head2.png",
+					"HP" : 4800,
+					"ATK": 700,
+					"DEF": 200,
+					"SHD": 150,
+					"SKL": 30,
+					"team": 2,
+					"pos": 3,
+					"skills" : ["s1","s2"],
+					"effects" : []
+				}
+			},
+			"skills" : {
+				"s1" : {
+					"id": "s1",
+					"title": "::攻击",
+					"desc": "::对一名敌人造成{ATK}点伤害",
+					"AP" : 30,
+					"CD" : 0,
+					"target": "one"
+				},
+				"s2" : {
+					"id": "s2",
+					"title": "::防御",
+					"desc": "::恢复自身{DEF}点防盾",
+					"AP" : 30,
+					"CD" : 2,
+					"target" : "self"
+				}
+			},
+			"effects" : {
+				"e1" : {
+					"id": "e1",
+					"title": "::防御姿势",
+					"desc": "::每回合恢复自身{XDEF}点防盾，持续{LAST}回合"
+				},
+				"e2" : {
+
+				}
+			}
+		}
+	}
+}
