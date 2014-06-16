@@ -4,8 +4,58 @@
 		"data" : {
 			"turn": 1,
 			"eid" : 1,
-			"chars" : [ "c1","c2","c3" ],
-			"APS" : 6
+			"chars" : {
+				"c1": {
+					"id": "c1",
+					"HP" : 4800,
+					"ATK": 700,
+					"DEF": 200,
+					"SKL": 30,
+					"AGI": 40,
+					"SHD": 150,					
+					"pos": 2,
+					"skills" : [
+						{"id":"s1"},
+						{"id":"s2"}
+					],
+					"effects" : [
+						{"id": "e1", "XDEF": 150, "LAST": 2}
+					]
+				},
+				"c2": {
+					"id": "c2",
+					"HP" : 4800,
+					"ATK": 700,
+					"DEF": 200,
+					"SKL": 30,
+					"AGI": 40,
+					"SHD": 150,					
+					"pos": 1,
+					"skills" : [
+						{"id":"s1"},
+						{"id":"s2"}
+					]
+				},
+				"c3": {
+					"id": "c3",
+					"HP" : 4800,
+					"ATK": 700,
+					"DEF": 200,
+					"SKL": 30,
+					"AGI": 40,
+					"SHD": 150,					
+					"pos": 3,
+					"skills" : [
+						{"id":"s1"},
+						{"id":"s2"}
+					]
+				}
+			},
+			"APS" : 6,
+			"aorder" : ["c1","c2","c3"],
+			"events" : [
+				{ "a":1 , "b":true }
+			]
 		}
 	},
 	"profile" : {
@@ -16,49 +66,19 @@
 					"id" : "c1",
 					"title": "::战士红",
 					"pic": "images/head1.png",
-					"HP" : 4800,
-					"ATK": 700,
-					"DEF": 200,
-					"SHD": 150,
-					"SKL": 30,
-					"team": 1,
-					"pos": 2,
-					"skills" : ["s1","s2"],
-					"effects" : [
-						{
-							"id": "e1",
-							"XDEF": 150,
-							"LAST": 2
-						}
-					]
+					"team": 1
 				},
 				"c2" : {
 					"id" : "c2",
 					"title": "::敌人甲",
 					"pic": "images/head2.png",
-					"HP" : 4800,
-					"ATK": 700,
-					"DEF": 200,
-					"SHD": 150,
-					"SKL": 30,
-					"team": 2,
-					"pos": 1,
-					"skills" : ["s1","s2"],
-					"effects" : []
+					"team": 2
 				},
 				"c3" : {
 					"id" : "c3",
 					"title": "::敌人乙",
 					"pic": "images/head2.png",
-					"HP" : 4800,
-					"ATK": 700,
-					"DEF": 200,
-					"SHD": 150,
-					"SKL": 30,
-					"team": 2,
-					"pos": 3,
-					"skills" : ["s1","s2"],
-					"effects" : []
+					"team": 2
 				}
 			},
 			"skills" : {

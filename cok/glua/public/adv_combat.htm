@@ -4,7 +4,7 @@
 <title>Combat</title>
 </head>
 <body>
-<div id="team2">
+<div>
 	<table>
 		<tr>
 			<td>
@@ -19,19 +19,9 @@
 						<td width="120" height="65" id="map_2_2">&nbsp;</td>
 						<td width="120" height="65" id="map_2_3">&nbsp;</td>
 					</tr>
-				</table>
-			</td>
-			<td id="teaminfo2" valign="top">&nbsp;</td>
-		</tr>
-	</table>
-</div>
-<hr>
-<div id="ginfo"></div>
-<div id="team1">
-	<table>
-		<tr>
-			<td>
-				<table border="1">
+					<tr>
+						<td colspan="3" bgcolor="blue"></td>
+					</tr>
 					<tr>
 						<td width="120" height="65" id="map_1_1">&nbsp;</td>
 						<td width="120" height="65" id="map_1_2">&nbsp;</td>
@@ -44,32 +34,33 @@
 					</tr>
 				</table>
 			</td>
-			<td id="teaminfo1" valign="top">&nbsp;</td>
+			<td id="chinfo" valign="top">&nbsp;</td>
 		</tr>
 	</table>
 </div>
 <hr>
-<div id="msgdiv"></div>
+<table border="1">
+<tr><td id="ginfo" width="320" valign="top">
+</td><td id="msgdiv" valign="top">
+</td></tr>
+</table>
 
 <script>
 contentManager = {
 	eid : 0,
-	selected : [0,0,0],
+	selected : "c1",
 	messages : [],
 
 	Init : function(viewData) {
 		queryViewProfile(function(viewProfile) {
-			contentManager.viewProfile = viewProfile;
+			contentManager.viewProfile = viewProfile.profile;
 			contentManager.BuildView(viewData);
 		})		
 	},
 	Update : function(viewData) {
 		contentManager.BuildView(viewData);
 	},
-	GetChar : function(id) {
-		return contentManager.viewProfile.profile.chars[id];
-	},
-	SkillDesc : function(skdesc, skprop) {
+	SkillDesc : function(skdesc, skprop1, skprop2, skprop3) {
 		var str = theText(skdesc);
 		var word = "";
 		var mword = false;
@@ -86,7 +77,15 @@ contentManager = {
 			} else {
 				if(s=="}") {
 					mword = false;
-					nstr += skprop[word]
+					var w = "";
+					w = skprop1[word];
+					if(!w && skprop2) {
+						w = skprop2[word];
+						if(!w && skprop3) {
+							w = skprop3[word];
+						}
+					}
+					nstr += w;
 					continue;
 				}
 				word += s;
@@ -94,89 +93,160 @@ contentManager = {
 		}
 		return nstr;
 	},
-	FocusOn : function(cid, focus) {
-		var chobj = contentManager.GetChar(cid);
-		var tid = chobj.team;
-		var pos = chobj.pos;
-		var old = contentManager.selected[tid];
-		if(old!=0 &&　old!=chobj.pos) {
-			$( "#tab_"+tid+"_"+old ).css("background-color", "");
-			contentManager.selected[tid] = 0;
-			$( "#teaminfo"+tid ).html("");
+	EventText : function(ev) {
+		var msg = "";
+		for(var key in ev){
+ 			msg += key+"="+ev[key]+"; ";
 		}
+		return msg;
+	},
+	FocusOn : function(cid, focus) {
+		if(cid!=contentManager.selected) {
+			var oid = contentManager.selected;
+			var ochobj = contentManager.viewData.chars[oid];
+			if(ochobj) {
+				var ochpro = contentManager.viewProfile.chars[oid];
+				var otid = ochpro.team;
+				var opos = ochobj.pos;
+				$( "#tab_"+otid+"_"+opos ).css("background-color", "");
+				$( "#oth_"+oid ).css("border", "");
+			}
+			contentManager.selected = "";
+			$( "#chinfo" ).html("");
+		}
+
+		if(!focus) {
+			return;
+		}
+
+		var chobj = contentManager.viewData.chars[cid];
+		if(!chobj) {
+			return;
+		}
+		var chpro = contentManager.viewProfile.chars[cid];
+		var tid = chpro.team;
+		var pos = chobj.pos;
+
 		if(!focus)return;
 		$( "#tab_"+tid+"_"+pos ).css("background-color", "#E6E6FA");
-		contentManager.selected[tid] = pos;
+		$( "#oth_"+cid ).css("border", "1px #FF0000 solid");
+		contentManager.selected = cid;
+
 		// show detail
 		var html = "";
-		html += theText(chobj.title)+"<br>";
+		html += theText(chpro.title)+"<br>";
 		html += "HP:"+chobj.HP+",";
 		html += "ATK:"+chobj.ATK+",";
 		html += "DEF:"+chobj.DEF+",";
 		html += "SHD:"+chobj.SHD+",";
+		html += "AGI:"+chobj.AGI+",";
 		if(tid==1) {
 			html += "SKL:"+chobj.SKL+",";
 		}
-		if(chobj.effects.length>0) {
+		if(chobj.effects && chobj.effects.length>0) {
 			html += "<br>";
-			html += "效果:";
+			html += "[效果]";
 			for (var i = 0; i < chobj.effects.length; i++) {
 				var efi = chobj.effects[i];
-				var ef = contentManager.viewProfile.profile.effects[efi.id];
-				html += " <span style='text-decoration:underline;' title='"+contentManager.SkillDesc(ef.desc, efi)+"'>"+theText(ef.title);
+				var ef = contentManager.viewProfile.effects[efi.id];
+
+				html += "<br>";				
+				html += theText(ef.title);
 				if(efi.LAST>0) {
 					html+="("+efi.LAST+")";
 				}
-				html += "</span>";
+				html += " - "+contentManager.SkillDesc(ef.desc, efi, chobj, chpro);
 			};
 		}
-		for (var i = 0; i < chobj.skills.length; i++) {
-			var skid = chobj.skills[i];
-			var sk = contentManager.viewProfile.profile.skills[skid];
+		if(chobj.skills) {
 			html += "<br>";
-			if(tid==1) {
-				html += "<button onclick=\"contentManager.SelectSkill('"+chobj.id+"','"+skid+"')\">"+theText(sk.title)+" AP:"+sk.AP+" CD:"+sk.CD+"</button> ";
-			} else {
-				html += "["+theText(sk.title)+"] ";
+			html += "[技能]";
+			for (var i = 0; i < chobj.skills.length; i++) {
+				var ski = chobj.skills[i];
+				var sk = contentManager.viewProfile.skills[ski.id];
+
+				html += "<br>";
+				html += theText(sk.title)+" - ";
+				html += contentManager.SkillDesc(sk.desc, sk, chobj, chpro);
 			}
-			html += contentManager.SkillDesc(sk.desc, chobj);
-		};
+		}
 		html += "<br>"
-		$( "#teaminfo"+tid ).html(html);
+		$( "#chinfo" ).html(html);
 	},
 	BuildView : function(viewData) {
-		contentManager.eid = viewData.eid;
-		for (var i = 0; i< viewData.chars.length; i++) {
-			var ch = viewData.chars[i];
-			var chobj = contentManager.GetChar(ch);
+		var mpos = {};
+		contentManager.viewData = viewData;
+
+		var focusId = "";
+		var ostr = "";
+		var mui = "";
+		for (var i = 0; i< viewData.aorder.length; i++) {
+			var chid = viewData.aorder[i];
+			var chobj = viewData.chars[chid];
 			if(chobj==null)continue;
+			var chpro = contentManager.viewProfile.chars[chid];
+			var tid = chpro.team;
+			var pos = chobj.pos;
+			mpos["p"+tid+"_"+pos] = true;
+
 			var html = "";
-			html += "<table id='tab_"+chobj.team+"_"+chobj.pos+"'><tr>";
+			var tabcss = "";
+			if(i==0) {
+				tabcss = "border: 1px solid #FF9900;"
+			}
+			html += "<table id='tab_"+tid+"_"+pos+"' style='"+tabcss+"'><tr>";
 			html += "<td>";
-			html += "<img src='"+chobj.pic+"' width=60 height=60 onclick=\"contentManager.SelectChar('"+chobj.id+"')\">";
+			html += "<img src='"+chpro.pic+"' width=60 height=60 onclick=\"contentManager.SelectChar('"+chobj.id+"')\">";
 			html += "</td><td>";
 			html += "HP:"+chobj.HP+"<br>";
 			html += "ATK:"+chobj.ATK+"<br>";
 			html += "SHD:"+chobj.SHD+"<br>";
 			html += "</td>";
 			html += "</tr></table>"
-			$( "#map_"+chobj.team+"_"+chobj.pos ).html(html);
+			$( "#map_"+tid+"_"+pos ).html(html);
 
-			if(contentManager.selected[chobj.team]==chobj.pos) {				
-				contentManager.FocusOn(chobj.id, true);
+			if(contentManager.selected==chobj.id) {
+				focusId = chobj.id;				
 			}
 
-			html = "";
-			html += "回合："+viewData.turn+" AP:"+viewData.APS;
-			$( "#ginfo" ).html(html);
+			ostr +="<img id='oth_"+chobj.id+"' src='"+chpro.pic+"' width=16 height=16 onclick=\"contentManager.SelectChar('"+chobj.id+"')\" title='"+theText(chpro.title)+"''>";
 
-			contentManager.ShowMessage("ok", i==1);
+			if(i==0 && tid==1) {
+				mui += "<table><tr><td>";
+				mui += "<img src='"+chpro.pic+"' width=60 height=60>";
+				mui += "</td><td>";
+				for (var j = 0; j < chobj.skills.length; j++) {
+					var ski = chobj.skills[j];
+					var sk = contentManager.viewProfile.skills[ski.id];
+					if(j!=0)mui += "<br>";
+					mui += "<button onclick=\"contentManager.SelectSkill('"+chobj.id+"','"+ski.id+"')\">"+theText(sk.title)+" AP:"+sk.AP+" CD:"+sk.CD+"</button> ";
+				}
+				mui += "</td></tr></table>";
+			}
+		}
+
+		html = "";
+		html += "回合："+viewData.turn+" AP:"+viewData.APS+" "+ostr;
+		if(mui!="") {
+			html += "<br>"+mui;
+		}
+
+		$( "#ginfo" ).html(html);
+
+		contentManager.FocusOn(focusId, focusId!="");
+
+		if(viewData.events) {
+			for (var i = 0; i < viewData.events.length; i++) {
+				var ev = viewData.events[i];
+				var msg = contentManager.EventText(ev)
+				contentManager.ShowMessage(msg);
+			}			
 		}
 	},
 	ShowMessage : function(msg, iserr) {
 		var mbox = contentManager.messages;
 		mbox.push({t:new Date(), m:msg,err:iserr});
-		if(mbox.length>20) {
+		if(mbox.length>15) {
 			mbox.shift();
 		}
 		var html = "";
@@ -198,9 +268,32 @@ contentManager = {
 
 	},
 	SelectChar : function(cid) {
-		contentManager.FocusOn(cid, true);
+		if(cid==contentManager.selected) {
+			contentManager.FocusOn("", false);
+		} else {
+			contentManager.FocusOn(cid, true);
+		}
 	},
 	SelectSkill : function(cid, skid) {
+		var sid = contentManager.selected;
+		var sk = contentManager.viewProfile.skills[skid];
+		// check target
+		if(sk.target) {
+			var me = contentManager.viewProfile.chars[cid];
+			if(sk.target=="one") {
+				if(sid=="") {
+					contentManager.ShowMessage("请选择一个敌方目标", true);
+					return;
+				}				
+				var sobj = contentManager.viewProfile.chars[sid];
+				if(sobj.team==me.team) {
+					contentManager.ShowMessage("该技能需要对敌方使用", true);
+					return;
+				}
+			}
+		}
+
+
 		// contentManager.ShowMessage("SelectSkill "+cid+","+skid);
 		var cb = function(data) {
 			var res = data.result;
@@ -214,7 +307,7 @@ contentManager = {
 			}
 			return true
 		}
-		doUIAction("SelectSkill",[contentManager.eid, cid, skid],cb)
+		doUIAction("SelectSkill",[contentManager.viewData.eid, skid, cid, contentManager.selected],cb);
 	}
 }
 </script>
