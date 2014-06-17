@@ -48,17 +48,20 @@
 <script>
 contentManager = {
 	eid : 0,
-	selected : "c1",
+	selected : "",
 	messages : [],
 
 	Init : function(viewData) {
-		queryViewProfile(function(viewProfile) {
-			contentManager.viewProfile = viewProfile.profile;
-			contentManager.BuildView(viewData);
-		})		
+		contentManager.DoProcess(null, 0);		
 	},
 	Update : function(viewData) {
-		contentManager.BuildView(viewData);
+		contentManager.UpdateView(viewData);
+	},
+	DoProcess : function(cmd, sid) {
+		doUIProcess(sid, cmd, function(rs) {
+			contentManager.EvalEvent(rs.result);
+			contentManager.UpdateView(rs.data);
+		});
 	},
 	SkillDesc : function(skdesc, skprop1, skprop2, skprop3) {
 		var str = theText(skdesc);
@@ -106,7 +109,7 @@ contentManager = {
 			var ochobj = contentManager.viewData.chars[oid];
 			if(ochobj) {
 				var ochpro = contentManager.viewProfile.chars[oid];
-				var otid = ochpro.team;
+				var otid = ochobj.team;
 				var opos = ochobj.pos;
 				$( "#tab_"+otid+"_"+opos ).css("background-color", "");
 				$( "#oth_"+oid ).css("border", "");
@@ -124,7 +127,7 @@ contentManager = {
 			return;
 		}
 		var chpro = contentManager.viewProfile.chars[cid];
-		var tid = chpro.team;
+		var tid = chobj.team;
 		var pos = chobj.pos;
 
 		if(!focus)return;
@@ -173,9 +176,15 @@ contentManager = {
 		html += "<br>"
 		$( "#chinfo" ).html(html);
 	},
-	BuildView : function(viewData) {
+	UpdateView : function(viewData) {
+
+	},
+	BuildView : function(data) {
 		var mpos = {};
-		contentManager.viewData = viewData;
+		var viewData = data.view
+		contentManager.viewProfile = data.profile;		
+
+		contentManager.viewData = viewData;		
 
 		var focusId = "";
 		var ostr = "";
@@ -185,7 +194,7 @@ contentManager = {
 			var chobj = viewData.chars[chid];
 			if(chobj==null)continue;
 			var chpro = contentManager.viewProfile.chars[chid];
-			var tid = chpro.team;
+			var tid = chobj.team;
 			var pos = chobj.pos;
 			mpos["p"+tid+"_"+pos] = true;
 
@@ -279,35 +288,48 @@ contentManager = {
 		var sk = contentManager.viewProfile.skills[skid];
 		// check target
 		if(sk.target) {
-			var me = contentManager.viewProfile.chars[cid];
+			var me = contentManager.viewData.chars[cid];
 			if(sk.target=="one") {
 				if(sid=="") {
 					contentManager.ShowMessage("请选择一个敌方目标", true);
 					return;
 				}				
-				var sobj = contentManager.viewProfile.chars[sid];
+				var sobj = contentManager.viewData.chars[sid];
 				if(sobj.team==me.team) {
 					contentManager.ShowMessage("该技能需要对敌方使用", true);
 					return;
 				}
 			}
 		}
-
-
-		// contentManager.ShowMessage("SelectSkill "+cid+","+skid);
-		var cb = function(data) {
-			var res = data.result;
-			if(res=="reload") {
-				reloadView();
-				return false;
+		contentManager.DoProcess({"skill":skid, "me":cid, "target":contentManager.selected}, contentManager.eid);
+	},
+	EvalEvent : function(elist) {
+		if(!elist)return;
+		for (var i = 0; i < elist.length; i++) {
+			var ev = elist[i];
+			if(ev.id) {
+				contentManager.eid = ev.id;
 			}
-			if(res=="error") {
-				contentManager.ShowMessage(data.message, true);
-				return false;
+			if(ev.k=="init") {
+				contentManager.BuildView(ev.data);
+				contentManager.EvalEvent([{k: "p"}]);
+			} else if(ev.k=="err") {
+				contentManager.ShowMessage(ev.msg, true);
+			} else if(ev.k=="msg") {
+				contentManager.ShowMessage(ev.msg);
+			} else if(ev.k=="p") {
+				contentManager.timer = setTimeout(function() {
+					if(contentManager.EvalEvent) {
+						contentManager.DoProcess(null, contentManager.eid);
+					}
+				}, 500)
+			} else if(ev.k=="cmd") {
+				// wait user command
+				contentManager.ShowMessage("请输入指令");
+			} else {
+				console.log("unknow event", ev);
 			}
-			return true
-		}
-		doUIAction("SelectSkill",[contentManager.viewData.eid, skid, cid, contentManager.selected],cb);
+		};
 	}
 }
 </script>

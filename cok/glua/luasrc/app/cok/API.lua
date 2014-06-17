@@ -31,11 +31,11 @@ function service_init(ctx, res)
 end
 
 function service_viewinfo( ctx, res )
-	if true then
-		local r = loader("combat_uitest")
-		glua_setString(res, "Content", table.json(r.view))
-		return true
-	end
+	-- if true then
+	-- 	local r = loader("combat_uitest")
+	-- 	glua_setString(res, "Content", table.json(r.view))
+	-- 	return true
+	-- end
 
 	local wid = glua_getString(ctx, "id")
 	local o = WORLD_MANAGER:getWorld(wid)
@@ -56,25 +56,42 @@ function service_viewinfo( ctx, res )
 	return true
 end
 
-function service_viewprofile( ctx, res )
-	if true then
-		local r = loader("combat_uitest")
-		glua_setString(res, "Content", table.json(r.profile))
-		return true
-	end
+function service_process( ctx, res )
+	-- if true then
+	-- 	local r = loader("combat_uitest")
+	-- 	glua_setString(res, "Content", table.json(r.process))
+	-- 	return true
+	-- end
 
 	local wid = glua_getString(ctx, "id")
+	local sid = glua_getString(ctx, "sid")
+	local p = glua_getString(ctx, "p")
+	LOG:debug("API", "process(%s, %s, %s)", wid, sid, p)
+	local param
+	if p~=nil and p~="" then
+		local data = string.json(p)
+		if type(data)=="table" then
+			param = data
+		end
+	end
+
 	local o = WORLD_MANAGER:getWorld(wid)
 	if o~=nil then
 		local r = {}
+		o:begin()
+		local resp = o:uiProcess(sid, param)
+		o:finish()
+		r.result = resp
+
 		local vo = o:getView(-1)
 		if vo==nil then
 			r.name = "home"
 		else
 			r.name = vo.name
-			r.profile = vo.profile
+			r.data = vo.data
 		end
-		glua_setString(res, "Content", table.json(r))		
+		-- var_dump(o._prop)
+		glua_setString(res, "Content", table.json(r))
 	else
 		glua_setString(res, "Content", "InvalidWorld")
 	end	
@@ -85,7 +102,7 @@ function service_action( ctx, res )
 	local wid = glua_getString(ctx, "id")
 	local cmd = glua_getString(ctx, "cmd")
 	local p = glua_getString(ctx, "p")
-	LOG:debug("API", "%s, %s(%s)", wid, cmd, p)
+	LOG:debug("API", "action(%s, %s, %s)", wid, cmd, p)
 	local param = {}
 	if p~=nil and p~="" then
 		local data = string.json(p)
@@ -110,7 +127,7 @@ function service_action( ctx, res )
 			r.name = vo.name
 			r.data = vo.data
 		end
-		var_dump(o._prop)
+		-- var_dump(o._prop)
 		glua_setString(res, "Content", table.json(r))
 	else
 		glua_setString(res, "Content", "InvalidWorld")

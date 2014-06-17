@@ -39,20 +39,28 @@ function Class.doTest2(ctx)
 	return 0
 end
 
+local loader = function(name)
+	local ddir = "../data"
+	local fn = ddir.."/"..name..".json"
+	local file = io.open(fn, "r")
+	if file==nil then
+		return {}
+	end
+	local str = file:read("*all")
+	file:close()
+	return str:json()
+end
+
 function Class.doTest3(ctx)
 	local cbm = class.forName("adventure.Combatd")
 	local chm = class.forName("adventure.Char")
-	
-	local cb = cbm.newCombat()
-	local ch1 = chm.newChar({
-		HP=10*100, ATK=1*100, APS=30, mod=false, team=1, pos=1
-	})
-	cbm.addChar(cb, ch1)
-	local ch2 = chm.newChar({
-		HP=10*100, ATK=1*100, APS=30, SPD=5, team=2, pos=1
-	})
-	cbm.addChar(cb, ch2)
 
+	local chlist = loader("combat_test")	
+	local cb = cbm.newCombat()
+	for _, chdata in ipairs(chlist) do
+		local ch = chm.newChar(chdata)
+		cbm.addChar(cb, ch)
+	end
 	cbm.process(cb)	
 	return 0
 end

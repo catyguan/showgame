@@ -139,11 +139,13 @@ function doUIAction(cmd, p, callback) {
 		}
 	});
 }
-function queryViewProfile(callback) {
+function doUIProcess(sid, p, callback) {
 	$.ajax({
-		url: aURL+"viewprofile",		
+		url: aURL+"process",		
 		data: {
-			id : worldId
+			id : worldId,
+			sid : sid,
+			p : JSON.stringify(p)
 		},		
 		type: "GET",
 		dataType : "json",
@@ -154,6 +156,7 @@ function queryViewProfile(callback) {
 					return
 				}
 			}
+			updateView(rs);
 		}
 	});
 }

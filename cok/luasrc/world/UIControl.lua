@@ -21,6 +21,9 @@ end
 function Class.onResume(ctx)
 end
 
+function Class.onProcess(ctx, sid, param)
+end
+
 function Class.viewContext(lvl)
 	if lvl==nil then lvl=-1 end
 	local w = WORLD

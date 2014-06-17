@@ -34,18 +34,6 @@ function Class:updateViewData(viewName, viewData)
 	return true
 end
 
-function Class:updateViewProfile(viewName, viewProfile)
-	local vo = self:getView(-1)
-	if vo==nil then
-		error("view stack empty")
-	end
-	if vo.name~=viewName then
-		return false
-	end
-	vo.profile = viewProfile
-	return true
-end
-
 function  Class:changeView(viewName, viewData, ctrl, ctx)
 	local vo = self:getView(-1)
 	if vo==nil then
@@ -206,3 +194,14 @@ function Class:uiAction(cmd, param)
 	return f(vo.context, param)
 end
 
+function Class:uiProcess(sid, param)
+	local vo = self:getView(-1)
+	if vo==nil then
+		error("view stack empty")
+	end	
+	local sc = class.forName(vo.control)
+	if LDEBUG then
+		LOG:debug(LTAG, "call view[%s] doProcess(%s)", vo.control, sid)
+	end
+	return sc.onProcess(vo.context, sid, param)
+end

@@ -1,114 +1,115 @@
 {
 	"view" : {
 		"name" : "adv_combat",
-		"data" : {
-			"turn": 1,
-			"eid" : 1,
-			"chars" : {
-				"c1": {
-					"id": "c1",
-					"HP" : 4800,
-					"ATK": 700,
-					"DEF": 200,
-					"SKL": 30,
-					"AGI": 40,
-					"SHD": 150,					
-					"pos": 2,
-					"skills" : [
-						{"id":"s1"},
-						{"id":"s2"}
-					],
-					"effects" : [
-						{"id": "e1", "XDEF": 150, "LAST": 2}
-					]
-				},
-				"c2": {
-					"id": "c2",
-					"HP" : 4800,
-					"ATK": 700,
-					"DEF": 200,
-					"SKL": 30,
-					"AGI": 40,
-					"SHD": 150,					
-					"pos": 1,
-					"skills" : [
-						{"id":"s1"},
-						{"id":"s2"}
-					]
-				},
-				"c3": {
-					"id": "c3",
-					"HP" : 4800,
-					"ATK": 700,
-					"DEF": 200,
-					"SKL": 30,
-					"AGI": 40,
-					"SHD": 150,					
-					"pos": 3,
-					"skills" : [
-						{"id":"s1"},
-						{"id":"s2"}
-					]
-				}
-			},
-			"APS" : 6,
-			"aorder" : ["c1","c2","c3"],
-			"events" : [
-				{ "a":1 , "b":true }
-			]
-		}
+		"data" : {}
 	},
-	"profile" : {
-		"name" : "adv_combat",
-		"profile" : {
-			"chars" : {
-				"c1" : {
-					"id" : "c1",
-					"title": "::战士红",
-					"pic": "images/head1.png",
-					"team": 1
+	"process" : [
+		{
+			"id": 1, "k": "init",
+			"data" : {
+				"view" : {
+					"turn": 1,
+					"APS" : 6,
+					"aorder" : ["c1","c2","c3"],	
+					"chars" : {
+						"c1": {
+							"id": "c1",
+							"HP" : 4800,
+							"ATK": 700,
+							"DEF": 200,
+							"SKL": 30,
+							"AGI": 40,
+							"SHD": 150,				
+							"team": 1,	
+							"pos": 2,
+							"skills" : [
+								{"id":"s1"},
+								{"id":"s2"}
+							],
+							"effects" : [
+								{"id": "e1", "XDEF": 150, "LAST": 2}
+							]
+						},
+						"c2": {
+							"id": "c2",
+							"HP" : 4800,
+							"ATK": 700,
+							"DEF": 200,
+							"SKL": 30,
+							"AGI": 40,
+							"SHD": 150,					
+							"team": 2,							
+							"pos": 1,
+							"skills" : [
+								{"id":"s1"},
+								{"id":"s2"}
+							]
+						},
+						"c3": {
+							"id": "c3",
+							"HP" : 4800,
+							"ATK": 700,
+							"DEF": 200,
+							"SKL": 30,
+							"AGI": 40,
+							"SHD": 150,
+							"team": 2,						
+							"pos": 3,
+							"skills" : [
+								{"id":"s1"},
+								{"id":"s2"}
+							]
+						}
+					}
 				},
-				"c2" : {
-					"id" : "c2",
-					"title": "::敌人甲",
-					"pic": "images/head2.png",
-					"team": 2
-				},
-				"c3" : {
-					"id" : "c3",
-					"title": "::敌人乙",
-					"pic": "images/head2.png",
-					"team": 2
-				}
-			},
-			"skills" : {
-				"s1" : {
-					"id": "s1",
-					"title": "::攻击",
-					"desc": "::对一名敌人造成{ATK}点伤害",
-					"AP" : 30,
-					"CD" : 0,
-					"target": "one"
-				},
-				"s2" : {
-					"id": "s2",
-					"title": "::防御",
-					"desc": "::恢复自身{DEF}点防盾",
-					"AP" : 30,
-					"CD" : 2,
-					"target" : "self"
-				}
-			},
-			"effects" : {
-				"e1" : {
-					"id": "e1",
-					"title": "::防御姿势",
-					"desc": "::每回合恢复自身{XDEF}点防盾，持续{LAST}回合"
-				},
-				"e2" : {
+				"profile" : {
+					"chars" : {
+						"c1" : {
+							"id" : "c1",
+							"title": "::战士红",
+							"pic": "images/head1.png"							
+						},
+						"c2" : {
+							"id" : "c2",
+							"title": "::敌人甲",
+							"pic": "images/head2.png"
+						},
+						"c3" : {
+							"id" : "c3",
+							"title": "::敌人乙",
+							"pic": "images/head2.png"
+						}
+					},
+					"skills" : {
+						"s1" : {
+							"id": "s1",
+							"title": "::攻击",
+							"desc": "::对一名敌人造成{ATK}点伤害",
+							"AP" : 30,
+							"CD" : 0,
+							"target": "one"
+						},
+						"s2" : {
+							"id": "s2",
+							"title": "::防御",
+							"desc": "::恢复自身{DEF}点防盾",
+							"AP" : 30,
+							"CD" : 2,
+							"target" : "self"
+						}
+					},
+					"effects" : {
+						"e1" : {
+							"id": "e1",
+							"title": "::防御姿势",
+							"desc": "::每回合恢复自身{XDEF}点防盾，持续{LAST}回合"
+						},
+						"e2" : {
 
+						}
+					}
 				}
 			}
 		}
-	}
+	]
 }

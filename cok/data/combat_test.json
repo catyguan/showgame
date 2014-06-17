@@ -1,0 +1,50 @@
+[
+	{
+		"_p": "cmod.pack.base.TestNPC",
+		"HP" : 4800,
+		"ATK": 700,
+		"DEF": 200,
+		"SKL": 30,
+		"AGI": 42,
+		"SHD": 150,					
+		"team": 1,
+		"pos": 2,
+		"skills" : [
+			{"_p":"cmod.pack.base.SkillAttack"},
+			{"_p":"cmod.pack.base.SkillDef"}
+		],
+		"effects" : [
+			{"_p": "cmod.pack.base.TestEff", "XDEF": 150, "LAST": 2}
+		]
+	},
+	{
+		"_p": "cmod.pack.base.TestMod",
+		"HP" : 4800,
+		"ATK": 700,
+		"DEF": 200,
+		"SKL": 30,
+		"AGI": 40,
+		"SHD": 150,					
+		"team": 2,
+		"pos": 1,
+		"skills" : [
+			{"_p":"cmod.pack.base.SkillAttack"},
+			{"_p":"cmod.pack.base.SkillDef"}
+		]
+	},
+	{
+		"_p": "cmod.pack.base.TestMod",
+		"HP" : 4800,
+		"ATK": 700,
+		"DEF": 200,
+		"SKL": 30,
+		"AGI": 41,
+		"SHD": 150,					
+		"team": 2,
+		"pos": 3,
+		"skills" : [
+			{"_p":"cmod.pack.base.SkillAttack"},
+			{"_p":"cmod.pack.base.SkillDef"}
+		]
+	}
+]
