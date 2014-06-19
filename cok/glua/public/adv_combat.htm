@@ -138,13 +138,13 @@ contentManager = {
 		// show detail
 		var html = "";
 		html += theText(chpro.title)+"<br>";
-		html += "HP:"+chobj.HP+",";
+		html += "HP:"+chobj.HP+"/"+chobj.MAXHP+",";
 		html += "ATK:"+chobj.ATK+",";
-		html += "DEF:"+chobj.DEF+",";
-		html += "SHD:"+chobj.SHD+",";
-		html += "AGI:"+chobj.AGI+",";
+		html += "SKL:"+chobj.SKL+",";
+		html += "DEF:"+chobj.DEF+"("+(chobj.ARMOR*100).toFixed(2)+"%)"+",";		
+		html += "AGI:"+chobj.AGI+"("+(chobj.DODGE*100).toFixed(2)+"%)"+",";
 		if(tid==1) {
-			html += "SKL:"+chobj.SKL+",";
+			html += "APS:"+chobj.APS+",";
 		}
 		if(chobj.effects && chobj.effects.length>0) {
 			html += "<br>";
@@ -179,15 +179,35 @@ contentManager = {
 	UpdateView : function(viewData) {
 
 	},
-	BuildView : function(data) {
-		var mpos = {};
-		var viewData = data.view
-		contentManager.viewProfile = data.profile;		
-
+	BuildOrder : function() {
+		var viewData = contentManager.viewData;
 		contentManager.viewData = viewData;		
+		var ostr = "";
+		for (var i = 0; i< viewData.aorder.length; i++) {
+			var chid = viewData.aorder[i];
+			var chobj = viewData.chars[chid];
+			if(chobj==null)continue;
+			var chpro = contentManager.viewProfile.chars[chid];
+
+			ostr +="<img id='oth_"+chobj.id+"' src='"+chpro.pic+"' width=16 height=16 onclick=\"contentManager.SelectChar('"+chobj.id+"')\" title='"+theText(chpro.title)+"''>";
+			var tabcss="";
+			if(i==0) {
+				tabcss = "1px solid #FF9900";
+			}
+			$("#tab_"+chobj.team+"_"+chobj.pos).css("border", tabcss);
+		}
+		$("#orderdiv").html(ostr);
+	},
+	InitView : function(data) {
+		contentManager.viewProfile = data.profile;
+		contentManager.viewData = data.view;
+		contentManager.BuildView();		
+	},
+	BuildView : function() {
+		var mpos = {};
+		var viewData = contentManager.viewData;
 
 		var focusId = "";
-		var ostr = "";
 		var mui = "";
 		for (var i = 0; i< viewData.aorder.length; i++) {
 			var chid = viewData.aorder[i];
@@ -200,16 +220,13 @@ contentManager = {
 
 			var html = "";
 			var tabcss = "";
-			if(i==0) {
-				tabcss = "border: 1px solid #FF9900;"
-			}
-			html += "<table id='tab_"+tid+"_"+pos+"' style='"+tabcss+"'><tr>";
+			html += "<table id='tab_"+tid+"_"+pos+"'><tr>";
 			html += "<td>";
 			html += "<img src='"+chpro.pic+"' width=60 height=60 onclick=\"contentManager.SelectChar('"+chobj.id+"')\">";
 			html += "</td><td>";
 			html += "HP:"+chobj.HP+"<br>";
-			html += "ATK:"+chobj.ATK+"<br>";
-			html += "SHD:"+chobj.SHD+"<br>";
+			html += "P:"+chobj.ATK+"/"+chobj.SKL+"<br>";
+			html += "D:"+chobj.DEF+"/"+chobj.AGI+"<br>";
 			html += "</td>";
 			html += "</tr></table>"
 			$( "#map_"+tid+"_"+pos ).html(html);
@@ -217,8 +234,6 @@ contentManager = {
 			if(contentManager.selected==chobj.id) {
 				focusId = chobj.id;				
 			}
-
-			ostr +="<img id='oth_"+chobj.id+"' src='"+chpro.pic+"' width=16 height=16 onclick=\"contentManager.SelectChar('"+chobj.id+"')\" title='"+theText(chpro.title)+"''>";
 
 			if(i==0 && tid==1) {
 				mui += "<table><tr><td>";
@@ -228,19 +243,22 @@ contentManager = {
 					var ski = chobj.skills[j];
 					var sk = contentManager.viewProfile.skills[ski.id];
 					if(j!=0)mui += "<br>";
-					mui += "<button onclick=\"contentManager.SelectSkill('"+chobj.id+"','"+ski.id+"')\">"+theText(sk.title)+" AP:"+sk.AP+" CD:"+sk.CD+"</button> ";
+					mui += "<button onclick=\"contentManager.SelectSkill('"+chobj.id+"','"+ski.id+"')\">"+theText(sk.title)+" AP:"+sk.AP+" CD:"+sk.CD+"</button>";
 				}
+				mui += "<br><button onclick=\"contentManager.SelectSkill('"+chobj.id+"','wait')\">待机</button>";
 				mui += "</td></tr></table>";
 			}
 		}
 
 		html = "";
-		html += "回合："+viewData.turn+" AP:"+viewData.APS+" "+ostr;
+		html += "回合:<span id='turndiv'>"+viewData.turn+"</span> AP:"+viewData.APS+" <span id='orderdiv'></span>";
 		if(mui!="") {
 			html += "<br>"+mui;
 		}
 
 		$( "#ginfo" ).html(html);
+
+		contentManager.BuildOrder()
 
 		contentManager.FocusOn(focusId, focusId!="");
 
@@ -286,50 +304,96 @@ contentManager = {
 	SelectSkill : function(cid, skid) {
 		var sid = contentManager.selected;
 		var sk = contentManager.viewProfile.skills[skid];
-		// check target
-		if(sk.target) {
-			var me = contentManager.viewData.chars[cid];
-			if(sk.target=="one") {
-				if(sid=="") {
-					contentManager.ShowMessage("请选择一个敌方目标", true);
-					return;
-				}				
-				var sobj = contentManager.viewData.chars[sid];
-				if(sobj.team==me.team) {
-					contentManager.ShowMessage("该技能需要对敌方使用", true);
-					return;
-				}
+		var p = {"act":"skill", "skill":skid, "me":cid, "target":sid};
+		doUIInvoke("CheckSkill", p, function(rs) {
+			if(rs.err) {
+				contentManager.ShowMessage(theText(rs.err), true);
+				return;
 			}
-		}
-		contentManager.DoProcess({"skill":skid, "me":cid, "target":contentManager.selected}, contentManager.eid);
+			if(rs.msg) {
+				contentManager.ShowMessage(theText(rs.msg), false);	
+				return;
+			}
+			if(!rs.ok) {
+
+			}
+			contentManager.DoProcess(p, contentManager.eid);
+		});		
+	},
+	ReloadChar : function(cid, cb) {
+		doUIInvoke("LoadChar", {id:cid}, function(rs) {
+			if(rs.char) {
+				contentManager.viewData.chars[cid] = rs.char;
+			}
+			cb();
+		});		
 	},
 	EvalEvent : function(elist) {
+		contentManager._evalEvent(elist, 0, 0);
+	},
+	_invokeEvent : function(ev, nextf) {
+		if(ev.id) {
+			contentManager.eid = ev.id;
+		}
+		if(ev.k=="init") {
+			contentManager.InitView(ev.data);				
+			contentManager.EvalEvent([{k: "p"}]);
+		} else if(ev.k=="err") {
+			contentManager.ShowMessage(ev.msg, true);
+		} else if(ev.k=="msg") {
+			contentManager.ShowMessage(ev.msg);
+		} else if(ev.k=="p") {
+			contentManager.timer = setTimeout(function() {
+				if(contentManager.EvalEvent) {
+					contentManager.DoProcess(null, contentManager.eid);
+				}
+			}, 500);
+		} else if(ev.k=="cmd") {
+			// wait user command
+			contentManager.ShowMessage("请输入指令");
+		} else if(ev.k=="turn") {
+			$("#turndiv").html(ev.v);
+		} else if(ev.k=="nextc") {
+			var viewData = contentManager.viewData;
+			viewData.aorder = ev.a;
+			contentManager.BuildView();
+			return 500;
+		} else if(ev.k=="refresh") {
+			contentManager.viewData.chars[ev.ME] = ev.data;
+			contentManager.BuildView();
+		} else if(ev.k=="skill") {
+			var msg = "";
+			var skd = {};
+			if(ev.uik=="SkillDef") {
+				contentManager.viewData.chars[ev.ME] = ev.data;
+				contentManager.BuildView();					
+
+				var mep = contentManager.viewProfile.chars[ev.ME];
+				msg = "::{TITLE}采用防御姿势"
+				skd.TITLE = mep.title;
+			}
+			if(msg) {
+				contentManager.ShowMessage(contentManager.SkillDesc(msg, skd));
+				return 500;					
+			}
+		} else {
+			console.log("unknow event", ev);
+		}
+		return 0;
+	},
+	_evalEvent : function(elist, idx, delay) {
 		if(!elist)return;
-		for (var i = 0; i < elist.length; i++) {
-			var ev = elist[i];
-			if(ev.id) {
-				contentManager.eid = ev.id;
+		if(idx>=elist.length)return;		
+		setTimeout(function() {
+			var nextf = function() {
+				_evalEvent(elist, idx+1, 0);
 			}
-			if(ev.k=="init") {
-				contentManager.BuildView(ev.data);
-				contentManager.EvalEvent([{k: "p"}]);
-			} else if(ev.k=="err") {
-				contentManager.ShowMessage(ev.msg, true);
-			} else if(ev.k=="msg") {
-				contentManager.ShowMessage(ev.msg);
-			} else if(ev.k=="p") {
-				contentManager.timer = setTimeout(function() {
-					if(contentManager.EvalEvent) {
-						contentManager.DoProcess(null, contentManager.eid);
-					}
-				}, 500)
-			} else if(ev.k=="cmd") {
-				// wait user command
-				contentManager.ShowMessage("请输入指令");
-			} else {
-				console.log("unknow event", ev);
+			var ev = elist[idx];
+			var ndelay = contentManager._invokeEvent(ev, nextf);
+			if(ndelay>=0) {
+				contentManager._evalEvent(elist, idx+1, ndelay);
 			}
-		};
+		}, delay);
 	}
 }
 </script>

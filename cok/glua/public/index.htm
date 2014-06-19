@@ -160,6 +160,26 @@ function doUIProcess(sid, p, callback) {
 		}
 	});
 }
+function doUIInvoke(cmd, p, callback) {
+	$.ajax({
+		url: aURL+"invoke",		
+		data: {
+			id : worldId,
+			cmd : cmd,
+			p : JSON.stringify(p)
+		},		
+		type: "GET",
+		dataType : "json",
+		success: function( rs ) {
+			console.log(rs);
+			if(callback!=null) {
+				if(!callback(rs.result)) {
+					return
+				}
+			}
+		}
+	});
+}
 //////////////////////////
 function doReset() {
 	$.ajax({

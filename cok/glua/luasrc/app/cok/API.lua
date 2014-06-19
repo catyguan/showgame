@@ -115,7 +115,7 @@ function service_action( ctx, res )
 	if o~=nil then
 		local r = {}
 		o:begin()
-		local resp = o:uiAction(cmd, unpack(param))
+		local resp = o:uiAction(cmd, param)
 		o:pdprocess()
 		o:finish()
 		r.result = resp
@@ -128,6 +128,34 @@ function service_action( ctx, res )
 			r.data = vo.data
 		end
 		-- var_dump(o._prop)
+		glua_setString(res, "Content", table.json(r))
+	else
+		glua_setString(res, "Content", "InvalidWorld")
+	end	
+	return true
+end
+
+function service_invoke( ctx, res )	
+	local wid = glua_getString(ctx, "id")
+	local cmd = glua_getString(ctx, "cmd")
+	local p = glua_getString(ctx, "p")
+	LOG:debug("API", "invoke(%s, %s, %s)", wid, cmd, p)
+	local param = {}
+	if p~=nil and p~="" then
+		local data = string.json(p)
+		if type(data)=="table" then
+			param = data
+		end
+	end
+
+	local o = WORLD_MANAGER:getWorld(wid)
+	if o~=nil then
+		local r = {}
+		o:begin()
+		local resp = o:uiInvoke(cmd, param)
+		o:finish()
+		r.result = resp
+
 		glua_setString(res, "Content", table.json(r))
 	else
 		glua_setString(res, "Content", "InvalidWorld")

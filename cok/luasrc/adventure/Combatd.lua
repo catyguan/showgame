@@ -7,9 +7,10 @@ local LDEBUG = LOG:debugEnabled()
 local LTAG = "AdvCombatd"
 local IDS = 1
 
-function Class.newCombat()
+function Class.newCombat(dif)
 	local data ={
 		stage = "begin",
+		dif = dif,
 		rt = {
 			aorder = {},
 			chars = {},		
@@ -23,10 +24,26 @@ function Class.newCombat()
 	return data
 end
 
+function Class.calArmor(dif, def)
+	local v = def/((dif+4)*100+def)
+	if v>0.9999 then v=0.9999 end
+	return v
+end
+
+function Class.calDodge(dif, agi)
+	local v = agi/((dif+4)*100+agi)
+	if v>0.9999 then v=0.9999 end
+	return v
+end
+
 local nextId = function(pre)
 	local r = pre .. IDS
 	IDS = IDS + 1
 	return r
+end
+
+local chkset = function(obj, n1, n2)
+	if obj[n1]==nil then obj[n1] = obj[n2] end
 end
 
 function Class.addChar(data, charObj)
@@ -38,12 +55,21 @@ function Class.addChar(data, charObj)
 	if data.rt.chars[cid] then
 		error(string.format("'%s' exists"), cid)
 	end
+	chkset(charObj, "MAXHP", "HP")
+	chkset(charObj, "BASE_HP", "MAXHP")
+	chkset(charObj, "BASE_ATK", "ATK")
+	chkset(charObj, "BASE_SKL", "SKL")
+	chkset(charObj, "BASE_DEF", "DEF")
+	chkset(charObj, "BASE_AGI", "AGI")
+	charObj.ARMOR = Class.calArmor(data.dif, charObj.DEF)
+	charObj.DODGE = Class.calArmor(data.dif, charObj.AGI)
 	data.rt.chars[cid] = charObj
 	
 	local chp = class.forName(charObj._p)
 	local chpro = chp.getProfile(charObj)
 	chpro.id = cid
 	data.profile.chars[cid] = chpro
+	local elist = {}
 	if charObj.skills then
 		for _, sk in ipairs(charObj.skills) do
 			if sk.id==nil then
@@ -51,9 +77,18 @@ function Class.addChar(data, charObj)
 			end
 			if not data.profile.skills[sk.id] then
 				local skp = class.forName(sk._p)
-				local skpro = skp.getProfile(sk)
+				local skpro = skp.getProfile()
 				skpro.id = sk.id
 				data.profile.skills[sk.id] = skpro
+
+				if skp.listRelProfile then
+					local rel = skp.listRelProfile()
+					if rel then
+						for _,tmp in ipairs(rel) do
+							table.insert(elist, {id=tmp,_p=tmp})
+						end
+					end
+				end
 			end
 		end
 	end
@@ -62,14 +97,57 @@ function Class.addChar(data, charObj)
 			if ef.id==nil then
 				ef.id = ef._p
 			end
-			if not data.profile.effects[ef.id] then
-				local efp = class.forName(ef._p)
-				local efpro = efp.getProfile(ef)
-				efpro.id = ef.id
-				data.profile.effects[ef.id] = efpro
+			table.insert(elist, ef)
+		end
+	end
+
+	for _, ef in ipairs(elist) do
+		if not data.profile.effects[ef.id] then
+			local efp = class.forName(ef._p)
+			local efpro = efp.getProfile()
+			efpro.id = ef.id
+			data.profile.effects[ef.id] = efpro
+		end
+	end
+end
+
+function Class.setProp(data, ch, n, v)
+	if n=="HP" then
+		local mhp = ch.MAXHP
+		if v>mhp then v=mhp end
+	end
+	if v<0 then
+		v = 0
+	end
+	ch[n] = v
+	if n=="DEF" then
+		ch.ARMOR = Class.calArmor(data.dif, v)
+	elseif n=="AGI"	 then
+		ch.DODGE = Class.calDodge(data.dif, v)
+	end
+	return v
+end
+
+function Class.modifyProp(data, ch, n, v)
+	local old = ch[n]
+	return Class.setProp(data, ch, n, old+v)
+end
+
+function Class.applyEffect(data, ch, eff)
+	if not eff.id then eff.id = eff._p end
+	if not ch.effects then ch.effects = {} end
+	local cls = class.forName(eff._p)
+	if eff.unique then
+		for i, old in ipairs(ch.effects) do
+			if old._p == eff._p then
+				cls.remove(Class, data, eff, ch)
+				table.remove(ch.effects, i)
+				break
 			end
 		end
 	end
+	table.insert(ch.effects, eff)
+	cls.apply(Class, data, eff, ch)
 end
 
 function Class.event( data, ev )
@@ -77,18 +155,18 @@ function Class.event( data, ev )
 	data.rt.eid = data.rt.eid + 1
 	ev.id = data.rt.eid	
 	table.insert(data.events, ev)
-	var_dump(data.events)
+	-- var_dump(data.events)
 end
 
 function Class.process(data)
-	for i=1,1000 do
+	for i=1,100 do
 		local f = Class[data.stage]
 		if f==nil then
 			error(string.format("invalid stage[%s]", data.stage))
-		end
+		end		
 		local doNext = f(data)
 		if not doNext then
-			break
+			return
 		end
 	end
 	if LDEBUG then
@@ -102,9 +180,94 @@ function Class.handleUserCommand(data, cmd)
 		Class.event(data, {k="err", msg="::请稍等"})
 		return false
 	end
-	Class.event(data, {k="msg", msg="hello world"})
-	-- Class.event(data, {k="p"})
+	if cmd.act=="skill" then
+		return Class.performSkill(data, cmd)
+	end
+	Class.event(data, {k="err", msg="::无效操作"})
 	return false
+end
+
+function Class.checkSkill(data, me, skid, target)
+	if skid=="wait" then return true end
+
+	local meobj = data.rt.chars[me]
+	local sk
+	for _,tmp in ipairs(meobj.skills) do
+		if tmp.id == skid then
+			sk = tmp
+			break
+		end
+	end
+	local skpro = data.profile.skills[skid]
+	local tobj
+	if target~=nil and target~="" then
+		tobj = data.rt.chars[target]
+	end
+
+	if meobj==nil or sk==nil or skpro==nil then
+		return false, "::无效参数"
+	end
+	if skpro.target=="one" then
+		if tobj==nil then
+			return false, "::请选择一个敌方目标"
+		end
+		if tobj.team==meobj.team then
+			return false, "::该技能只对敌方目标使用"
+		end
+	end
+
+	return true, nil, meobj, sk, skpro, tobj
+end
+
+function Class.performSkill(data, cmd)
+	if cmd.skill=="wait" then
+		data.stage = "charEnd"
+		return true
+	end
+
+	local ok, err, meobj, sk, skpro, tobj = Class.checkSkill(data, cmd.me, cmd.skill, cmd.target)
+	if not ok then
+		Class.event(data, {k="err", msg=err})
+		return false
+	end
+	local skp = class.forName(sk._p)
+	if skp.doPerform(sk, Class, data, meobj, tobj) then
+		data.stage = "charEnd"
+	end
+	return true
+end
+
+function Class.copyProp(des, src, kind)
+	des.id = src.id
+	des.HP = src.HP
+	des.MAXHP = src.MAXHP
+	des.ATK = src.ATK	
+	des.DEF = src.DEF
+	des.SKL = src.SKL
+	des.AGI = src.AGI
+	des.ARMOR = src.ARMOR
+	des.DODGE = src.DODGE
+	des.team = src.team
+	des.pos = src.pos
+
+	-- skills
+	des.skills = {}
+	for _,sk in ipairs(src.skills) do
+		local sko = {}
+		sko.id = sk.id
+		table.insert(des.skills, sko)
+	end
+	-- effects
+	des.effects = {}
+	if src.effects then
+		for _,ef in ipairs(src.effects) do
+			local efo = {}
+			local efp = class.forName(ef._p)
+			efo.id = ef.id
+			efp.copyViewData(efo, ef)
+			table.insert(des.effects, efo)
+		end
+	end
 end
 
 -- init view
@@ -112,44 +275,14 @@ function Class.buildInit(data, ev)
 	local view = {}	
 	view.turn = data.rt.turn	
 	view.APS = data.rt.APS
-	view.aorder = {}
-	local j = data.rt.order
+	view.aorder = {}	
 	for i=1,#data.rt.aorder do
-		table.insert(view.aorder, data.rt.aorder[j])
-		j = j + 1
-		if j > #data.rt.aorder then j = 1 end
+		table.insert(view.aorder, data.rt.aorder[i])
 	end
-	table.copy(view.aorder, data.rt.aorder, false)
 	view.chars = {}
 	for k,ch in pairs(data.rt.chars) do
 		local vch = {}
-		vch.id = ch.id
-		vch.HP = ch.HP
-		vch.ATK = ch.ATK
-		vch.DEF = ch.DEF
-		vch.SKL = ch.SKL
-		vch.AGI = ch.AGI
-		vch.SHD = ch.SHD
-		vch.team = ch.team
-		vch.pos = ch.pos
-		-- skills
-		vch.skills = {}
-		for _,sk in ipairs(ch.skills) do
-			local sko = {}
-			sko.id = sk.id
-			table.insert(vch.skills, sko)
-		end
-		-- effects
-		vch.effects = {}
-		if ch.effects then
-			for _,ef in ipairs(ch.effects) do
-				local efo = {}
-				local efp = class.forName(ef._p)
-				efo.id = ef.id
-				efp.copyViewData(efo, ef)
-				table.insert(vch.effects, efo)
-			end
-		end
+		Class.copyProp(vch, ch, "view")
 		view.chars[k] = vch
 	end
 
@@ -162,55 +295,81 @@ function Class.buildInit(data, ev)
 end
 
 function Class.activeChar(data)
-	local cid = data.rt.aorder[data.rt.order]
+	local cid = data.rt.aorder[1]
 	return data.rt.chars[cid]
 end
 
 -- inner flow
 local sortA = function(data)
-	local id = ""
-	if data.rt.order>0 then
-		id = data.rt.aorder[data.rt.order]
-	end
 	table.sort(data.rt.aorder, function(e1,e2)
 		local c1 = data.rt.chars[e1]
 		local c2 = data.rt.chars[e2]
-        return c1.AGI > c2.AGI
+		if c1.acted == c2.acted then
+			return c1.AGI > c2.AGI
+		end
+        if c1.acted then return false end
+        return true
     end)
-    if id~="" then
-	    for i,ch in ipairs(data.rt.aorder) do
-	    	if ch==id then
-	    		data.rt.order = i
-	    		break
-	    	end
-	    end
-	end
 end
 
-function Class.begin(data)
+function Class.prepare(data)
 	data.rt.turn = 1
 	data.rt.eid = 1
 	data.rt.APS = 0
 	for k,ch in pairs(data.rt.chars) do
+		ch.acted = false
 		table.insert(data.rt.aorder, k)
 	end
-	data.rt.order = 0
 	sortA(data)
-	data.rt.order = 1
-
 	local o = WORLD
 	o:createView("adv_combat", {}, "adventure.ui.Combat",data)
+end
+
+function Class.begin(data)	
 	data.stage = "turnBegin"
 	return true
 end
 
 function Class.turnBegin( data )
+	if LDEBUG then
+		LOG:debug(LTAG, "stage - turnBegin - %d", data.rt.turn)
+	end	
+	for _,ch in pairs(data.rt.chars) do
+		ch.acted = false
+	end
 	data.stage = "charBegin"
 	return true
 end
 
 function Class.charBegin( data )
 	local ch = Class.activeChar(data)
+	if LDEBUG then
+		LOG:debug(LTAG, "stage - charBegin - %s", ch.id)
+	end
+	-- check effects
+	if ch.effects then
+		local rmlist = {}
+		for i, eff in ipairs(ch.effects) do
+			if eff.LAST~=nil then
+				eff.LAST = eff.LAST - 1
+				if eff.LAST<=0 then table.insert(rmlist, 1, i) end
+			end		
+		end
+		for _, idx in ipairs(rmlist) do
+			eff = ch.effects[idx]
+			table.remove(ch.effects, idx)
+			local cls = class.forName(eff._p)
+			cls.remove(Class, data, eff, ch)			
+		end
+	end
+	local view = {}
+	Class.copyProp(view, ch, "view")
+	Class.event(data,
+	{
+		k="refresh",
+		ME=ch.id,
+		data=view,
+	})
 	if ch.team==1 then
 		Class.event(data, {k="cmd"})
 		return false
@@ -220,11 +379,34 @@ function Class.charBegin( data )
 end
 
 function Class.charEnd( data )
-	data.stage = "turnEnd"
+	local aid = data.rt.aorder[1]
+	if LDEBUG then
+		LOG:debug(LTAG, "stage - charEnd - %s", aid)
+	end	
+	local ch = data.rt.chars[aid]
+	ch.acted = true
+	table.remove(data.rt.aorder, 1)
+	table.insert(data.rt.aorder, aid)
+	local a = {}
+	table.copy(a, data.rt.aorder,false)
+	Class.event(data, {k="nextc",a=a})
+
+	aid = data.rt.aorder[1]
+	ch = data.rt.chars[aid]	
+	if ch.acted then
+		data.stage = "turnEnd"
+	else
+		data.stage = "charBegin"
+	end
 	return true
 end
 
 function Class.turnEnd( data )
+	if LDEBUG then
+		LOG:debug(LTAG, "stage - turnEnd - %d", data.rt.turn)
+	end	
+	data.rt.turn = data.rt.turn + 1
+	Class.event(data, {k="turn", v=data.rt.turn})
 	data.stage = "turnBegin"
 	return true
 end

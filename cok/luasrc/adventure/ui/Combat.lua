@@ -24,3 +24,15 @@ function Class.onProcess(ctx, sid, param)
 	ctx.events = nil
 	return elist
 end
+
+function Class.callCheckSkill(ctx, param)
+	local skid = param.skill
+	local me = param.me
+	local target = param.target
+	local ok, err = M.checkSkill(ctx, me, skid, target)
+	if ok then
+		return {ok=true}
+	else
+		return {ok=false, err=err}
+	end
+end

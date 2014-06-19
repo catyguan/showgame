@@ -205,3 +205,22 @@ function Class:uiProcess(sid, param)
 	end
 	return sc.onProcess(vo.context, sid, param)
 end
+
+function Class:uiInvoke(cmd, param)
+	local vo = self:getView(-1)
+	if vo==nil then
+		error("view stack empty")
+	end	
+	local sc = class.forName(vo.control)
+	local f = sc["call"..cmd]
+	if f==nil then
+		if LDEBUG then
+			LOG:debug(LTAG, "view[%s] invoke(%s) invalid", vo.control, cmd)
+		end
+		error("invalid "..cmd)
+	end
+	if LDEBUG then
+		LOG:debug(LTAG, "call view[%s] call(%s)", vo.control, cmd)
+	end
+	return f(vo.context, param)
+end
