@@ -63,6 +63,16 @@ contentManager = {
 			contentManager.UpdateView(rs.data);
 		});
 	},
+	SkillEnable : function(ski) {
+		var skp = contentManager.viewProfile.skills[ski.id];
+		if(skp.AP && skp.AP>0 && skp.AP>contentManager.viewData.APS) {
+			return false;
+		}
+		if(ski.XCD && ski.XCD>0) {
+			return false;
+		}
+		return true;
+	},
 	SkillDesc : function(skdesc, skprop1, skprop2, skprop3) {
 		var str = theText(skdesc);
 		var word = "";
@@ -249,7 +259,12 @@ contentManager = {
 					var ski = chobj.skills[j];
 					var sk = contentManager.viewProfile.skills[ski.id];
 					if(j!=0)mui += "<br>";
-					mui += "<button onclick=\"contentManager.SelectSkill('"+chobj.id+"','"+ski.id+"')\">"+theText(sk.title)+" AP:"+sk.AP+" CD:"+sk.CD+"</button>";
+					var en = "";
+					if(!contentManager.SkillEnable(ski)) {
+						en = "disabled";
+					}					
+					var cd = ski.XCD && ski.XCD>0?ski.XCD:sk.CD;
+					mui += "<button onclick=\"contentManager.SelectSkill('"+chobj.id+"','"+ski.id+"')\" "+en+">"+theText(sk.title)+" AP:"+sk.AP+" CD:"+cd+"</button>";
 				}
 				mui += "<br><button onclick=\"contentManager.SelectSkill('"+chobj.id+"','wait')\">待机</button>";
 				mui += "</td></tr></table>";
@@ -356,7 +371,16 @@ contentManager = {
 			}, 500);
 		} else if(ev.k=="cmd") {
 			// wait user command
-			contentManager.ShowMessage("请输入指令");
+			var cid = contentManager.viewData.aorder[0];
+			var ch = contentManager.viewData.chars[cid];
+			for (var i = 0; i < ch.skills.length; i++) {
+				var sk = ch.skills[i];
+				if(contentManager.SkillEnable(sk)) {
+					contentManager.ShowMessage("请输入指令");
+					return 0;		
+				}
+			}
+			contentManager.SelectSkill(cid, "wait");			
 		} else if(ev.k=="turn") {
 			$("#turndiv").html(ev.v);
 		} else if(ev.k=="nextc") {
@@ -373,6 +397,9 @@ contentManager = {
 			contentManager.BuildView();
 		} else if(ev.k=="end") {
 			contentManager.ShowMessage("end, winner is "+ev.winner, true);
+		} else if(ev.k=="aps") {
+			contentManager.viewData.APS = ev.v;
+			contentManager.BuildView();
 		} else if(ev.k=="skill") {
 			var msg = "";
 			var skd = {};

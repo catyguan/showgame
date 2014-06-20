@@ -5,7 +5,7 @@ function Class.getProfile()
 	return {
 		title="::攻击",
 		desc="::对一名敌人造成{ATK}点伤害",
-		AP=30,
+		AP=20,
 		CD=0,
 		target="one"
 	}
@@ -20,12 +20,9 @@ function Class.checkPerform(sk, cbc, cbdata, ch)
 end
 
 function Class.aiPerform(sk, cbc, cbdata, ch, info)
-	local cmd = {
-		skill=Class.className,
-		me=ch.id,
-		target=info.target[1]
-	}
-	cbc.performSkill(cbdata, cmd)
+	local tid = info.target[1]
+	local tobj = cbdata.rt.chars[tid]
+	Class.doPerform(sk, cbc, cbdata, ch, tobj)
 end
 
 function Class.doPerform(sk, cbc, cbdata, mobj, tobj)
@@ -34,12 +31,12 @@ function Class.doPerform(sk, cbc, cbdata, mobj, tobj)
 
 	local refresh
 	if info.hited then
-		local mdata = {}
-		cbc.copyProp(mdata, mobj, "view")
+		-- local mdata = {}
+		-- cbc.copyProp(mdata, mobj, "view")
 		local tdata = {}
 		cbc.copyProp(tdata, tobj, "view")
 		refresh = {
-			{id=mobj.id, data=mdata},
+			-- {id=mobj.id, data=mdata},
 			{id=tobj.id, data=tdata}
 		}
 	end

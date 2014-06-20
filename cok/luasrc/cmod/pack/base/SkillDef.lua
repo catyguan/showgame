@@ -5,7 +5,7 @@ function Class.getProfile()
 	return {
 		title="::防御",
 		desc="::恢复自身{DEF}点防盾",
-		AP=30,
+		AP=20,
 		CD=2,
 		target="self"
 	}
@@ -17,20 +17,18 @@ end
 
 function Class.checkPerform(sk, cbc, cbdata, ch)
 	if cbc.hasEffect(cbdata, ch, sk.id) then return nil end
+	if sk.XCD and sk.XCD>0 then return nil end
 	return {p=10}
 end
 
 function Class.aiPerform(sk, cbc, cbdata, ch, info)
-	local cmd = {
-		skill=Class.className,
-		me=ch.id
-	}
-	cbc.performSkill(cbdata, cmd)
+	Class.doPerform(sk, cbc, cbdata, ch, nil)
 end
 
 function Class.doPerform(sk, cbc, cbdata, mobj, tobj)	
 	local eff = class.forName("cmod.pack.base.EffDef").newEff(mobj.BASE_DEF, 2)
 	cbc.applyEffect(cbdata, mobj, eff)
+	sk.XCD = 2
 
 	local data = {}
 	cbc.copyProp(data, mobj, "view")

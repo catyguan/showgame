@@ -255,6 +255,19 @@ function Class.performSkill(data, cmd)
 		Class.event(data, {k="err", msg=err})
 		return false
 	end
+	if skpro.AP and skpro.AP>0 then
+		if skpro.AP>data.rt.APS then
+			Class.event(data, {k="err", msg="::AP不足"})
+			return false
+		end
+		data.rt.APS = data.rt.APS - skpro.AP
+		Class.event(data,
+		{
+			k="aps",
+			v=data.rt.APS
+		})
+	end
+
 	local skp = class.forName(sk._p)
 	skp.doPerform(sk, Class, data, meobj, tobj)
 	return true
@@ -279,6 +292,11 @@ function Class.copyProp(des, src, kind)
 	for _,sk in ipairs(src.skills) do
 		local sko = {}
 		sko.id = sk.id
+		sko.XCD = sk.XCD
+		-- local skp = class.forName(sk._p)
+		-- if skp.copyViewData then
+		-- 	skp.copyViewData(sko, sk)
+		-- end
 		table.insert(des.skills, sko)
 	end
 	-- effects
@@ -371,6 +389,14 @@ function Class.charBegin( data )
 	if LDEBUG then
 		LOG:debug(LTAG, "stage - charBegin - %s", ch.id)
 	end
+	-- check skills
+	if ch.skills then
+		for i, sk in ipairs(ch.skills) do
+			if sk.XCD and sk.XCD>0 then
+				sk.XCD = sk.XCD - 1
+			end		
+		end
+	end
 	-- check effects
 	if ch.effects then
 		local rmlist = {}
@@ -396,6 +422,14 @@ function Class.charBegin( data )
 		data=view,
 	})
 	if ch.team==1 then
+		if ch.APS and ch.APS>0 then
+			data.rt.APS = data.rt.APS + ch.APS
+			Class.event(data,
+			{
+				k="aps",
+				v=data.rt.APS
+			})			
+		end
 		data.stage = "charCommand"
 		return true
 	end

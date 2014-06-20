@@ -5,6 +5,8 @@ plist = [{p=}, ...]
 ]]
 function PRandom(plist, randf)
 	if not randf then randf = math.random end
+	if #plist<=1 then return #plist end
+	
 	local maxp = 0	
 	for _,pv in ipairs(plist) do
 		maxp = maxp + pv.p
@@ -21,5 +23,5 @@ function PRandom(plist, randf)
 		vp = vp - p
 	end
 	-- print("DFRandom out")
-	return #dplist
+	return #plist
 end
