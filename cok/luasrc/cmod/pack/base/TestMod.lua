@@ -1,5 +1,5 @@
 -- cmod/pack/base/TestMod.lua
-local Class = class.define("cmod.pack.base.TestMod")
+local Class = class.define("cmod.pack.base.TestMod", {"cmod.char.CharBase"})
 
 function Class.getProfile()
 	return {

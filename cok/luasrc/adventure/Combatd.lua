@@ -9,7 +9,7 @@ local IDS = 1
 
 function Class.newCombat(dif)
 	local data ={
-		stage = "begin",
+		stage = "combatBegin",
 		dif = dif,
 		rt = {
 			aorder = {},
@@ -46,6 +46,19 @@ local chkset = function(obj, n1, n2)
 	if obj[n1]==nil then obj[n1] = obj[n2] end
 end
 
+function Class.opTeam(tid)
+	if tid==1 then return 2 end
+	return 1
+end
+
+function Class.listIdByTeam(data, teamId)
+	local r = {}
+	for cid,ch in pairs(data.rt.chars) do
+		if ch.team==teamId then table.insert(r, cid) end
+	end
+	return r
+end
+
 function Class.addChar(data, charObj)
 	local cid = charObj.id
 	if cid==nil then
@@ -69,6 +82,7 @@ function Class.addChar(data, charObj)
 	local chpro = chp.getProfile(charObj)
 	chpro.id = cid
 	data.profile.chars[cid] = chpro
+	if not charObj.title then charObj.title = chpro.title end
 	local elist = {}
 	if charObj.skills then
 		for _, sk in ipairs(charObj.skills) do
@@ -131,6 +145,17 @@ end
 function Class.modifyProp(data, ch, n, v)
 	local old = ch[n]
 	return Class.setProp(data, ch, n, old+v)
+end
+
+function Class.hasEffect(data, ch, id)
+	if ch.effects then
+		for i, old in ipairs(ch.effects) do
+			if old.id == id then
+				return true
+			end
+		end
+	end
+	return false
 end
 
 function Class.applyEffect(data, ch, eff)
@@ -231,14 +256,13 @@ function Class.performSkill(data, cmd)
 		return false
 	end
 	local skp = class.forName(sk._p)
-	if skp.doPerform(sk, Class, data, meobj, tobj) then
-		data.stage = "charEnd"
-	end
+	skp.doPerform(sk, Class, data, meobj, tobj)
 	return true
 end
 
 function Class.copyProp(des, src, kind)
 	des.id = src.id
+	des.title = src.title
 	des.HP = src.HP
 	des.MAXHP = src.MAXHP
 	des.ATK = src.ATK	
@@ -305,8 +329,9 @@ local sortA = function(data)
 		local c1 = data.rt.chars[e1]
 		local c2 = data.rt.chars[e2]
 		if c1.acted == c2.acted then
+			if c1.AGI==c2.AGI then return c1.team<c2.team end
 			return c1.AGI > c2.AGI
-		end
+		end		
         if c1.acted then return false end
         return true
     end)
@@ -325,7 +350,7 @@ function Class.prepare(data)
 	o:createView("adv_combat", {}, "adventure.ui.Combat",data)
 end
 
-function Class.begin(data)	
+function Class.combatBegin(data)	
 	data.stage = "turnBegin"
 	return true
 end
@@ -371,11 +396,35 @@ function Class.charBegin( data )
 		data=view,
 	})
 	if ch.team==1 then
-		Class.event(data, {k="cmd"})
-		return false
+		data.stage = "charCommand"
+		return true
 	end
-	data.stage = "charEnd"
+
+	-- AI action
+	local aicls
+	if data.AI then
+		aicls = class.forName(data.AI)
+	else
+		if ch.AI then
+			aicls = class.forName(ch.AI)
+		else
+			aicls = class.forName(ch._p)
+		end
+	end
+	aicls.doAI(Class, data, ch)
+	if data.stage == "charBegin" then
+		data.stage = "charEnd"
+	end
 	return true
+end
+
+function Class.charCommand(data)
+	local ch = Class.activeChar(data)
+	if LDEBUG then
+		LOG:debug(LTAG, "stage - charCommand - %s", ch.id)
+	end
+	Class.event(data, {k="cmd"})
+	return false
 end
 
 function Class.charEnd( data )
@@ -411,6 +460,14 @@ function Class.turnEnd( data )
 	return true
 end
 
+function Class.combatEnd( data )
+	if LDEBUG then
+		LOG:debug(LTAG, "stage - turnEnd - %d", data.rt.turn)
+	end
+	Class.event(data, {k="end", winner=data.winner})
+	return false
+end
+
 -- map
 --[[
 B<4><5><6>
@@ -419,3 +476,63 @@ B<1><2><3>
 A<1><2><3>
 A<4><5><6>
 ]]
+function Class.doAttack(data, sch, tch, dmg)
+	local w = WORLD
+	local r = {hited=true}
+	local d = tch.DODGE*10000
+	local rd = math.random(10000)
+	if LDEBUG then
+		LOG:debug(LTAG, "dodge, %s:%s, %d/%d", sch.id, tch.id, rd, d)
+	end
+	if rd<d then		
+		r.hited = false
+		r.dodge = true
+		return r
+	end
+	local a = tch.ARMOR
+	local rdmg = math.ceil((1-a)*dmg)
+	if LDEBUG then
+		LOG:debug(LTAG, "damage, %s:%s, %d/%d, %d", sch.id, tch.id, dmg, a*100, rdmg)
+	end
+	r.damage = rdmg
+	Class.modifyProp(data, tch, "HP", -rdmg)
+	return r
+end
+
+function Class.doDie(data, ch)
+	-- clear effects
+	-- call skills
+	data.rt.chars[ch.id] = nil
+	for i,cid in ipairs(data.rt.aorder) do
+		if cid==ch.id then
+			table.remove(data.rt.aorder, i)
+			break
+		end
+	end
+	sortA(data)
+	local a = {}
+	table.copy(a, data.rt.aorder,false)
+	Class.event(data, 
+		{
+			k="die",
+			MID=ch.id,
+			a=a
+		}
+	)
+
+	-- check end?
+	local t1 = false
+	local t2 = false
+	for k, cch in pairs(data.rt.chars) do
+		if cch.team==1 then t1=true end
+		if cch.team==2 then t2=true end
+	end
+	if t1 and t2 then return end
+	-- end
+	data.stage = "combatEnd"
+	if not t1 then
+		data.winner = 2
+	else
+		data.winner = 1
+	end
+end

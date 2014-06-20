@@ -2,7 +2,7 @@
 	{
 		"_p": "cmod.pack.base.TestNPC",
 		"HP" : 4800,
-		"ATK": 700,
+		"ATK": 2000,
 		"SKL": 30,
 		"DEF": 200,		
 		"AGI": 42,

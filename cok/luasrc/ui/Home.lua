@@ -53,13 +53,11 @@ end
 
 function Class.doTest3(ctx)
 	local cbm = class.forName("adventure.Combatd")
-	local chm = class.forName("adventure.Char")
 
 	local chlist = loader("combat_test")	
 	local cb = cbm.newCombat(1)
 	for _, chdata in ipairs(chlist) do
-		local ch = chm.newChar(chdata)
-		cbm.addChar(cb, ch)
+		cbm.addChar(cb, chdata)
 	end
 	cbm.prepare(cb)
 	-- cbm.process(cb)	

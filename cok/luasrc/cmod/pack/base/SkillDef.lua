@@ -15,6 +15,19 @@ function Class.listRelProfile()
 	return {"cmod.pack.base.EffDef"}
 end
 
+function Class.checkPerform(sk, cbc, cbdata, ch)
+	if cbc.hasEffect(cbdata, ch, sk.id) then return nil end
+	return {p=10}
+end
+
+function Class.aiPerform(sk, cbc, cbdata, ch, info)
+	local cmd = {
+		skill=Class.className,
+		me=ch.id
+	}
+	cbc.performSkill(cbdata, cmd)
+end
+
 function Class.doPerform(sk, cbc, cbdata, mobj, tobj)	
 	local eff = class.forName("cmod.pack.base.EffDef").newEff(mobj.BASE_DEF, 2)
 	cbc.applyEffect(cbdata, mobj, eff)
@@ -24,9 +37,10 @@ function Class.doPerform(sk, cbc, cbdata, mobj, tobj)
 	cbc.event(cbdata, 
 		{
 			k="skill", uik="SkillDef",
-			ME=mobj.id,
-			data=data,
+			MID=mobj.id,
+			refresh = {
+				{id=mobj.id, data=data}
+			}
 		}
 	)
-	return true
 end

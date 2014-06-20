@@ -207,6 +207,12 @@ contentManager = {
 		var mpos = {};
 		var viewData = contentManager.viewData;
 
+		for (var i = 1; i <= 2; i++) {
+			for (var j = 1; j <= 6; j++) {
+				$( "#map_"+i+"_"+j ).html("&nbsp;");
+			}
+		};
+
 		var focusId = "";
 		var mui = "";
 		for (var i = 0; i< viewData.aorder.length; i++) {
@@ -359,18 +365,46 @@ contentManager = {
 			contentManager.BuildView();
 			return 500;
 		} else if(ev.k=="refresh") {
-			contentManager.viewData.chars[ev.ME] = ev.data;
+			contentManager.viewData.chars[ev.id] = ev.data;
 			contentManager.BuildView();
+		} else if(ev.k=="die") {
+			contentManager.viewData.chars[ev.MID] = null;
+			contentManager.viewData.aorder = ev.a;
+			contentManager.BuildView();
+		} else if(ev.k=="end") {
+			contentManager.ShowMessage("end, winner is "+ev.winner, true);
 		} else if(ev.k=="skill") {
 			var msg = "";
 			var skd = {};
 			if(ev.uik=="SkillDef") {
-				contentManager.viewData.chars[ev.ME] = ev.data;
-				contentManager.BuildView();					
+				var ch = contentManager.viewData.chars[ev.MID];
+				msg = "::{TITLE}采用防御姿势";
+				skd.TITLE = ch.title;
+			}
+			if(ev.uik=="SkillAttack") {
+				var ch = contentManager.viewData.chars[ev.MID];
+				var ch2 = contentManager.viewData.chars[ev.TID];
+				skd.TITLE = theText(ch.title);
+				skd.TITLE2 = theText(ch2.title);
 
-				var mep = contentManager.viewProfile.chars[ev.ME];
-				msg = "::{TITLE}采用防御姿势"
-				skd.TITLE = mep.title;
+				if(ev.info.hited) {
+					msg = "::{TITLE}攻击{TITLE2}，造成{DMG}点伤害";
+					skd.DMG = ev.info.damage;
+				} else {
+					msg = "::{TITLE}攻击{TITLE2}，但未命中";
+				}				
+			}
+			if(ev.uik=="wait") {
+				var ch = contentManager.viewData.chars[ev.MID];
+				msg = "::{TITLE}待机";
+				skd.TITLE = ch.title;
+			}
+			if(ev.refresh) {
+				for (var i = 0; i < ev.refresh.length; i++) {
+					var rinfo = ev.refresh[i]
+					contentManager.viewData.chars[rinfo.id] = rinfo.data;				
+				};
+				contentManager.BuildView();
 			}
 			if(msg) {
 				contentManager.ShowMessage(contentManager.SkillDesc(msg, skd));
