@@ -4,8 +4,7 @@ local Class = class.define("cmod.pack.base.SkillDef")
 function Class.getProfile()
 	return {
 		title="::防御",
-		desc="::恢复自身{DEF}点防盾",
-		AP=20,
+		desc="::提升100+{DEF}点防御",
 		CD=2,
 		target="self"
 	}

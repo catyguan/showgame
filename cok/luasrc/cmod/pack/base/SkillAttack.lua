@@ -5,23 +5,21 @@ function Class.getProfile()
 	return {
 		title="::攻击",
 		desc="::对一名敌人造成{ATK}点伤害",
-		AP=20,
 		CD=0,
 		target="one"
 	}
 end
 
-function Class.checkPerform(sk, cbc, cbdata, ch)	
-	local idlist = cbc.listIdByTeam(cbdata, 1)
-	if #idlist==0 then
+function Class.checkPerform(sk, cbc, cbdata, ch)
+	local target = cbc.rposTarget(cbdata, ch.team, ch.pos)	
+	if not target then
 		return nil
 	end
-	return {p=50, target=idlist}
+	return {p=50, target=target}
 end
 
 function Class.aiPerform(sk, cbc, cbdata, ch, info)
-	local tid = info.target[1]
-	local tobj = cbdata.rt.chars[tid]
+	local tobj = info.target
 	Class.doPerform(sk, cbc, cbdata, ch, tobj)
 end
 

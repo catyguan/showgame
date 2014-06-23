@@ -1,12 +1,25 @@
 [
 	{
 		"_p": "cmod.pack.base.TestNPC",
-		"HP" : 4800,
-		"ATK": 2000,
-		"SKL": 30,
-		"DEF": 200,		
-		"AGI": 42,
-		"APS": 20,					
+		"HP" : 550,
+		"ATK": 145,
+		"SKL": 50,
+		"DEF": 29,
+		"SPD": 102,
+		"team": 1,
+		"pos": 3,
+		"player": false,
+		"skills" : [
+			{"_p":"cmod.pack.base.SkillAttack"}
+		]
+	},
+	{
+		"_p": "cmod.pack.base.TestNPC2",
+		"HP" : 690,
+		"ATK": 146,
+		"SKL": 50,
+		"DEF": 47,
+		"SPD": 95,
 		"team": 1,
 		"pos": 2,
 		"skills" : [
@@ -16,11 +29,11 @@
 	},
 	{
 		"_p": "cmod.pack.base.TestMod",
-		"HP" : 4800,
-		"ATK": 700,
-		"SKL": 30,
-		"DEF": 220,		
-		"AGI": 150,		
+		"HP" : 735,
+		"ATK": 146,
+		"SKL": 50,
+		"DEF": 40,
+		"SPD": 103,
 		"team": 2,
 		"pos": 1,
 		"skills" : [
@@ -30,11 +43,11 @@
 	},
 	{
 		"_p": "cmod.pack.base.TestMod2",
-		"HP" : 4800,
-		"ATK": 700,
-		"SKL": 30,
-		"DEF": 200,		
-		"AGI": 42,			
+		"HP" : 750,
+		"ATK": 148,
+		"SKL": 50,
+		"DEF": 37,
+		"SPD": 100,
 		"team": 2,
 		"pos": 3,
 		"skills" : [

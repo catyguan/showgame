@@ -22,6 +22,7 @@ function Class.onProcess(ctx, sid, param)
 	if dop then M.process(ctx) end
 	local elist = ctx.events
 	ctx.events = nil
+	ctx.eventg = nil
 	return elist
 end
 

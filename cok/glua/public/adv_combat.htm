@@ -10,27 +10,27 @@
 			<td>
 				<table border="1">
 					<tr>
-						<td width="120" height="65" id="map_2_4">&nbsp;	</td>
-						<td width="120" height="65" id="map_2_5">&nbsp;</td>
-						<td width="120" height="65" id="map_2_6">&nbsp;</td>
+						<td width="120" height="65"><div id="map_2_4">&nbsp;</div></td>
+						<td width="120" height="65"><div  id="map_2_5">&nbsp;</div></td>
+						<td width="120" height="65"><div  id="map_2_6">&nbsp;</div></td>
 					</tr>
 					<tr>
-						<td width="120" height="65" id="map_2_1">&nbsp;</td>
-						<td width="120" height="65" id="map_2_2">&nbsp;</td>
-						<td width="120" height="65" id="map_2_3">&nbsp;</td>
+						<td width="120" height="65"><div  id="map_2_1">&nbsp;</div></td>
+						<td width="120" height="65"><div  id="map_2_2">&nbsp;</div></td>
+						<td width="120" height="65"><div  id="map_2_3">&nbsp;</div></td>
 					</tr>
 					<tr>
 						<td colspan="3" bgcolor="blue"></td>
 					</tr>
 					<tr>
-						<td width="120" height="65" id="map_1_1">&nbsp;</td>
-						<td width="120" height="65" id="map_1_2">&nbsp;</td>
-						<td width="120" height="65" id="map_1_3">&nbsp;</td>
+						<td width="120" height="65"><div  id="map_1_1">&nbsp;</div></td>
+						<td width="120" height="65"><div  id="map_1_2">&nbsp;</div></td>
+						<td width="120" height="65"><div  id="map_1_3">&nbsp;</div></td>
 					</tr>
 					<tr>
-						<td width="120" height="65" id="map_1_4">&nbsp;</td>
-						<td width="120" height="65" id="map_1_5">&nbsp;</td>
-						<td width="120" height="65" id="map_1_6">&nbsp;</td>
+						<td width="120" height="65"><div  id="map_1_4">&nbsp;</div></td>
+						<td width="120" height="65"><div  id="map_1_5">&nbsp;</div></td>
+						<td width="120" height="65"><div  id="map_1_6">&nbsp;</div></td>
 					</tr>
 				</table>
 			</td>
@@ -50,15 +50,21 @@ contentManager = {
 	eid : 0,
 	selected : "",
 	messages : [],
+	processing : false,
 
 	Init : function(viewData) {
-		contentManager.DoProcess(null, 0);		
+		contentManager.DoProcess(null, 0);
 	},
 	Update : function(viewData) {
 		contentManager.UpdateView(viewData);
 	},
 	DoProcess : function(cmd, sid) {
+		if(contentManager.processing) {
+			return
+		}
+		contentManager.processing = true;
 		doUIProcess(sid, cmd, function(rs) {
+			contentManager.processing = false;
 			contentManager.EvalEvent(rs.result);
 			contentManager.UpdateView(rs.data);
 		});
@@ -113,6 +119,15 @@ contentManager = {
 		}
 		return msg;
 	},
+	HPText : function(c, m, s) {
+		var clr = "#267F00";
+		if(c<m*0.333) {
+			clr = "#FF0000";
+		} else if(c<m*0.666) {
+			clr = "#FF6A00";
+		}
+		return "<font color='"+clr+"'>"+(s?"":c+"/")+(c*100/m).toFixed(2)+"%</font>";
+	},
 	FocusOn : function(cid, focus) {
 		if(cid!=contentManager.selected) {
 			var oid = contentManager.selected;
@@ -148,14 +163,11 @@ contentManager = {
 		// show detail
 		var html = "";
 		html += theText(chpro.title)+"<br>";
-		html += "HP:"+chobj.HP+"/"+chobj.MAXHP+",";
+		html += "HP:"+contentManager.HPText(chobj.HP, chobj.MAXHP)+",";
 		html += "ATK:"+chobj.ATK+",";
 		html += "SKL:"+chobj.SKL+",";
 		html += "DEF:"+chobj.DEF+"("+(chobj.ARMOR*100).toFixed(2)+"%)"+",";		
-		html += "AGI:"+chobj.AGI+"("+(chobj.DODGE*100).toFixed(2)+"%)"+",";
-		if(tid==1) {
-			html += "APS:"+chobj.APS+",";
-		}
+		html += "SPD:"+chobj.SPD+",";
 		if(chobj.effects && chobj.effects.length>0) {
 			html += "<br>";
 			html += "[效果]";
@@ -163,7 +175,8 @@ contentManager = {
 				var efi = chobj.effects[i];
 				var ef = contentManager.viewProfile.effects[efi.id];
 
-				html += "<br>";				
+				html += "<br>";	
+				html += "<img src='"+ef.pic+"' width=24>";
 				html += theText(ef.title);
 				if(efi.LAST>0) {
 					html+="("+efi.LAST+")";
@@ -240,9 +253,16 @@ contentManager = {
 			html += "<td>";
 			html += "<img src='"+chpro.pic+"' width=60 height=60 onclick=\"contentManager.SelectChar('"+chobj.id+"')\">";
 			html += "</td><td>";
-			html += "HP:"+chobj.HP+"<br>";
-			html += "P:"+chobj.ATK+"/"+chobj.SKL+"<br>";
-			html += "D:"+chobj.DEF+"/"+chobj.AGI+"<br>";
+			html += "HP:"+contentManager.HPText(chobj.HP, chobj.MAXHP, true)+"<br>";
+			for (var j = 0; j < chobj.effects.length; j++) {
+				var efi = chobj.effects[j];
+				var efp = contentManager.viewProfile.effects[efi.id];
+				var eftext = theText(efp.title);				
+				if(efi.LAST>0) {
+					eftext+="("+efi.LAST+")";
+				}				
+				html += "<img src='"+efp.pic+"' width=24 title='"+eftext+"'>";
+			};
 			html += "</td>";
 			html += "</tr></table>"
 			$( "#map_"+tid+"_"+pos ).html(html);
@@ -251,7 +271,7 @@ contentManager = {
 				focusId = chobj.id;				
 			}
 
-			if(i==0 && tid==1) {
+			if(i==0 && chobj.player) {
 				mui += "<table><tr><td>";
 				mui += "<img src='"+chpro.pic+"' width=60 height=60>";
 				mui += "</td><td>";
@@ -264,7 +284,7 @@ contentManager = {
 						en = "disabled";
 					}					
 					var cd = ski.XCD && ski.XCD>0?ski.XCD:sk.CD;
-					mui += "<button onclick=\"contentManager.SelectSkill('"+chobj.id+"','"+ski.id+"')\" "+en+">"+theText(sk.title)+" AP:"+sk.AP+" CD:"+cd+"</button>";
+					mui += "<button onclick=\"contentManager.SelectSkill('"+chobj.id+"','"+ski.id+"')\" "+en+">"+theText(sk.title)+" CD:"+cd+"</button>";
 				}
 				mui += "<br><button onclick=\"contentManager.SelectSkill('"+chobj.id+"','wait')\">待机</button>";
 				mui += "</td></tr></table>";
@@ -272,9 +292,11 @@ contentManager = {
 		}
 
 		html = "";
-		html += "回合:<span id='turndiv'>"+viewData.turn+"</span> AP:"+viewData.APS+" <span id='orderdiv'></span>";
+		if(viewData.turn>0) {
+			html += "行动:<span id='turndiv'>"+viewData.turn+"</span> <span id='orderdiv'></span><br>";
+		}
 		if(mui!="") {
-			html += "<br>"+mui;
+			html += mui;
 		}
 
 		$( "#ginfo" ).html(html);
@@ -358,17 +380,11 @@ contentManager = {
 		}
 		if(ev.k=="init") {
 			contentManager.InitView(ev.data);				
-			contentManager.EvalEvent([{k: "p"}]);
+			contentManager.EvalEvent([{k: "nextc"}]);
 		} else if(ev.k=="err") {
 			contentManager.ShowMessage(ev.msg, true);
 		} else if(ev.k=="msg") {
 			contentManager.ShowMessage(ev.msg);
-		} else if(ev.k=="p") {
-			contentManager.timer = setTimeout(function() {
-				if(contentManager.EvalEvent) {
-					contentManager.DoProcess(null, contentManager.eid);
-				}
-			}, 500);
 		} else if(ev.k=="cmd") {
 			// wait user command
 			var cid = contentManager.viewData.aorder[0];
@@ -382,12 +398,16 @@ contentManager = {
 			}
 			contentManager.SelectSkill(cid, "wait");			
 		} else if(ev.k=="turn") {
+			contentManager.viewData.aorder = ev.a;
+			contentManager.viewData.turn = ev.v;
+			contentManager.BuildView();
 			$("#turndiv").html(ev.v);
 		} else if(ev.k=="nextc") {
-			var viewData = contentManager.viewData;
-			viewData.aorder = ev.a;
-			contentManager.BuildView();
-			return 500;
+			setTimeout(function() {
+				if(contentManager.EvalEvent) {					
+					contentManager.DoProcess(null, contentManager.eid);
+				}
+			}, 500);			
 		} else if(ev.k=="refresh") {
 			contentManager.viewData.chars[ev.id] = ev.data;
 			contentManager.BuildView();
@@ -397,9 +417,6 @@ contentManager = {
 			contentManager.BuildView();
 		} else if(ev.k=="end") {
 			contentManager.ShowMessage("end, winner is "+ev.winner, true);
-		} else if(ev.k=="aps") {
-			contentManager.viewData.APS = ev.v;
-			contentManager.BuildView();
 		} else if(ev.k=="skill") {
 			var msg = "";
 			var skd = {};

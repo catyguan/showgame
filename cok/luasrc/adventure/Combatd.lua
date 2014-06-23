@@ -6,6 +6,7 @@ local Class = class.define("adventure.Combatd")
 local LDEBUG = LOG:debugEnabled()
 local LTAG = "AdvCombatd"
 local IDS = 1
+local ACT_AP = 500
 
 function Class.newCombat(dif)
 	local data ={
@@ -13,25 +14,21 @@ function Class.newCombat(dif)
 		dif = dif,
 		rt = {
 			aorder = {},
-			chars = {},		
+			chars = {},
+			items = {}		
 		},
 		profile = {
 			chars = {},
 			effects = {},
 			skills = {},
+			items = {}
 		}
 	}
 	return data
 end
 
 function Class.calArmor(dif, def)
-	local v = def/((dif+4)*100+def)
-	if v>0.9999 then v=0.9999 end
-	return v
-end
-
-function Class.calDodge(dif, agi)
-	local v = agi/((dif+4)*100+agi)
+	local v = def/((dif+30)*5+def)
 	if v>0.9999 then v=0.9999 end
 	return v
 end
@@ -73,9 +70,12 @@ function Class.addChar(data, charObj)
 	chkset(charObj, "BASE_ATK", "ATK")
 	chkset(charObj, "BASE_SKL", "SKL")
 	chkset(charObj, "BASE_DEF", "DEF")
-	chkset(charObj, "BASE_AGI", "AGI")
+	chkset(charObj, "BASE_SPD", "SPD")
 	charObj.ARMOR = Class.calArmor(data.dif, charObj.DEF)
-	charObj.DODGE = Class.calArmor(data.dif, charObj.AGI)
+	if charObj.DODGE==nil then
+		charObj.DODGE = 0.1
+	end
+	charObj.AP = 0
 	data.rt.chars[cid] = charObj
 	
 	local chp = class.forName(charObj._p)
@@ -136,8 +136,7 @@ function Class.setProp(data, ch, n, v)
 	ch[n] = v
 	if n=="DEF" then
 		ch.ARMOR = Class.calArmor(data.dif, v)
-	elseif n=="AGI"	 then
-		ch.DODGE = Class.calDodge(data.dif, v)
+	elseif n=="AGI"	 then		
 	end
 	return v
 end
@@ -177,10 +176,40 @@ end
 
 function Class.event( data, ev )
 	if data.events == nil then data.events = {} end
+	if data.eventg~=nil and #data.eventg>0 then
+		local eg = data.eventg[#data.eventg]
+		table.insert(eg.es, ev)
+		return
+	end
 	data.rt.eid = data.rt.eid + 1
 	ev.id = data.rt.eid	
 	table.insert(data.events, ev)
 	-- var_dump(data.events)
+end
+
+function Class.eventBegin(data, eid)
+	if data.eventg == nil then data.eventg = {} end
+	table.insert(data.eventg, {id=eid, es={}})
+end
+
+function Class.eventCommit(data, eid, ev)
+	local eg
+	if data.eventg~=nil and #data.eventg>0 then
+		eg = data.eventg[#data.eventg]		
+	end
+	if not eg then
+		error("event commit fail, eventg empty")
+	end
+	if eg.id~=eid then
+		error(string.format("event commit fail, id not same, %s - %s", eg.id, eid))
+	end
+	table.remove(data.eventg, #data.eventg)
+	if ev~=nil then
+		Class.event(data, ev)
+	end
+	for _,lev in ipairs(eg.es) do
+		Class.event(data, lev)
+	end
 end
 
 function Class.process(data)
@@ -201,7 +230,7 @@ end
 
 function Class.handleUserCommand(data, cmd)
 	local ch = Class.activeChar(data)
-	if ch.team~=1 then
+	if not ch.player then
 		Class.event(data, {k="err", msg="::请稍等"})
 		return false
 	end
@@ -255,18 +284,6 @@ function Class.performSkill(data, cmd)
 		Class.event(data, {k="err", msg=err})
 		return false
 	end
-	if skpro.AP and skpro.AP>0 then
-		if skpro.AP>data.rt.APS then
-			Class.event(data, {k="err", msg="::AP不足"})
-			return false
-		end
-		data.rt.APS = data.rt.APS - skpro.AP
-		Class.event(data,
-		{
-			k="aps",
-			v=data.rt.APS
-		})
-	end
 
 	local skp = class.forName(sk._p)
 	skp.doPerform(sk, Class, data, meobj, tobj)
@@ -279,11 +296,12 @@ function Class.copyProp(des, src, kind)
 	des.HP = src.HP
 	des.MAXHP = src.MAXHP
 	des.ATK = src.ATK	
-	des.DEF = src.DEF
 	des.SKL = src.SKL
-	des.AGI = src.AGI
+	des.DEF = src.DEF	
+	des.SPD = src.SPD
 	des.ARMOR = src.ARMOR
 	des.DODGE = src.DODGE
+	des.player = src.player
 	des.team = src.team
 	des.pos = src.pos
 
@@ -346,48 +364,75 @@ local sortA = function(data)
 	table.sort(data.rt.aorder, function(e1,e2)
 		local c1 = data.rt.chars[e1]
 		local c2 = data.rt.chars[e2]
-		if c1.acted == c2.acted then
-			if c1.AGI==c2.AGI then return c1.team<c2.team end
-			return c1.AGI > c2.AGI
-		end		
-        if c1.acted then return false end
-        return true
+		if c1.AP==c2.AP then return c1.team<c2.team end
+		return c1.AP > c2.AP
     end)
 end
 
 function Class.prepare(data)
-	data.rt.turn = 1
+	data.rt.turn = 0
 	data.rt.eid = 1
-	data.rt.APS = 0
 	for k,ch in pairs(data.rt.chars) do
-		ch.acted = false
+		ch.AP = ch.SPD
 		table.insert(data.rt.aorder, k)
 	end
 	sortA(data)
 	local o = WORLD
-	o:createView("adv_combat", {}, "adventure.ui.Combat",data)
+	o:createView("adv_combat", {}, "adventure.ui.Combat", data)
 end
 
 function Class.combatBegin(data)	
-	data.stage = "turnBegin"
+	data.stage = "pollStage"
 	return true
 end
 
-function Class.turnBegin( data )
+function Class.pollStage( data )
 	if LDEBUG then
-		LOG:debug(LTAG, "stage - turnBegin - %d", data.rt.turn)
-	end	
-	for _,ch in pairs(data.rt.chars) do
-		ch.acted = false
+		LOG:debug(LTAG, "stage - pollStage")
 	end
-	data.stage = "charBegin"
+	for i=1,10 do
+		local act = false
+		for _,ch in pairs(data.rt.chars) do
+			ch.AP = ch.AP + ch.SPD		
+			if ch.AP>=ACT_AP then act = true end
+		end
+		if act then			
+			data.stage = "actStage"
+			return true
+		end
+	end
+	data.stage = "pollStage"
+	return true
+end
+
+function Class.actStage(data)
+	if LDEBUG then
+		LOG:debug(LTAG, "stage - actStage")
+	end
+	sortA(data)
+	local ch = Class.activeChar(data)
+	if ch.AP>=ACT_AP then
+		data.rt.turn = data.rt.turn + 1
+		data.stage = "charBegin"
+		local ao = {}
+		for _,cid in ipairs(data.rt.aorder) do
+			table.insert(ao, cid)
+		end
+		Class.event(data, {
+			k="turn",
+			v=data.rt.turn,
+			a=ao,
+		})
+	else
+		data.stage = "pollStage"
+	end
 	return true
 end
 
 function Class.charBegin( data )
 	local ch = Class.activeChar(data)
 	if LDEBUG then
-		LOG:debug(LTAG, "stage - charBegin - %s", ch.id)
+		LOG:debug(LTAG, "stage - charBegin - %s, %d", ch.id, data.rt.turn)
 	end
 	-- check skills
 	if ch.skills then
@@ -421,15 +466,7 @@ function Class.charBegin( data )
 		ME=ch.id,
 		data=view,
 	})
-	if ch.team==1 then
-		if ch.APS and ch.APS>0 then
-			data.rt.APS = data.rt.APS + ch.APS
-			Class.event(data,
-			{
-				k="aps",
-				v=data.rt.APS
-			})			
-		end
+	if ch.player then
 		data.stage = "charCommand"
 		return true
 	end
@@ -464,34 +501,14 @@ end
 function Class.charEnd( data )
 	local aid = data.rt.aorder[1]
 	if LDEBUG then
-		LOG:debug(LTAG, "stage - charEnd - %s", aid)
+		LOG:debug(LTAG, "stage - charEnd - %s, %d", aid, data.rt.turn)
 	end	
 	local ch = data.rt.chars[aid]
-	ch.acted = true
-	table.remove(data.rt.aorder, 1)
-	table.insert(data.rt.aorder, aid)
-	local a = {}
-	table.copy(a, data.rt.aorder,false)
-	Class.event(data, {k="nextc",a=a})
+	ch.AP = ch.AP - ACT_AP
+	Class.event(data, {k="nextc"})
 
-	aid = data.rt.aorder[1]
-	ch = data.rt.chars[aid]	
-	if ch.acted then
-		data.stage = "turnEnd"
-	else
-		data.stage = "charBegin"
-	end
-	return true
-end
-
-function Class.turnEnd( data )
-	if LDEBUG then
-		LOG:debug(LTAG, "stage - turnEnd - %d", data.rt.turn)
-	end	
-	data.rt.turn = data.rt.turn + 1
-	Class.event(data, {k="turn", v=data.rt.turn})
-	data.stage = "turnBegin"
-	return true
+	data.stage = "actStage"
+	return false
 end
 
 function Class.combatEnd( data )
@@ -510,6 +527,48 @@ B<1><2><3>
 A<1><2><3>
 A<4><5><6>
 ]]
+local POSP = {
+	{1,2,3,4,5,6},
+	{2,1,2,4,3,4},
+	{3,2,1,6,5,4},
+}
+
+function Class.rposTarget(data, myTeamId, myPos)
+	local t1, t2 = Class.posTarget(data, myTeamId, myPos)	
+	local target
+	if t1~=nil then
+		target = t1
+		if t2~=nil then
+			if math.random(2)==2 then target = t2 end
+		end
+	end	
+	return target
+end
+
+function Class.posTarget(data, myTeamId, myPos)
+	local tid = Class.opTeam(myTeamId)
+	local tp = 100
+	local tch1, tch2
+	if myPos>3 then myPos = myPos - 3 end
+
+	for _, ch in pairs(data.rt.chars) do
+		if tid==ch.team then
+			local p = POSP[myPos][ch.pos]
+			if p == tp then
+				if tch1~=nil then
+					tch2 = ch
+				else
+					tch1 = ch
+				end
+			elseif p < tp then
+				tp = p
+				tch1 = ch
+				tch2 = nil
+			end
+		end
+	end
+	return tch1, tch2
+end
 function Class.doAttack(data, sch, tch, dmg)
 	local w = WORLD
 	local r = {hited=true}
@@ -518,7 +577,7 @@ function Class.doAttack(data, sch, tch, dmg)
 	if LDEBUG then
 		LOG:debug(LTAG, "dodge, %s:%s, %d/%d", sch.id, tch.id, rd, d)
 	end
-	if rd<d then		
+	if rd<d then
 		r.hited = false
 		r.dodge = true
 		return r

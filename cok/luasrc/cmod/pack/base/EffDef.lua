@@ -4,6 +4,7 @@ local Class = class.define("cmod.pack.base.EffDef")
 function Class.getProfile()
 	return {
 		title="::防御姿势",
+		pic="images/eff_def.png",
 		desc="::提升{XDEF}点防御，持续{LAST}回合"
 	}
 end
@@ -12,7 +13,7 @@ function Class.newEff(def, last)
 	return {
 		_p = Class.className,
 		unique = true,
-		XDEF = def,
+		XDEF = 100+def,
 		LAST = last
 	}
 end
