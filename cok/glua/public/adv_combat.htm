@@ -51,30 +51,38 @@ contentManager = {
 	selected : "",
 	messages : [],
 	processing : false,
+	processCommand : null,
 
 	Init : function(viewData) {
-		contentManager.DoProcess(null, 0);
+		contentManager.DoProcess();
 	},
 	Update : function(viewData) {
 		contentManager.UpdateView(viewData);
 	},
-	DoProcess : function(cmd, sid) {
+	DoProcess : function() {
 		if(contentManager.processing) {
 			return
 		}
 		contentManager.processing = true;
-		doUIProcess(sid, cmd, function(rs) {
+		var cmd = null;
+		if(contentManager.processCommand!=null) {
+			cmd = contentManager.processCommand;
+			contentManager.processCommand = null;
+		}
+		doUIProcess(contentManager.eid, cmd, function(rs) {
 			contentManager.processing = false;
 			contentManager.EvalEvent(rs.result);
 			contentManager.UpdateView(rs.data);
 		});
 	},
-	SkillEnable : function(ski) {
-		var skp = contentManager.viewProfile.skills[ski.id];
-		if(skp.AP && skp.AP>0 && skp.AP>contentManager.viewData.APS) {
+	NextProcess : function(cmd) {
+		contentManager.processCommand = cmd;
+	},
+	SpellEnable : function(spi) {
+		if(spi.CD>0) {
 			return false;
 		}
-		if(ski.XCD && ski.XCD>0) {
+		if(spi.num<=0) {
 			return false;
 		}
 		return true;
@@ -137,7 +145,6 @@ contentManager = {
 				var otid = ochobj.team;
 				var opos = ochobj.pos;
 				$( "#tab_"+otid+"_"+opos ).css("background-color", "");
-				$( "#oth_"+oid ).css("border", "");
 			}
 			contentManager.selected = "";
 			$( "#chinfo" ).html("");
@@ -157,7 +164,6 @@ contentManager = {
 
 		if(!focus)return;
 		$( "#tab_"+tid+"_"+pos ).css("background-color", "#E6E6FA");
-		$( "#oth_"+cid ).css("border", "1px #FF0000 solid");
 		contentManager.selected = cid;
 
 		// show detail
@@ -202,24 +208,24 @@ contentManager = {
 	UpdateView : function(viewData) {
 
 	},
-	BuildOrder : function() {
+	BuildSpells : function() {
 		var viewData = contentManager.viewData;
 		contentManager.viewData = viewData;		
-		var ostr = "";
-		for (var i = 0; i< viewData.aorder.length; i++) {
-			var chid = viewData.aorder[i];
-			var chobj = viewData.chars[chid];
-			if(chobj==null)continue;
-			var chpro = contentManager.viewProfile.chars[chid];
-
-			ostr +="<img id='oth_"+chobj.id+"' src='"+chpro.pic+"' width=16 height=16 onclick=\"contentManager.SelectChar('"+chobj.id+"')\" title='"+theText(chpro.title)+"''>";
-			var tabcss="";
-			if(i==0) {
-				tabcss = "1px solid #FF9900";
+		var html = "";
+		for (var spid in viewData.spells) {
+			var sp = viewData.spells[spid];
+			var spp = contentManager.viewProfile.spells[spid];
+			var en = "";
+			var cd = "";
+			if(!contentManager.SpellEnable(sp)) {
+				en = "disabled";
+				if(sp.CD>0) {
+					cd = " CD:"+sp.CD;
+				}
 			}
-			$("#tab_"+chobj.team+"_"+chobj.pos).css("border", tabcss);
+			html +="<br><button onclick=\"contentManager.SelectSpell('"+sp.id+"')\" "+en+">"+theText(spp.title)+"("+sp.num+")"+cd+"</button>"+theText(spp.desc);
 		}
-		$("#orderdiv").html(ostr);
+		return html;
 	},
 	InitView : function(data) {
 		contentManager.viewProfile = data.profile;
@@ -237,9 +243,7 @@ contentManager = {
 		};
 
 		var focusId = "";
-		var mui = "";
-		for (var i = 0; i< viewData.aorder.length; i++) {
-			var chid = viewData.aorder[i];
+		for(var chid in viewData.chars) {
 			var chobj = viewData.chars[chid];
 			if(chobj==null)continue;
 			var chpro = contentManager.viewProfile.chars[chid];
@@ -270,38 +274,14 @@ contentManager = {
 			if(contentManager.selected==chobj.id) {
 				focusId = chobj.id;				
 			}
-
-			if(i==0 && chobj.player) {
-				mui += "<table><tr><td>";
-				mui += "<img src='"+chpro.pic+"' width=60 height=60>";
-				mui += "</td><td>";
-				for (var j = 0; j < chobj.skills.length; j++) {
-					var ski = chobj.skills[j];
-					var sk = contentManager.viewProfile.skills[ski.id];
-					if(j!=0)mui += "<br>";
-					var en = "";
-					if(!contentManager.SkillEnable(ski)) {
-						en = "disabled";
-					}					
-					var cd = ski.XCD && ski.XCD>0?ski.XCD:sk.CD;
-					mui += "<button onclick=\"contentManager.SelectSkill('"+chobj.id+"','"+ski.id+"')\" "+en+">"+theText(sk.title)+" CD:"+cd+"</button>";
-				}
-				mui += "<br><button onclick=\"contentManager.SelectSkill('"+chobj.id+"','wait')\">待机</button>";
-				mui += "</td></tr></table>";
-			}
 		}
 
 		html = "";
 		if(viewData.turn>0) {
-			html += "行动:<span id='turndiv'>"+viewData.turn+"</span> <span id='orderdiv'></span><br>";
-		}
-		if(mui!="") {
-			html += mui;
+			html += "行动:<span id='turndiv'>"+viewData.turn+"</span> <span id='spelldiv'>"+contentManager.BuildSpells()+"</span><br>";
 		}
 
 		$( "#ginfo" ).html(html);
-
-		contentManager.BuildOrder()
 
 		contentManager.FocusOn(focusId, focusId!="");
 
@@ -344,24 +324,12 @@ contentManager = {
 			contentManager.FocusOn(cid, true);
 		}
 	},
-	SelectSkill : function(cid, skid) {
-		var sid = contentManager.selected;
-		var sk = contentManager.viewProfile.skills[skid];
-		var p = {"act":"skill", "skill":skid, "me":cid, "target":sid};
-		doUIInvoke("CheckSkill", p, function(rs) {
-			if(rs.err) {
-				contentManager.ShowMessage(theText(rs.err), true);
-				return;
-			}
-			if(rs.msg) {
-				contentManager.ShowMessage(theText(rs.msg), false);	
-				return;
-			}
-			if(!rs.ok) {
-
-			}
-			contentManager.DoProcess(p, contentManager.eid);
-		});		
+	SelectSpell : function(spid) {
+		var sp = contentManager.viewData.spells[spid];
+		if(contentManager.SpellEnable(sp)) {
+			var p = {"act":"spell", "spellId": spid};
+			contentManager.NextProcess(p);	
+		}		
 	},
 	ReloadChar : function(cid, cb) {
 		doUIInvoke("LoadChar", {id:cid}, function(rs) {
@@ -385,20 +353,7 @@ contentManager = {
 			contentManager.ShowMessage(ev.msg, true);
 		} else if(ev.k=="msg") {
 			contentManager.ShowMessage(ev.msg);
-		} else if(ev.k=="cmd") {
-			// wait user command
-			var cid = contentManager.viewData.aorder[0];
-			var ch = contentManager.viewData.chars[cid];
-			for (var i = 0; i < ch.skills.length; i++) {
-				var sk = ch.skills[i];
-				if(contentManager.SkillEnable(sk)) {
-					contentManager.ShowMessage("请输入指令");
-					return 0;		
-				}
-			}
-			contentManager.SelectSkill(cid, "wait");			
 		} else if(ev.k=="turn") {
-			contentManager.viewData.aorder = ev.a;
 			contentManager.viewData.turn = ev.v;
 			contentManager.BuildView();
 			$("#turndiv").html(ev.v);
@@ -408,12 +363,15 @@ contentManager = {
 					contentManager.DoProcess(null, contentManager.eid);
 				}
 			}, 500);			
-		} else if(ev.k=="refresh") {
-			contentManager.viewData.chars[ev.id] = ev.data;
+		} else if(ev.k=="char") {
+			contentManager.viewData.chars[ev.MID] = ev.data;
 			contentManager.BuildView();
+		} else if(ev.k=="spell") {
+			contentManager.viewData.spells[ev.SID] = ev.data;
+			var html = contentManager.BuildSpells();
+			$('#spelldiv').html(html);
 		} else if(ev.k=="die") {
 			contentManager.viewData.chars[ev.MID] = null;
-			contentManager.viewData.aorder = ev.a;
 			contentManager.BuildView();
 		} else if(ev.k=="end") {
 			contentManager.ShowMessage("end, winner is "+ev.winner, true);
@@ -424,6 +382,9 @@ contentManager = {
 				var ch = contentManager.viewData.chars[ev.MID];
 				msg = "::{TITLE}采用防御姿势";
 				skd.TITLE = ch.title;
+			}
+			if(ev.uik=="SpellHeal") {
+				msg = "::使用了恢复法术";
 			}
 			if(ev.uik=="SkillAttack") {
 				var ch = contentManager.viewData.chars[ev.MID];

@@ -15,13 +15,13 @@ function Class.newCombat(dif)
 		rt = {
 			aorder = {},
 			chars = {},
-			items = {}		
+			spells = {}		
 		},
 		profile = {
 			chars = {},
 			effects = {},
 			skills = {},
-			items = {}
+			spells = {}
 		}
 	}
 	return data
@@ -56,6 +56,24 @@ function Class.listIdByTeam(data, teamId)
 	return r
 end
 
+
+local HProfiles = function(data, plist)
+	for _, tmp in ipairs(plist) do
+		if tmp.k=="char" then
+
+		else
+			local ef = tmp
+			if ef.id==nil then ef.id = ef._p end
+			if not data.profile.effects[ef.id] then
+				local efp = class.forName(ef._p)
+				local efpro = efp.getProfile()
+				efpro.id = ef.id
+				data.profile.effects[ef.id] = efpro
+			end
+		end
+	end
+end
+
 function Class.addChar(data, charObj)
 	local cid = charObj.id
 	if cid==nil then
@@ -83,7 +101,7 @@ function Class.addChar(data, charObj)
 	chpro.id = cid
 	data.profile.chars[cid] = chpro
 	if not charObj.title then charObj.title = chpro.title end
-	local elist = {}
+	local plist = {}
 	if charObj.skills then
 		for _, sk in ipairs(charObj.skills) do
 			if sk.id==nil then
@@ -99,7 +117,7 @@ function Class.addChar(data, charObj)
 					local rel = skp.listRelProfile()
 					if rel then
 						for _,tmp in ipairs(rel) do
-							table.insert(elist, {id=tmp,_p=tmp})
+							table.insert(plist, tmp)
 						end
 					end
 				end
@@ -111,18 +129,31 @@ function Class.addChar(data, charObj)
 			if ef.id==nil then
 				ef.id = ef._p
 			end
-			table.insert(elist, ef)
+			table.insert(plist, ef)
 		end
 	end
+	HProfiles(data, plist)	
+end
 
-	for _, ef in ipairs(elist) do
-		if not data.profile.effects[ef.id] then
-			local efp = class.forName(ef._p)
-			local efpro = efp.getProfile()
-			efpro.id = ef.id
-			data.profile.effects[ef.id] = efpro
+function Class.addSpell(data, sp)
+	if not sp.id then sp.id = nextId("s") end
+
+	data.rt.spells[sp.id] = sp
+	local spp = class.forName(sp._p)
+	local sppro = spp.getProfile()
+	sppro.id = sp.id
+	data.profile.spells[sp.id] = sppro
+
+	local plist = {}
+	if spp.listRelProfile then
+		local rel = spp.listRelProfile()
+		if rel then
+			for _,tmp in ipairs(rel) do
+				table.insert(plist, tmp)
+			end
 		end
 	end
+	HProfiles(data, plist)
 end
 
 function Class.setProp(data, ch, n, v)
@@ -229,65 +260,19 @@ function Class.process(data)
 end
 
 function Class.handleUserCommand(data, cmd)
-	local ch = Class.activeChar(data)
-	if not ch.player then
-		Class.event(data, {k="err", msg="::请稍等"})
+	if data.stage=="combatEnd" then
+		Class.event(data, {k="err", msg="::已结束"})
 		return false
 	end
-	if cmd.act=="skill" then
-		return Class.performSkill(data, cmd)
+	if cmd.act=="spell" then
+		return Class.performSpell(data, cmd)
 	end
 	Class.event(data, {k="err", msg="::无效操作"})
 	return false
 end
 
-function Class.checkSkill(data, me, skid, target)
-	if skid=="wait" then return true end
-
-	local meobj = data.rt.chars[me]
-	local sk
-	for _,tmp in ipairs(meobj.skills) do
-		if tmp.id == skid then
-			sk = tmp
-			break
-		end
-	end
-	local skpro = data.profile.skills[skid]
-	local tobj
-	if target~=nil and target~="" then
-		tobj = data.rt.chars[target]
-	end
-
-	if meobj==nil or sk==nil or skpro==nil then
-		return false, "::无效参数"
-	end
-	if skpro.target=="one" then
-		if tobj==nil then
-			return false, "::请选择一个敌方目标"
-		end
-		if tobj.team==meobj.team then
-			return false, "::该技能只对敌方目标使用"
-		end
-	end
-
-	return true, nil, meobj, sk, skpro, tobj
-end
-
-function Class.performSkill(data, cmd)
-	if cmd.skill=="wait" then
-		data.stage = "charEnd"
-		return true
-	end
-
-	local ok, err, meobj, sk, skpro, tobj = Class.checkSkill(data, cmd.me, cmd.skill, cmd.target)
-	if not ok then
-		Class.event(data, {k="err", msg=err})
-		return false
-	end
-
-	local skp = class.forName(sk._p)
-	skp.doPerform(sk, Class, data, meobj, tobj)
-	return true
+function Class.copyCharView(des, src)
+	Class.copyProp(des, src, "view")
 end
 
 function Class.copyProp(des, src, kind)
@@ -301,7 +286,6 @@ function Class.copyProp(des, src, kind)
 	des.SPD = src.SPD
 	des.ARMOR = src.ARMOR
 	des.DODGE = src.DODGE
-	des.player = src.player
 	des.team = src.team
 	des.pos = src.pos
 
@@ -330,20 +314,28 @@ function Class.copyProp(des, src, kind)
 	end
 end
 
+function Class.copySpellView(des, src)
+	des.id = src.id
+	des.num = src.num
+	des.CD = src.CD
+end
+
 -- init view
 function Class.buildInit(data, ev)
-	local view = {}	
-	view.turn = data.rt.turn	
-	view.APS = data.rt.APS
-	view.aorder = {}	
-	for i=1,#data.rt.aorder do
-		table.insert(view.aorder, data.rt.aorder[i])
-	end
+	local view = {}
+	view.turn = data.rt.turn
 	view.chars = {}
 	for k,ch in pairs(data.rt.chars) do
 		local vch = {}
 		Class.copyProp(vch, ch, "view")
 		view.chars[k] = vch
+	end
+
+	view.spells = {}
+	for k, sp in pairs(data.rt.spells) do
+		local vsp = {}
+		Class.copySpellView(vsp, sp)
+		view.spells[k] = vsp
 	end
 
 	local profile ={}
@@ -391,6 +383,19 @@ function Class.pollStage( data )
 		LOG:debug(LTAG, "stage - pollStage")
 	end
 	for i=1,10 do
+		for _, sp in pairs(data.rt.spells) do
+			if sp.CD and sp.CD>0 then
+				sp.CDT = sp.CDT + 100
+				if sp.CDT > ACT_AP then
+					sp.CD = sp.CD - 1
+					sp.CDT = sp.CDT - ACT_AP
+					local spv = {}
+					Class.copySpellView(spv, sp)
+					Class.event(data, {k="spell", SID=sp.id, data=spv})					
+				end
+			end
+		end
+
 		local act = false
 		for _,ch in pairs(data.rt.chars) do
 			ch.AP = ch.AP + ch.SPD		
@@ -414,14 +419,9 @@ function Class.actStage(data)
 	if ch.AP>=ACT_AP then
 		data.rt.turn = data.rt.turn + 1
 		data.stage = "charBegin"
-		local ao = {}
-		for _,cid in ipairs(data.rt.aorder) do
-			table.insert(ao, cid)
-		end
 		Class.event(data, {
 			k="turn",
-			v=data.rt.turn,
-			a=ao,
+			v=data.rt.turn
 		})
 	else
 		data.stage = "pollStage"
@@ -462,14 +462,10 @@ function Class.charBegin( data )
 	Class.copyProp(view, ch, "view")
 	Class.event(data,
 	{
-		k="refresh",
-		ME=ch.id,
+		k="char",
+		MID=ch.id,
 		data=view,
 	})
-	if ch.player then
-		data.stage = "charCommand"
-		return true
-	end
 
 	-- AI action
 	local aicls
@@ -489,15 +485,6 @@ function Class.charBegin( data )
 	return true
 end
 
-function Class.charCommand(data)
-	local ch = Class.activeChar(data)
-	if LDEBUG then
-		LOG:debug(LTAG, "stage - charCommand - %s", ch.id)
-	end
-	Class.event(data, {k="cmd"})
-	return false
-end
-
 function Class.charEnd( data )
 	local aid = data.rt.aorder[1]
 	if LDEBUG then
@@ -513,7 +500,7 @@ end
 
 function Class.combatEnd( data )
 	if LDEBUG then
-		LOG:debug(LTAG, "stage - turnEnd - %d", data.rt.turn)
+		LOG:debug(LTAG, "stage - combatEnd - %d", data.rt.turn)
 	end
 	Class.event(data, {k="end", winner=data.winner})
 	return false
@@ -527,49 +514,26 @@ B<1><2><3>
 A<1><2><3>
 A<4><5><6>
 ]]
-local POSP = {
-	{1,2,3,4,5,6},
-	{2,1,2,4,3,4},
-	{3,2,1,6,5,4},
-}
-
-function Class.rposTarget(data, myTeamId, myPos)
-	local t1, t2 = Class.posTarget(data, myTeamId, myPos)	
-	local target
-	if t1~=nil then
-		target = t1
-		if t2~=nil then
-			if math.random(2)==2 then target = t2 end
-		end
-	end	
-	return target
-end
-
-function Class.posTarget(data, myTeamId, myPos)
-	local tid = Class.opTeam(myTeamId)
-	local tp = 100
-	local tch1, tch2
-	if myPos>3 then myPos = myPos - 3 end
-
-	for _, ch in pairs(data.rt.chars) do
-		if tid==ch.team then
-			local p = POSP[myPos][ch.pos]
-			if p == tp then
-				if tch1~=nil then
-					tch2 = ch
-				else
-					tch1 = ch
-				end
-			elseif p < tp then
-				tp = p
-				tch1 = ch
-				tch2 = nil
-			end
-		end
+function Class.performSpell(data, cmd)
+	local spid = cmd.spellId
+	local sp = data.rt.spells[spid]
+	if sp==nil then
+		error(string.format("invalid spell '%s'", spid))
 	end
-	return tch1, tch2
+	
+	local spp = class.forName(sp._p)
+	if spp.doPerform(Class, data, sp) then
+		local vsp = {}
+		Class.copySpellView(vsp, sp)
+		Class.event(data, {k="spell", SID=sp.id, data=vsp})
+	end
+	return true
 end
+
 function Class.doAttack(data, sch, tch, dmg)
+	if type(dmg)~="table" then
+		dmg = {pdmg=dmg}
+	end
 	local w = WORLD
 	local r = {hited=true}
 	local d = tch.DODGE*10000
@@ -583,9 +547,9 @@ function Class.doAttack(data, sch, tch, dmg)
 		return r
 	end
 	local a = tch.ARMOR
-	local rdmg = math.ceil((1-a)*dmg)
+	local rdmg = math.ceil((1-a)*dmg.pdmg)
 	if LDEBUG then
-		LOG:debug(LTAG, "damage, %s:%s, %d/%d, %d", sch.id, tch.id, dmg, a*100, rdmg)
+		LOG:debug(LTAG, "damage, %s:%s, %d/%d, %d", sch.id, tch.id, dmg.pdmg, a*100, rdmg)
 	end
 	r.damage = rdmg
 	Class.modifyProp(data, tch, "HP", -rdmg)
@@ -603,13 +567,10 @@ function Class.doDie(data, ch)
 		end
 	end
 	sortA(data)
-	local a = {}
-	table.copy(a, data.rt.aorder,false)
 	Class.event(data, 
 		{
 			k="die",
-			MID=ch.id,
-			a=a
+			MID=ch.id
 		}
 	)
 

@@ -1,5 +1,5 @@
 -- cmod/pack/base/SkillAttack.lua
-local Class = class.define("cmod.pack.base.SkillAttack")
+local Class = class.define("cmod.pack.base.SkillAttack",{"cmod.skill.SkillBase"})
 
 function Class.getProfile()
 	return {
@@ -11,7 +11,7 @@ function Class.getProfile()
 end
 
 function Class.checkPerform(sk, cbc, cbdata, ch)
-	local target = cbc.rposTarget(cbdata, ch.team, ch.pos)	
+	local target = Class.oneTarget(cbc, cbdata, ch.team, ch.pos)	
 	if not target then
 		return nil
 	end

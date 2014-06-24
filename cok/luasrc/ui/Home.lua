@@ -54,11 +54,17 @@ end
 function Class.doTest3(ctx)
 	local cbm = class.forName("adventure.Combatd")
 
-	local chlist = loader("combat_test")	
+	local cbjson = loader("combat_test")		
 	local cb = cbm.newCombat(1)
+	local chlist = cbjson.chars
 	for _, chdata in ipairs(chlist) do
 		cbm.addChar(cb, chdata)
 	end
+	local splist = cbjson.spells
+	for _,spdata in ipairs(splist) do
+		cbm.addSpell(cb, spdata)
+	end
+
 	cbm.prepare(cb)
 	-- cbm.process(cb)	
 	return 0

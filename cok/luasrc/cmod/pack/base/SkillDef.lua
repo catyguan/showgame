@@ -11,7 +11,9 @@ function Class.getProfile()
 end
 
 function Class.listRelProfile()
-	return {"cmod.pack.base.EffDef"}
+	return {
+		{_p="cmod.pack.base.EffDef"}
+	}
 end
 
 function Class.checkPerform(sk, cbc, cbdata, ch)
