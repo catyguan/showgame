@@ -58,7 +58,7 @@ function Class.doTest3(ctx)
 	local cb = cbm.newCombat(1)
 	local chlist = cbjson.chars
 	for _, chdata in ipairs(chlist) do
-		cbm.addChar(cb, chdata)
+		cbm.newChar(cb, chdata)
 	end
 	local splist = cbjson.spells
 	for _,spdata in ipairs(splist) do

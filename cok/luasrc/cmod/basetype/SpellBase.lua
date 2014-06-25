@@ -1,5 +1,5 @@
--- cmod/spell/SpellBase.lua
-local Class = class.define("cmod.spell.SpellBase")
+-- cmod/basetype/SpellBase.lua
+local Class = class.define("cmod.basetype.SpellBase")
 
 function Class.checkPerform(sp)
 	if sp.num <=0 then return false end

@@ -1,60 +1,31 @@
 {
 	"chars" : [
 		{
-			"_p": "cmod.pack.base.TestNPC",
-			"HP" : 550,
-			"ATK": 145,
-			"SKL": 50,
-			"DEF": 29,
-			"SPD": 102,
-			"team": 1,
-			"pos": 3,
-			"player": true,
-			"skills" : [
-				{"_p":"cmod.pack.base.SkillAttack"}
-			]
+			"newc": true,
+			"_p": "cmod.pack.base.ModTreant",
+			"level": 3,
+			"prop" : {
+				"team": 1,
+				"pos": 2
+			}
 		},
 		{
-			"_p": "cmod.pack.base.TestNPC2",
-			"HP" : 690,
-			"ATK": 146,
-			"SKL": 50,
-			"DEF": 47,
-			"SPD": 95,
-			"team": 1,
-			"pos": 2,
-			"skills" : [
-				{"_p":"cmod.pack.base.SkillAttack"},
-				{"_p":"cmod.pack.base.SkillDef"}
-			]
+			"newc": true,
+			"_p": "cmod.pack.base.ModMushroom",
+			"level": 1,
+			"prop" : {
+				"team": 2,
+				"pos": 1
+			}
 		},
 		{
-			"_p": "cmod.pack.base.TestMod",
-			"HP" : 735,
-			"ATK": 146,
-			"SKL": 50,
-			"DEF": 40,
-			"SPD": 103,
-			"team": 2,
-			"pos": 1,
-			"skills" : [
-				{"_p":"cmod.pack.base.SkillAttack"},
-				{"_p":"cmod.pack.base.SkillDef"}
-			]
-		},
-		{
-			"_p": "cmod.pack.base.TestMod2",
-			"HP" : 750,
-			"ATK": 148,
-			"SKL": 50,
-			"DEF": 37,
-			"SPD": 100,
-			"team": 2,
-			"pos": 3,
-			"skills" : [
-				{"_p":"cmod.pack.base.SkillAttack"},
-				{"_p":"cmod.pack.base.SkillDef"}
-			]
+			"newc": true,
+			"_p": "cmod.pack.base.ModSlime",
+			"level" : 1,
+			"prop" : {
+				"team": 2,
+				"pos": 3
+			}
 		}
 	],
 	"spells" : [

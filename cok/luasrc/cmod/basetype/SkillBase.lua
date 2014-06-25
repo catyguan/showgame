@@ -1,5 +1,5 @@
--- cmod/skill/SkillBase.lua
-local Class = class.define("cmod.skill.SkillBase")
+-- cmod/basetype/SkillBase.lua
+local Class = class.define("cmod.basetype.SkillBase")
 
 local POSP = {
 	{1,2,3,4,5,6},
@@ -43,4 +43,39 @@ function Class.oneTarget(cbc, data, myTeamId, myPos)
 		end
 	end	
 	return target
+end
+
+
+function Class.doAttack(sk, cbc, cbdata, mobj, tobjList, dmg, uik, hitf)
+	for _,tobj in ipairs(tobjList) do
+		local info = cbc.doAttack(cbdata, mobj, tobj, dmg)
+
+		local refresh
+		if info.hited then
+			if hitf~=nil then
+				hitf(sk, cbc, cbdata, tobj, info)
+			end
+
+			local tdata = {}
+			cbc.copyProp(tdata, tobj, "view")
+			refresh = {
+				-- {id=mobj.id, data=mdata},
+				{id=tobj.id, data=tdata}
+			}
+		end
+
+		cbc.event(cbdata, 
+			{
+				k="skill", uik=uik,
+				MID=mobj.id, TID=tobj.id,
+				info=info,
+				refresh = refresh
+			}
+		)
+
+
+		if tobj.HP==0 then
+			cbc.doDie(cbdata, tobj)
+		end
+	end
 end

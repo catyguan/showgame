@@ -27,12 +27,6 @@ function Class.newCombat(dif)
 	return data
 end
 
-function Class.calArmor(dif, def)
-	local v = def/((dif+30)*5+def)
-	if v>0.9999 then v=0.9999 end
-	return v
-end
-
 local nextId = function(pre)
 	local r = pre .. IDS
 	IDS = IDS + 1
@@ -66,12 +60,27 @@ local HProfiles = function(data, plist)
 			if ef.id==nil then ef.id = ef._p end
 			if not data.profile.effects[ef.id] then
 				local efp = class.forName(ef._p)
-				local efpro = efp.getProfile()
-				efpro.id = ef.id
+				local efpro = efp.getProfile(ef)
+				if efpro.id==nil then efpro.id = ef.id end
 				data.profile.effects[ef.id] = efpro
 			end
 		end
 	end
+end
+
+function Class.newChar(data, charObj)
+	local ch = charObj
+	if charObj.newc then
+		local cls = class.forName(charObj._p)
+		ch = cls.newChar(charObj.level)
+		ch._p = charObj._p
+		if charObj.prop then
+			for k,v in pairs(charObj.prop) do
+				ch[k] = v
+			end
+		end
+	end
+	Class.addChar(data, ch)
 end
 
 function Class.addChar(data, charObj)
@@ -89,18 +98,19 @@ function Class.addChar(data, charObj)
 	chkset(charObj, "BASE_SKL", "SKL")
 	chkset(charObj, "BASE_DEF", "DEF")
 	chkset(charObj, "BASE_SPD", "SPD")
-	charObj.ARMOR = Class.calArmor(data.dif, charObj.DEF)
+	charObj.ARMOR = 0.0
 	if charObj.DODGE==nil then
 		charObj.DODGE = 0.1
-	end
-	charObj.AP = 0
-	data.rt.chars[cid] = charObj
+	end	
 	
 	local chp = class.forName(charObj._p)
 	local chpro = chp.getProfile(charObj)
-	chpro.id = cid
-	data.profile.chars[cid] = chpro
+	if chpro.id==nil then chpro.id = cid end
 	if not charObj.title then charObj.title = chpro.title end
+		
+	data.rt.chars[cid] = charObj
+	data.profile.chars[cid] = chpro
+
 	local plist = {}
 	if charObj.skills then
 		for _, sk in ipairs(charObj.skills) do
@@ -109,8 +119,8 @@ function Class.addChar(data, charObj)
 			end
 			if not data.profile.skills[sk.id] then
 				local skp = class.forName(sk._p)
-				local skpro = skp.getProfile()
-				skpro.id = sk.id
+				local skpro = skp.getProfile(sk)
+				if skpro.id==nil then skpro.id = sk.id end
 				data.profile.skills[sk.id] = skpro
 
 				if skp.listRelProfile then
@@ -140,8 +150,8 @@ function Class.addSpell(data, sp)
 
 	data.rt.spells[sp.id] = sp
 	local spp = class.forName(sp._p)
-	local sppro = spp.getProfile()
-	sppro.id = sp.id
+	local sppro = spp.getProfile(sp)
+	if sppro.id==nil then sppro.id = sp.id end
 	data.profile.spells[sp.id] = sppro
 
 	local plist = {}
@@ -165,8 +175,7 @@ function Class.setProp(data, ch, n, v)
 		v = 0
 	end
 	ch[n] = v
-	if n=="DEF" then
-		ch.ARMOR = Class.calArmor(data.dif, v)
+	if n=="DEF" then		
 	elseif n=="AGI"	 then		
 	end
 	return v
@@ -203,6 +212,28 @@ function Class.applyEffect(data, ch, eff)
 	end
 	table.insert(ch.effects, eff)
 	cls.apply(Class, data, eff, ch)
+end
+
+function Class.applyFlag(data, ch, n)
+	local v = ch[n]
+	if v==nil then
+		v = 1
+	else
+		v = v + 1
+	end
+	ch[n] = v
+end
+
+function Class.removeFlag(data, ch, n)
+	local v = ch[n]
+	if v~=nil then
+		v = v - 1
+		if v<=0 then
+			ch[n] = nil
+		else
+			ch[n] = v
+		end
+	end
 end
 
 function Class.event( data, ev )
@@ -364,9 +395,25 @@ end
 function Class.prepare(data)
 	data.rt.turn = 0
 	data.rt.eid = 1
+	local nspa = {}
 	for k,ch in pairs(data.rt.chars) do
+		local ns = nspa[ch._p]
+		if ns then
+			ns.c = ns.c + 1
+		else
+			nspa[ch._p] = {c=1, n=1}
+		end
 		ch.AP = ch.SPD
 		table.insert(data.rt.aorder, k)
+	end
+	for k,ch in pairs(data.rt.chars) do
+		local ns = nspa[ch._p]
+		if ns.c>1 then
+			if ch.title==data.profile.chars[k].title then
+				ch.title = ch.title .. ns.n
+				ns.n = ns.n + 1
+			end
+		end
 	end
 	sortA(data)
 	local o = WORLD
@@ -443,6 +490,7 @@ function Class.charBegin( data )
 		end
 	end
 	-- check effects
+	local fstun = ch.FLAG_STUN
 	if ch.effects then
 		local rmlist = {}
 		for i, eff in ipairs(ch.effects) do
@@ -468,17 +516,23 @@ function Class.charBegin( data )
 	})
 
 	-- AI action
-	local aicls
-	if data.AI then
-		aicls = class.forName(data.AI)
-	else
-		if ch.AI then
-			aicls = class.forName(ch.AI)
-		else
-			aicls = class.forName(ch._p)
-		end
+	local doact = true
+	if fstun~=nil and fstun>0 then
+		doact = false
 	end
-	aicls.doAI(Class, data, ch)
+	if doact then
+		local aicls
+		if data.AI then
+			aicls = class.forName(data.AI)
+		else
+			if ch.AI then
+				aicls = class.forName(ch.AI)
+			else
+				aicls = class.forName(ch._p)
+			end
+		end
+		aicls.doAI(Class, data, ch)
+	end
 	if data.stage == "charBegin" then
 		data.stage = "charEnd"
 	end
@@ -530,6 +584,14 @@ function Class.performSpell(data, cmd)
 	return true
 end
 
+local DMGS = {	
+	{"pdmg",  "PARMOR"},
+	{"edmgp", "EPARMOR"},
+	{"edmgf", "EFARMOR"},
+	{"edmgw", "EWARMOR"},
+	{"edmge", "EEARMOR"}
+}
+
 function Class.doAttack(data, sch, tch, dmg)
 	if type(dmg)~="table" then
 		dmg = {pdmg=dmg}
@@ -539,15 +601,39 @@ function Class.doAttack(data, sch, tch, dmg)
 	local d = tch.DODGE*10000
 	local rd = math.random(10000)
 	if LDEBUG then
-		LOG:debug(LTAG, "dodge, %s:%s, %d/%d", sch.id, tch.id, rd, d)
+		LOG:debug(LTAG, "dodgecheck, %s:%s, %d/%d", sch.id, tch.id, rd, d)
 	end
 	if rd<d then
+		if LDEBUG then
+			LOG:debug(LTAG, "dodge, %s:%s", sch.id, tch.id)
+		end
 		r.hited = false
 		r.dodge = true
 		return r
 	end
 	local a = tch.ARMOR
-	local rdmg = math.ceil((1-a)*dmg.pdmg)
+	local rdmg = 0
+	for i, dmgtype in ipairs(DMGS) do
+		local dv = dmg[dmgtype[1]]
+		if dv~=nil then
+			if a>0 then
+				dv = (1-a)*dv
+			end
+			local ar = tch[dmgtype[2]]
+			if ar~=nil then
+				dv = (1-ar)*dv
+			end
+			if i==1 then
+				dv =  dv - tch.DEF
+				if dv<1 then dv = 1 end
+			end
+			if dv>0 then
+				r[dmgtype[1]] = dv
+			end
+			rdmg = rdmg + dv
+		end
+	end
+	rdmg = math.floor(rdmg)
 	if LDEBUG then
 		LOG:debug(LTAG, "damage, %s:%s, %d/%d, %d", sch.id, tch.id, dmg.pdmg, a*100, rdmg)
 	end

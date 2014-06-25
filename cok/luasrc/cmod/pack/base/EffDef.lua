@@ -1,5 +1,5 @@
 -- cmod/pack/base/EffDef.lua
-local Class = class.define("cmod.pack.base.EffDef", {"cmod.skill.SkillBase"})
+local Class = class.define("cmod.pack.base.EffDef", {"cmod.basetype.EffBase"})
 
 function Class.getProfile()
 	return {

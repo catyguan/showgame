@@ -1,7 +1,18 @@
--- cmod/char/CharBase.lua
+-- cmod/basetype/CharBase.lua
 require("world.PRandom")
 
-local Class = class.define("cmod.char.CharBase")
+local Class = class.define("cmod.basetype.CharBase")
+
+function Class.levelUp(prop, lvl, grow)
+	if lvl==1 then return end
+	for k,gv in pairs(grow) do
+		local v = prop[k]
+		if v~=nil then
+			nv = v * math.pow(1 + gv, lvl-1)
+			prop[k] = math.ceil(nv)
+		end
+	end
+end
 
 function Class.doAI(cbc, cbdata, ch)
 	Class.doRandomSkill(cbc, cbdata, ch)

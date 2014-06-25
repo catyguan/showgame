@@ -52,8 +52,15 @@ contentManager = {
 	messages : [],
 	processing : false,
 	processCommand : null,
+	colors : [[],[]],
 
 	Init : function(viewData) {
+		for (var t = 0; t < 2; t++) {
+			var tc = contentManager.colors[t];
+			for (var p = 0; p < 6; p++) {
+				tc[p] = "";
+			}
+		}
 		contentManager.DoProcess();
 	},
 	Update : function(viewData) {
@@ -168,7 +175,7 @@ contentManager = {
 
 		// show detail
 		var html = "";
-		html += theText(chpro.title)+"<br>";
+		html += theText(chobj.title)+"<br>";
 		html += "HP:"+contentManager.HPText(chobj.HP, chobj.MAXHP)+",";
 		html += "ATK:"+chobj.ATK+",";
 		html += "SKL:"+chobj.SKL+",";
@@ -207,6 +214,25 @@ contentManager = {
 	},
 	UpdateView : function(viewData) {
 
+	},
+	SetColor : function(t, p, c, rc) {
+		var old = contentManager.colors[t-1][p-1];
+		if(rc!="" && old!=rc)return false;
+		contentManager.colors[t-1][p-1] = c;
+		return true;
+	},
+	BuildColors : function() {
+		for (var t = 0; t < 2; t++) {
+			var tc = contentManager.colors[t];
+			for (var p = 0; p < 6; p++) {
+				var c = tc[p];
+				var team = t+1;
+				var pos = p+1;
+				var css = "";
+				if(c!="")css="1px solid "+c;
+				$('#map_'+team+'_'+pos).css('border', css);
+			}
+		}
 	},
 	BuildSpells : function() {
 		var viewData = contentManager.viewData;
@@ -275,6 +301,7 @@ contentManager = {
 				focusId = chobj.id;				
 			}
 		}
+		contentManager.BuildColors();
 
 		html = "";
 		if(viewData.turn>0) {
@@ -375,22 +402,32 @@ contentManager = {
 			contentManager.BuildView();
 		} else if(ev.k=="end") {
 			contentManager.ShowMessage("end, winner is "+ev.winner, true);
-		} else if(ev.k=="skill") {
+		} else if(ev.k=="skill" || ev.k=="usespell") {
 			var msg = "";
 			var skd = {};
+			var clset = [];
 			if(ev.uik=="SkillDef") {
 				var ch = contentManager.viewData.chars[ev.MID];
 				msg = "::{TITLE}采用防御姿势";
-				skd.TITLE = ch.title;
+				skd.TITLE = ch.title;				
+				clset[0] = {team:ch.team, pos:ch.pos, c:"blue"};
 			}
 			if(ev.uik=="SpellHeal") {
-				msg = "::使用了恢复法术";
+				msg = "::激活恢复法术";
+				for(var cid in contentManager.viewData.chars) {
+					var ch = contentManager.viewData.chars[cid];
+					if(ch.team==1) {
+						clset[clset.length] = {team:ch.team, pos:ch.pos, c:"green"};	
+					}
+				}
 			}
 			if(ev.uik=="SkillAttack") {
 				var ch = contentManager.viewData.chars[ev.MID];
 				var ch2 = contentManager.viewData.chars[ev.TID];
 				skd.TITLE = theText(ch.title);
 				skd.TITLE2 = theText(ch2.title);
+				clset[0] = {team:ch.team, pos:ch.pos, c:"blue"};
+				clset[1] = {team:ch2.team, pos:ch2.pos, c:"red"};
 
 				if(ev.info.hited) {
 					msg = "::{TITLE}攻击{TITLE2}，造成{DMG}点伤害";
@@ -404,12 +441,30 @@ contentManager = {
 				msg = "::{TITLE}待机";
 				skd.TITLE = ch.title;
 			}
-			if(ev.refresh) {
+			if(clset.length>0) {
+				for (var i = 0; i < clset.length; i++) {
+					var cl = clset[i];
+					if(contentManager.SetColor(cl.team, cl.pos, cl.c, "")) {
+						f = function(cl) {
+							setTimeout(function() {
+								contentManager.SetColor(cl.team, cl.pos, "", cl.c);
+							}, 350);
+						};
+						f(cl);
+					}
+				}
+			}
+			var bdone = false;			
+			if(ev.refresh && ev.refresh.length>0) {
 				for (var i = 0; i < ev.refresh.length; i++) {
 					var rinfo = ev.refresh[i]
 					contentManager.viewData.chars[rinfo.id] = rinfo.data;				
 				};
+				bdone = true;
 				contentManager.BuildView();
+			}
+			if(!bdone && clset.length>0) {
+				contentManager.BuildColors();
 			}
 			if(msg) {
 				contentManager.ShowMessage(contentManager.SkillDesc(msg, skd));
@@ -422,17 +477,28 @@ contentManager = {
 	},
 	_evalEvent : function(elist, idx, delay) {
 		if(!elist)return;
-		if(idx>=elist.length)return;		
-		setTimeout(function() {
-			var nextf = function() {
-				_evalEvent(elist, idx+1, 0);
+		if(idx>=elist.length)return;
+		var cf = function() {
+			for(var i=idx;i<elist.length;i++) {
+				var nextf = function() {
+					_evalEvent(elist, i+1, 0);
+				}
+				var ev = elist[i];
+				var ndelay = contentManager._invokeEvent(ev, nextf);
+				if(ndelay<0) {
+					break;
+				}
+				if(ndelay>0) {
+					contentManager._evalEvent(elist, i+1, ndelay);
+					break;
+				}
 			}
-			var ev = elist[idx];
-			var ndelay = contentManager._invokeEvent(ev, nextf);
-			if(ndelay>=0) {
-				contentManager._evalEvent(elist, idx+1, ndelay);
-			}
-		}, delay);
+		};
+		if(delay>0) {
+			setTimeout(cf, delay);
+		} else {
+			cf();
+		}
 	}
 }
 </script>
