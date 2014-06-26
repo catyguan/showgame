@@ -4,7 +4,7 @@ local Class = class.define("cmod.pack.base.ModTreant", {"cmod.basetype.CharBase"
 function Class.newChar(lvl)
 	local r = {
 		HP=585,
-		ATK=166,
+		STR=166,
 		SKL=55,
 		DEF=96,
 		SPD=88,
@@ -14,7 +14,7 @@ function Class.newChar(lvl)
 	}
 	Class.levelUp(r, lvl, {
 		HP=0.2,
-		ATK=0.1,
+		STR=0.1,
 		DEF=0.25
 	})
 	return r

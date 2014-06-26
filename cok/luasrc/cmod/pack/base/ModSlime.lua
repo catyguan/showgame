@@ -4,7 +4,7 @@ local Class = class.define("cmod.pack.base.ModSlime", {"cmod.basetype.CharBase"}
 function Class.newChar(lvl)
 	local r = {
 		HP=450,
-		ATK=160,
+		STR=160,
 		SKL=60,
 		DEF=120,
 		SPD=102,
@@ -14,7 +14,7 @@ function Class.newChar(lvl)
 	}
 	Class.levelUp(r, lvl, {
 		HP=0.1,
-		ATK=0.1,
+		STR=0.1,
 		SKL=0.1,
 		DEF=0.2
 	})

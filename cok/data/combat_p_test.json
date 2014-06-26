@@ -1,0 +1,68 @@
+{
+	"opts" : {
+		"teamType": 6
+	},
+	"emenyTeam" : {
+		"groups" : [
+			{
+				"id":"group1",
+				"chars" : [
+					{
+						"_p": "cmod.pack.base.ModTreant",
+						"level": 3,
+						"prop" : {
+							"pos": 2
+						}
+					}
+				]
+			},
+			{
+				"id":"group2",
+				"chars" : [
+					{
+						"_p": "cmod.pack.base.ModMushroom",
+						"level": 1,
+						"prop" : {
+							"pos": 3
+						}
+					}
+				]
+			}
+		]
+	},
+	"myGroup" : {
+		"chars" : [
+			{
+				"_p": "cmod.pack.base.ModSlime",
+				"level": 2,
+				"prop" : {
+					"pos": 5,
+					"fixed": true
+				}
+			},
+			{
+				"_p": "cmod.pack.base.ModSlime",
+				"level": 1,
+				"prop" : {
+					"pos": 2
+				}
+			}
+		]
+	},
+	"myWagon" : {
+		"chars" : [
+			{
+				"_p": "cmod.pack.base.ModSlime",
+				"level": 3,
+				"prop" : {					
+				}
+			},
+			{
+				"_p": "cmod.pack.base.ModSlime",
+				"level": 4,
+				"prop" : {					
+				}
+			}
+		]
+	}
+}

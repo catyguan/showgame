@@ -36,3 +36,15 @@ function Class.queryRegions()
 
 	return r
 end
+
+local WAGON_KEY = {"adv", "wagon"}
+
+function Class.getWagon()
+	local w = WORLD
+	local v = w:prop(WAGON_KEY)
+	if v==nil then
+		v = {}
+		w:prop(WAGON_KEY, v)
+	end
+	return v
+end

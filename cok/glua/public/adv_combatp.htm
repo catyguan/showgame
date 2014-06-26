@@ -1,0 +1,426 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<title>CombatPrepare</title>
+</head>
+<body>
+<div>
+	<table>
+		<tr>
+			<td>
+				<!-- emeny group selector-->
+				<span id="divEGSelector"></span>
+			</td>
+		</tr>
+		<tr>
+			<td id="divTeamView">
+				
+			</td>
+			<td id="chinfo" valign="top">&nbsp;</td>
+		</tr>
+	</table>
+</div>
+<hr>
+<div id='PopUp' style='display: none;'>
+<button id='btSelect' onclick="contentManager.SetupChar()">Select</button><button onclick="contentManager.ClosePopUp()">Close</button><br>
+<span id='PopUpContent'>&nbsp;</span>
+</DIV>
+
+<script>
+contentManager = {
+	eid : 0,
+	selected : "",
+	setPos: 0,
+	messages : [],
+	processing : false,
+	processCommand : null,
+	colors : [[],[]],
+
+	Init : function(viewData) {
+		contentManager.InitView(viewData);
+	},
+	Update : function(viewData) {
+		// contentManager.UpdateView(viewData);
+	},
+	DoProcess : function() {
+		if(contentManager.processing) {
+			return
+		}
+		contentManager.processing = true;
+		var cmd = null;
+		if(contentManager.processCommand!=null) {
+			cmd = contentManager.processCommand;
+			contentManager.processCommand = null;
+		}
+		doUIProcess(contentManager.eid, cmd, function(rs) {
+			contentManager.processing = false;
+			contentManager.EvalEvent(rs.result);
+			contentManager.UpdateView(rs.data);
+		});
+	},
+	NextProcess : function(cmd) {
+		contentManager.processCommand = cmd;
+	},
+	SpellEnable : function(spi) {
+		if(spi.CD>0) {
+			return false;
+		}
+		if(spi.num<=0) {
+			return false;
+		}
+		return true;
+	},
+	SkillDesc : function(skdesc, skprop1, skprop2, skprop3) {
+		var str = theText(skdesc);
+		var word = "";
+		var mword = false;
+		var nstr = "";
+		for (var i = 0; i <str.length; i++) {
+			var s = str[i];
+			if(!mword) {
+				if(s=="{") {
+					mword = true;
+					word = "";
+					continue;
+				}
+				nstr += s;
+			} else {
+				if(s=="}") {
+					mword = false;
+					var w = "";
+					w = skprop1[word];
+					if(!w && skprop2) {
+						w = skprop2[word];
+						if(!w && skprop3) {
+							w = skprop3[word];
+						}
+					}
+					nstr += w;
+					continue;
+				}
+				word += s;
+			}
+		}
+		return nstr;
+	},
+	EventText : function(ev) {
+		var msg = "";
+		for(var key in ev){
+ 			msg += key+"="+ev[key]+"; ";
+		}
+		return msg;
+	},
+	GetChar : function(cid) {
+		var r
+		var vd = contentManager.viewData;
+		for(var i=0;i<vd.et.groups.length;i++) {
+			var g = vd.et.groups[i];
+			for(var j=0;j<g.chars.length;j++) {
+				var ch = g.chars[j];
+				if(ch.id==cid) {
+					return ch;
+				}
+			}
+		}
+		if(true) {
+			var g = vd.mt.team;
+			if(g) {
+			for(var j=0;j<g.chars.length;j++) {
+				var ch = g.chars[j];
+				if(ch.id==cid) {
+					return ch;
+				}
+			}
+			}
+		}
+		if(true) {
+			var g = contentManager.viewData.mt.wagon;
+			if(g) {
+			for(var j=0;j<g.chars.length;j++) {
+				var ch = g.chars[j];
+				if(ch.id==cid) {
+					return ch;
+				}
+			}
+			}
+		}
+		return r
+	},
+	CharDetail : function(chobj) {
+		var html = "";
+		html += theText(chobj.title)+"/"+chobj.level+"<br>";
+		html += "HP:"+chobj.HP+",";
+		html += "STR:"+chobj.STR+",";
+		html += "SKL:"+chobj.SKL+",";
+		html += "DEF:"+chobj.DEF+",";		
+		html += "SPD:"+chobj.SPD+",";
+		if(chobj.skills) {
+			html += "<br>";
+			html += "[技能]";
+			for (var i = 0; i < chobj.skills.length; i++) {
+				var ski = chobj.skills[i];
+
+				html += "<br>";
+				html += theText(ski.title)+" - ";
+				html += contentManager.SkillDesc(ski.desc, ski, chobj);
+			}
+		}
+		html += "<br>"
+		return html;
+	},
+	FocusOn : function(cid, focus) {
+		if(cid!=contentManager.selected) {
+			var oid = contentManager.selected;
+			var ochobj = contentManager.GetChar(oid);
+			if(ochobj) {
+				var otid = ochobj.team?ochobj.team:3;
+				var opos = ochobj.pos?ochobj.pos:ochobj.xpos;
+				$( "#tab_"+otid+"_"+opos ).css("background-color", "");				
+			}
+			contentManager.selected = "";
+			$( "#chinfo" ).html("");
+		}
+
+		if(!focus) {
+			return;
+		}
+
+		var chobj = contentManager.GetChar(cid);
+		if(!chobj) {
+			return;
+		}
+		var tid = chobj.team?chobj.team:3;
+		var pos = chobj.pos?chobj.pos:chobj.xpos;
+
+		if(!focus)return;
+		$( "#tab_"+tid+"_"+pos ).css("background-color", "#E6E6FA");
+		contentManager.selected = cid;
+
+		// show detail
+		var html = contentManager.CharDetail(chobj);
+		$( "#chinfo" ).html(html);
+	},
+	UpdateView : function(viewData) {
+
+	},
+	InitView : function(data) {
+		contentManager.viewData = data;
+		contentManager.BuildView();		
+	},
+	BuildView : function() {
+		var viewData = contentManager.viewData;
+
+		var html = "";
+		for(var i=1;i<=viewData.et.groups.length;i++) {			
+			html += "<button onclick='contentManager.BuildGroup(2,"+i+")'>GROUP"+i+"</button> ";
+		}
+		$('#divEGSelector').html(html);
+
+		html = "";
+		var tmpf = function(team, posline) {
+			var p1,p2,p3;
+			p1 = (posline-1)*3+1;
+			p2 = (posline-1)*3+2;
+			p3 = (posline-1)*3+3;
+			var r = "";
+			r += "<tr>";
+			r += "<td width='160' height='65'><div  id='map_"+team+"_"+p1+"'>&nbsp;</div></td>";
+			r += "<td width='160' height='65'><div  id='map_"+team+"_"+p2+"'>&nbsp;</div></td>";
+			r += "<td width='160' height='65'><div  id='map_"+team+"_"+p3+"'>&nbsp;</div></td>";
+			r += "</tr>";
+			return r;
+		};
+		html += "<table border='1'>";
+		if(viewData.opts.teamType==9) {
+			html += tmpf(2, 3);
+		}
+		html += tmpf(2, 2);
+		html += tmpf(2, 1);
+		html += "<tr>";
+		html += "<td colspan='3' bgcolor='blue'></td>";
+		html += "</tr>";
+		html += tmpf(1, 1);
+		html += tmpf(1, 2);
+		if(viewData.opts.teamType==9) {
+			html += tmpf(1, 3);
+		}
+		html += "</table>";
+		$('#divTeamView').html(html);
+		
+		contentManager.BuildGroup(2, 1);
+		contentManager.BuildGroup(1, 1);
+		if(true)return;
+
+	},
+	BuildGroup : function(team, gp) {
+		var gpdata;
+		if(team==2) {
+			var glist = contentManager.viewData.et.groups;
+			if(gp-1>=glist.length) {
+				return;
+			}
+			gpdata = glist[gp-1];
+		} else {
+			gpdata = contentManager.viewData.mt.team;
+		}
+
+		for(var i=1;i<=contentManager.viewData.opts.teamType;i++) {
+			if(team==1) {
+				$('#map_'+team+'_'+i).html("<button onclick='contentManager.DoSet("+i+")'>SET</button>");
+			} else {
+				$('#map_'+team+'_'+i).html("&nbsp;");
+			}
+		}
+		for(var i=0;i<gpdata.chars.length;i++) {
+			var chobj = gpdata.chars[i];
+			var chid = chobj.id;
+			var tid = team;
+			var pos = chobj.pos;
+
+			var html = "";
+			var tabcss = "";
+			html += "<table id='tab_"+tid+"_"+pos+"'><tr>";
+			html += "<td>";
+			html += "<img src='"+chobj.pic+"' width=60 height=60 onclick=\"contentManager.SelectChar('"+chobj.id+"')\">";
+			html += "</td><td>";
+			html += ""+theText(chobj.title)+"<br>";
+			html += "LEVEL: "+chobj.level+"<br>";			
+			html += "</td>";
+			html += "</tr></table>"
+			if(tid==1 && !chobj.fixed) {
+				html += "<button onclick=\"contentManager.DoUnset('"+chobj.id+"',"+pos+")\">UNSET</button>"
+			}
+			$( "#map_"+tid+"_"+pos ).html(html);
+		}
+		if(true)return;
+
+		contentManager.BuildColors();
+
+		html = "";
+		if(viewData.turn>0) {
+			html += "行动:<span id='turndiv'>"+viewData.turn+"</span> <span id='spelldiv'>"+contentManager.BuildSpells()+"</span><br>";
+		}
+
+		$( "#ginfo" ).html(html);
+
+		contentManager.FocusOn(focusId, focusId!="");
+
+		if(viewData.events) {
+			for (var i = 0; i < viewData.events.length; i++) {
+				var ev = viewData.events[i];
+				var msg = contentManager.EventText(ev)
+				contentManager.ShowMessage(msg);
+			}			
+		}
+	},
+	ShowMessage : function(msg, iserr) {
+		var mbox = contentManager.messages;
+		mbox.push({t:new Date(), m:msg,err:iserr});
+		if(mbox.length>15) {
+			mbox.shift();
+		}
+		var html = "";
+		for (var i = mbox.length - 1; i >= 0; i--) {
+			var mi = mbox[i];
+			if(html!="") {
+				html += "<br>";
+			}
+			html += mi.t.Format("yyyy-MM-dd hh:mm:ss ");
+			if(mi.err) {
+				html += "<font color=red>"+theText(mi.m)+"</font>";
+			} else {
+				html += theText(mi.m);
+			}
+		};
+		$( "#msgdiv" ).html(html);
+	},
+	Close : function() {
+
+	},
+	SelectChar : function(cid) {
+		if(cid==contentManager.selected) {
+			contentManager.FocusOn("", false);
+		} else {
+			contentManager.FocusOn(cid, true);
+		}
+	},
+	SelectWChar : function(cid) {
+		if(cid==contentManager.selected) {
+			contentManager.FocusOn("", false);
+			$('#btSelect').attr("disabled", "true");
+		} else {
+			contentManager.FocusOn(cid, true);
+			$('#btSelect').removeAttr("disabled");
+		}
+	},
+	DoUnset : function(cid, pos) {
+		var ch = contentManager.GetChar(cid);
+		var team = 1;
+		var pos = ch.pos;
+		ch.team = 3;
+		ch.pos=null;
+		var wg = contentManager.viewData.mt.wagon;
+		if(!ch.xpos) {
+			wg.chars[wg.chars.length] = ch;
+		}
+
+		$('#map_'+team+'_'+pos).html("<button onclick='contentManager.DoSet("+pos+")'>SET</button>");
+	},
+	DoSet : function(pos) {
+		contentManager.setPos = pos;
+		contentManager.ShowPopup();
+	},
+	ShowPopup : function() {
+		var html = "";
+		var wg = contentManager.viewData.mt.wagon;
+		for (var i = 0; i < wg.chars.length; i++) {
+			var chobj = wg.chars[i];
+			if(chobj.team==1) {
+				continue;
+			}
+			var pos = i + 1;
+			chobj.xpos = pos;
+			html += "<div style='float:left;'>";
+			html += "<table id='tab_3_"+pos+"'><tr>";
+			html += "<td>";
+			html += "<img src='"+chobj.pic+"' width=60 height=60 onclick=\"contentManager.SelectWChar('"+chobj.id+"')\">";
+			html += "</td><td>";
+			html += ""+theText(chobj.title)+"<br>";
+			html += "LEVEL: "+chobj.level+"<br>";			
+			html += "</td>";
+			html += "</tr></table>"
+			html += "</div>";
+		}
+		html += "<div style='clear:both'></div>"
+		$('#PopUpContent').html(html);
+		$('#PopUp').css("display","");
+		$('#btSelect').attr("disabled", "true");
+	},
+	ClosePopUp : function() {
+		$('#PopUp').css("display","none");	
+	},
+	SetupChar : function() {
+		if(contentManager.selected=="") {
+			return;
+		}
+		var ch = contentManager.GetChar(contentManager.selected);
+		console.log(ch.team, ch.pos);
+		if(ch.pos) {
+			return;
+		}
+		if(ch.team && ch.team!=3) {
+			return;
+		}
+		contentManager.ClosePopUp();
+		var tg = contentManager.viewData.mt.team;
+		var wg = contentManager.viewData.mt.wagon;
+		ch.team = 1;
+		ch.pos = contentManager.setPos;
+		tg.chars[tg.chars.length] = ch;
+		contentManager.BuildView();
+	}
+}
+</script>
+
+</body>
+</html>

@@ -54,7 +54,7 @@ end
 function Class.doTest3(ctx)
 	local cbm = class.forName("adventure.Combatd")
 
-	local cbjson = loader("combat_test")		
+	local cbjson = loader("combat_test")	
 	local cb = cbm.newCombat(1)
 	local chlist = cbjson.chars
 	for _, chdata in ipairs(chlist) do
@@ -67,5 +67,18 @@ function Class.doTest3(ctx)
 
 	cbm.prepare(cb)
 	-- cbm.process(cb)	
+	return 0
+end
+
+function Class.doTest4(ctx)
+	local ldata = loader("combat_p_test")
+
+	local uic = class.forName("adventure.ui.CombatPrepare")
+	
+	local opts = ldata.opts
+	local emenyTeam = ldata.emenyTeam
+	local myGroup = ldata.myGroup
+	local myWagon = ldata.myWagon
+	uic.uiEnter(opts, emenyTeam, myGroup, myWagon)
 	return 0
 end

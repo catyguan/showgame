@@ -4,7 +4,7 @@ local Class = class.define("cmod.pack.base.ModMushroom", {"cmod.basetype.CharBas
 function Class.newChar(lvl)
 	local r = {
 		HP=640,
-		ATK=192,
+		STR=192,
 		SKL=60,
 		DEF=64,
 		SPD=104,
@@ -14,7 +14,7 @@ function Class.newChar(lvl)
 	}
 	Class.levelUp(r, lvl, {
 		HP=0.1,
-		ATK=0.2,
+		STR=0.2,
 		SKL=0.1,
 		DEF=0.1
 	})
