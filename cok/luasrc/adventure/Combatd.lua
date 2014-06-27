@@ -8,10 +8,9 @@ local LTAG = "AdvCombatd"
 local IDS = 1
 local ACT_AP = 500
 
-function Class.newCombat(dif)
+function Class.newCombat()
 	local data ={
 		stage = "combatBegin",
-		dif = dif,
 		rt = {
 			aorder = {},
 			chars = {},
@@ -70,14 +69,13 @@ end
 
 function Class.newChar(data, charObj)
 	local ch = charObj
-	if charObj.newc then
-		local cls = class.forName(charObj._p)
-		ch = cls.newChar(charObj.level)
-		ch._p = charObj._p
-		if charObj.prop then
-			for k,v in pairs(charObj.prop) do
-				ch[k] = v
-			end
+	local cls = class.forName(charObj._p)
+	ch = cls.newChar(charObj.level)	
+	ch._p = charObj._p
+	ch.level = charObj.level
+	if charObj.prop then
+		for k,v in pairs(charObj.prop) do
+			ch[k] = v
 		end
 	end
 	Class.addChar(data, ch)
@@ -94,7 +92,7 @@ function Class.addChar(data, charObj)
 	end
 	chkset(charObj, "MAXHP", "HP")
 	chkset(charObj, "BASE_HP", "MAXHP")
-	chkset(charObj, "BASE_ATK", "ATK")
+	chkset(charObj, "BASE_STR", "STR")
 	chkset(charObj, "BASE_SKL", "SKL")
 	chkset(charObj, "BASE_DEF", "DEF")
 	chkset(charObj, "BASE_SPD", "SPD")
@@ -308,30 +306,13 @@ end
 
 function Class.copyProp(des, src, kind)
 	des.id = src.id
+	des.level = src.level
 	des.title = src.title
 	des.HP = src.HP
 	des.MAXHP = src.MAXHP
-	des.ATK = src.ATK	
-	des.SKL = src.SKL
-	des.DEF = src.DEF	
-	des.SPD = src.SPD
-	des.ARMOR = src.ARMOR
-	des.DODGE = src.DODGE
 	des.team = src.team
 	des.pos = src.pos
 
-	-- skills
-	des.skills = {}
-	for _,sk in ipairs(src.skills) do
-		local sko = {}
-		sko.id = sk.id
-		sko.XCD = sk.XCD
-		-- local skp = class.forName(sk._p)
-		-- if skp.copyViewData then
-		-- 	skp.copyViewData(sko, sk)
-		-- end
-		table.insert(des.skills, sko)
-	end
 	-- effects
 	des.effects = {}
 	if src.effects then

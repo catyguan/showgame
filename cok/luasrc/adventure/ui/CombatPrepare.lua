@@ -5,8 +5,6 @@ local Class = class.define("adventure.ui.CombatPrepare", {"world.UIControl"})
 local LDEBUG = LOG:debugEnabled()
 local LTAG = "UI.adv.CombatPrepare"
 
-local M = class.forName("adventure.Manager")
-
 --[[
 viewdata {
 	opts : {
@@ -27,52 +25,17 @@ viewdata {
 		],
 	}
 }
-context {
-	opts : {
-		teamType : 6,9
-	},
-	et : {
-		groups : [
-			-- group 1
-			{ -- char -- }
-		],
-
-	},
-	mt : {
-		team = [
-			{...}
-		]
-	}
-}
 ]]
-function Class.uiEnter(opts, emenyTeam, myGroup, myWagon)
+function Class.uiEnter()
 	local w = WORLD
-	local mw = myWagon
-	if mw==nil then
-		mw = M.getWagon()
-	end
-	local ctx = {
-		opts = {},
-		et = {},
-		mt = {
-			team = {},
-			wagon = {}
-		}
-	}
-
-	table.copy(ctx.opts, opts, true)
-	table.copy(ctx.et, emenyTeam, true)	
-	if myGroup~=nil then
-		table.copy(ctx.mt.team, myGroup, true)
-	end
-	table.copy(ctx.mt.wagon, mw, true)
-
-	local view = Class.buildView(ctx)	
-	w:changeView("adv_combatp",view,"adventure.ui.CombatPrepare", ctx)
+	local ctx = w:prop({"adv", "combat"})
+	local wagon = w:prop({"adv", "wagon"})
+	local view = Class.buildView(ctx, wagon)	
+	w:createView("adv_combatp",view, Class.className, {})
 end
 
 local buildCharView = function(ch, ids)
-	local chc = class.forName(ch._p)			
+	local chc = class.forName(ch._p)
 	local vch = chc.newChar(ch.level)
 	vch.level = ch.level
 	if ch.id then
@@ -107,7 +70,7 @@ local buildCharView = function(ch, ids)
 	return vch, ids
 end
 
-function Class.buildView(ctx)
+function Class.buildView(ctx, wagon)
 	local r = {
 		opts = {},
 		et = {},
@@ -116,7 +79,7 @@ function Class.buildView(ctx)
 	local ids = 1
 	r.opts.teamType = ctx.opts.teamType
 	r.et.groups = {}
-	for _,gp in ipairs(ctx.et.groups) do
+	for _,gp in ipairs(ctx.emenyTeam.groups) do
 		local vgp = {}
 		vgp.chars = {}
 		for _, ch in ipairs(gp.chars) do
@@ -129,7 +92,7 @@ function Class.buildView(ctx)
 	end
 
 	if true then
-		local gp = ctx.mt.team
+		local gp = ctx.team
 		local vgp = {}
 		vgp.chars = {}
 		for _, ch in ipairs(gp.chars) do
@@ -141,15 +104,27 @@ function Class.buildView(ctx)
 		r.mt.team = vgp
 	end
 
-	if true then
-		local gp = ctx.mt.wagon
+	if true then		
 		local vgp = {}
 		vgp.chars = {}
-		for i, ch in ipairs(gp.chars) do
-			local vch
-			vch, ids = buildCharView(ch, ids)
-			vch.team = 3
-			table.insert(vgp.chars, vch)
+
+		local gp = ctx.wagon
+		if gp~= nil then		
+			for i, ch in ipairs(gp.chars) do
+				local vch
+				vch, ids = buildCharView(ch, ids)
+				vch.team = 3
+				table.insert(vgp.chars, vch)
+			end
+		end
+		local gp = wagon
+		if gp~= nil then		
+			for i, ch in ipairs(gp.chars) do
+				local vch
+				vch, ids = buildCharView(ch, ids)
+				vch.team = 3
+				table.insert(vgp.chars, vch)
+			end
 		end
 		r.mt.wagon = vgp
 	end
@@ -158,8 +133,10 @@ function Class.buildView(ctx)
 end
 
 -- ui action
-function Class.onMain()
-
+function Class.doSetup(ctx, p)
+	local M = class.forName("adventure.Manager")
+	M.setupCombat(p.team)
+	M.flowProcess()
 end
 
 

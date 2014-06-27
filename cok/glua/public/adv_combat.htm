@@ -94,7 +94,23 @@ contentManager = {
 		}
 		return true;
 	},
-	SkillDesc : function(skdesc, skprop1, skprop2, skprop3) {
+	EventText : function(ev) {
+		var msg = "";
+		for(var key in ev){
+ 			msg += key+"="+ev[key]+"; ";
+		}
+		return msg;
+	},
+	HPText : function(c, m, s) {
+		var clr = "#267F00";
+		if(c<m*0.333) {
+			clr = "#FF0000";
+		} else if(c<m*0.666) {
+			clr = "#FF6A00";
+		}
+		return "<font color='"+clr+"'>"+(s?"":c+"/")+(c*100/m).toFixed(2)+"%</font>";
+	},
+	DescText : function(skdesc, skprop1, skprop2, skprop3) {
 		var str = theText(skdesc);
 		var word = "";
 		var mword = false;
@@ -127,22 +143,6 @@ contentManager = {
 		}
 		return nstr;
 	},
-	EventText : function(ev) {
-		var msg = "";
-		for(var key in ev){
- 			msg += key+"="+ev[key]+"; ";
-		}
-		return msg;
-	},
-	HPText : function(c, m, s) {
-		var clr = "#267F00";
-		if(c<m*0.333) {
-			clr = "#FF0000";
-		} else if(c<m*0.666) {
-			clr = "#FF6A00";
-		}
-		return "<font color='"+clr+"'>"+(s?"":c+"/")+(c*100/m).toFixed(2)+"%</font>";
-	},
 	FocusOn : function(cid, focus) {
 		if(cid!=contentManager.selected) {
 			var oid = contentManager.selected;
@@ -174,13 +174,10 @@ contentManager = {
 		contentManager.selected = cid;
 
 		// show detail
-		var html = "";
+		var html = "";		
 		html += theText(chobj.title)+"<br>";
-		html += "HP:"+contentManager.HPText(chobj.HP, chobj.MAXHP)+",";
-		html += "ATK:"+chobj.ATK+",";
-		html += "SKL:"+chobj.SKL+",";
-		html += "DEF:"+chobj.DEF+"("+(chobj.ARMOR*100).toFixed(2)+"%)"+",";		
-		html += "SPD:"+chobj.SPD+",";
+		html += "LEVEL:"+chobj.level+"<br>";
+		html += "HP:"+contentManager.HPText(chobj.HP, chobj.MAXHP)+",";		
 		if(chobj.effects && chobj.effects.length>0) {
 			html += "<br>";
 			html += "[效果]";
@@ -194,20 +191,8 @@ contentManager = {
 				if(efi.LAST>0) {
 					html+="("+efi.LAST+")";
 				}
-				html += " - "+contentManager.SkillDesc(ef.desc, efi, chobj, chpro);
+				html += " - "+contentManager.DescText(ef.desc, efi, chobj, chpro);
 			};
-		}
-		if(chobj.skills) {
-			html += "<br>";
-			html += "[技能]";
-			for (var i = 0; i < chobj.skills.length; i++) {
-				var ski = chobj.skills[i];
-				var sk = contentManager.viewProfile.skills[ski.id];
-
-				html += "<br>";
-				html += theText(sk.title)+" - ";
-				html += contentManager.SkillDesc(sk.desc, sk, chobj, chpro);
-			}
 		}
 		html += "<br>"
 		$( "#chinfo" ).html(html);
@@ -283,6 +268,7 @@ contentManager = {
 			html += "<td>";
 			html += "<img src='"+chpro.pic+"' width=60 height=60 onclick=\"contentManager.SelectChar('"+chobj.id+"')\">";
 			html += "</td><td>";
+			html += "LEVEL:"+chobj.level+"<br>";
 			html += "HP:"+contentManager.HPText(chobj.HP, chobj.MAXHP, true)+"<br>";
 			for (var j = 0; j < chobj.effects.length; j++) {
 				var efi = chobj.effects[j];
@@ -467,7 +453,7 @@ contentManager = {
 				contentManager.BuildColors();
 			}
 			if(msg) {
-				contentManager.ShowMessage(contentManager.SkillDesc(msg, skd));
+				contentManager.ShowMessage(contentManager.DescText(msg, skd));
 				return 500;					
 			}
 		} else {

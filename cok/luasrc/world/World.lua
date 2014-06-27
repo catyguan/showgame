@@ -47,7 +47,8 @@ function Class:prop(nlist, sv)
 			if sv==nil then
 				return nil
 			end
-			t[n] = {}
+			v = {}
+			t[n] = v
 		end
 		ln = n
 		p = t

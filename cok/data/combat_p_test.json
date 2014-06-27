@@ -33,6 +33,7 @@
 	"myGroup" : {
 		"chars" : [
 			{
+				"id": "cid1",
 				"_p": "cmod.pack.base.ModSlime",
 				"level": 2,
 				"prop" : {
@@ -41,6 +42,7 @@
 				}
 			},
 			{
+				"id": "cid2",
 				"_p": "cmod.pack.base.ModSlime",
 				"level": 1,
 				"prop" : {
@@ -52,14 +54,23 @@
 	"myWagon" : {
 		"chars" : [
 			{
+				"id": "w1",
 				"_p": "cmod.pack.base.ModSlime",
-				"level": 3,
+				"level": 1,
 				"prop" : {					
 				}
 			},
 			{
-				"_p": "cmod.pack.base.ModSlime",
-				"level": 4,
+				"id": "w2",
+				"_p": "cmod.pack.base.ModMushroom",
+				"level": 1,
+				"prop" : {					
+				}
+			},
+			{
+				"id": "w3",
+				"_p": "cmod.pack.base.ModTreant",
+				"level": 1,
 				"prop" : {					
 				}
 			}

@@ -73,12 +73,12 @@ end
 function Class.doTest4(ctx)
 	local ldata = loader("combat_p_test")
 
-	local uic = class.forName("adventure.ui.CombatPrepare")
+	local M = class.forName("adventure.Manager")
 	
 	local opts = ldata.opts
 	local emenyTeam = ldata.emenyTeam
 	local myGroup = ldata.myGroup
 	local myWagon = ldata.myWagon
-	uic.uiEnter(opts, emenyTeam, myGroup, myWagon)
+	M.startCombat(opts, emenyTeam, myGroup, myWagon)
 	return 0
 end

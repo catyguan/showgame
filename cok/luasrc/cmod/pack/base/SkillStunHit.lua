@@ -6,7 +6,7 @@ Class.UIK = "SkillAttack"
 function Class.getProfile()
 	return {
 		title="::撞击",
-		desc="::对一名敌人造成0.9*ATK点伤害并小几率使其眩晕",
+		desc="::对一名敌人造成0.9*STR点伤害并小几率使其眩晕",
 		CD=0,
 		target="one"
 	}
@@ -27,5 +27,5 @@ local hitf = function(sk, cbc, cbdata, ch, info)
 end
 
 function Class.doPerform(cls, sk, cbc, cbdata, mobj, tobj)
-	cls.doAttack(sk, cbc, cbdata, mobj, {tobj}, 0.9*mobj.ATK, cls.UIK, hitf)
+	cls.doAttack(sk, cbc, cbdata, mobj, {tobj}, 0.9*mobj.STR, cls.UIK, hitf)
 end

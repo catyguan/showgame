@@ -6,12 +6,12 @@ Class.UIK = "SkillAttack"
 function Class.getProfile()
 	return {
 		title="::猛击",
-		desc="::对一名敌人造成1.0*ATK点伤害",
+		desc="::对一名敌人造成1.0*STR点伤害",
 		CD=0,
 		target="one"
 	}
 end
 
 function Class.getDamage(cls, sk, cbc, cbdata, mobj)
-	return 1.0*mobj.ATK
+	return 1.0*mobj.STR
 end

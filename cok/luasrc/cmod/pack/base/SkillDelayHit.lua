@@ -6,7 +6,7 @@ Class.UIK = "SkillAttack"
 function Class.getProfile()
 	return {
 		title="::击退",
-		desc="::对一名敌人造成1.0*ATK点伤害并减少其攻击速度",
+		desc="::对一名敌人造成1.0*STR点伤害并减少其攻击速度",
 		CD=0,
 		target="one"
 	}
@@ -25,5 +25,5 @@ local hitf = function(sk, cbc, cbdata, ch, info)
 end
 
 function Class.doPerform(cls, sk, cbc, cbdata, mobj, tobj)
-	cls.doAttack(sk, cbc, cbdata, mobj, {tobj}, 1.0*mobj.ATK, cls.UIK, hitf)
+	cls.doAttack(sk, cbc, cbdata, mobj, {tobj}, 1.0*mobj.STR, cls.UIK, hitf)
 end

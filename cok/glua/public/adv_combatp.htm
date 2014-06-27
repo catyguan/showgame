@@ -9,7 +9,7 @@
 		<tr>
 			<td>
 				<!-- emeny group selector-->
-				<span id="divEGSelector"></span>
+				<span id="divEGSelector"></span><span> - <button id="btSubmit" onclick="contentManager.DoSubmit()">完成布阵</button></span>
 			</td>
 		</tr>
 		<tr>
@@ -353,8 +353,20 @@ contentManager = {
 			$('#btSelect').removeAttr("disabled");
 		}
 	},
-	DoUnset : function(cid, pos) {
-		var ch = contentManager.GetChar(cid);
+	DoUnset : function(cid, pos) {		
+		var ch
+		if(true) {
+			var g = contentManager.viewData.mt.team;
+			for(var j=0;j<g.chars.length;j++) {
+				var tch = g.chars[j];
+				if(tch.id==cid) {
+					ch = tch;
+					g.chars.splice(j, 1)					
+					break;
+				}			
+			}
+		}
+
 		var team = 1;
 		var pos = ch.pos;
 		ch.team = 3;
@@ -418,6 +430,22 @@ contentManager = {
 		ch.pos = contentManager.setPos;
 		tg.chars[tg.chars.length] = ch;
 		contentManager.BuildView();
+	},
+	DoSubmit : function() {
+		var p = [];
+		var gpdata = contentManager.viewData.mt.team;
+		for(var i=0;i<gpdata.chars.length;i++) {
+			var ch = gpdata.chars[i];
+			var s = {
+				id: ch.id,
+				pos: ch.pos
+			}
+			p[p.length] = s;
+		}
+		if(p.length==0) {
+			return;
+		}
+		doUIAction("Setup",{team:p});
 	}
 }
 </script>
