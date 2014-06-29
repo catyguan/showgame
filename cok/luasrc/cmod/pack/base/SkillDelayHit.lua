@@ -1,7 +1,7 @@
 -- cmod/pack/base/SkillDelayHit.lua
 local Class = class.define("cmod.pack.base.SkillDelayHit",{"cmod.basetype.SkillAttackOneBase"})
 
-Class.UIK = "SkillAttack"
+Class.UIK = "hit"
 
 function Class.getProfile()
 	return {
@@ -18,12 +18,12 @@ function Class.listRelProfile()
 	}
 end
 
-local hitf = function(sk, cbc, cbdata, ch, info)
+function Class.whenHit(skc,sk, cbc,cbdata, chc,ch, info)
 	local v = math.ceil(ch.SPD*0.15)
 	local eff = class.forName("cmod.pack.base.EffSlow").newEff(v, 1)
-	cbc.applyEffect(cbdata, ch, eff)
+	cbc.applyEffect(cbdata, tch,ch, eff)
 end
 
-function Class.doPerform(cls, sk, cbc, cbdata, mobj, tobj)
-	cls.doAttack(sk, cbc, cbdata, mobj, {tobj}, 1.0*mobj.STR, cls.UIK, hitf)
+function Class.getDamage(skc,sk, cbc,cbdata, tch,ch)
+	return 1.0*ch.STR
 end

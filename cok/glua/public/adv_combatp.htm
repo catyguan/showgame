@@ -22,7 +22,7 @@
 </div>
 <hr>
 <div id='PopUp' style='display: none;'>
-<button id='btSelect' onclick="contentManager.SetupChar()">Select</button><button onclick="contentManager.ClosePopUp()">Close</button><br>
+<button onclick="contentManager.ClosePopUp()">Close</button><br>
 <span id='PopUpContent'>&nbsp;</span>
 </DIV>
 
@@ -347,10 +347,8 @@ contentManager = {
 	SelectWChar : function(cid) {
 		if(cid==contentManager.selected) {
 			contentManager.FocusOn("", false);
-			$('#btSelect').attr("disabled", "true");
 		} else {
 			contentManager.FocusOn(cid, true);
-			$('#btSelect').removeAttr("disabled");
 		}
 	},
 	DoUnset : function(cid, pos) {		
@@ -400,29 +398,19 @@ contentManager = {
 			html += ""+theText(chobj.title)+"<br>";
 			html += "LEVEL: "+chobj.level+"<br>";			
 			html += "</td>";
-			html += "</tr></table>"
+			html += "</tr></table><br>";
+			html += "<button onclick=\"contentManager.SetupChar('"+chobj.id+"')\">Select</button>";
 			html += "</div>";
 		}
 		html += "<div style='clear:both'></div>"
 		$('#PopUpContent').html(html);
 		$('#PopUp').css("display","");
-		$('#btSelect').attr("disabled", "true");
 	},
 	ClosePopUp : function() {
 		$('#PopUp').css("display","none");	
 	},
-	SetupChar : function() {
-		if(contentManager.selected=="") {
-			return;
-		}
-		var ch = contentManager.GetChar(contentManager.selected);
-		console.log(ch.team, ch.pos);
-		if(ch.pos) {
-			return;
-		}
-		if(ch.team && ch.team!=3) {
-			return;
-		}
+	SetupChar : function(cid) {
+		var ch = contentManager.GetChar(cid);
 		contentManager.ClosePopUp();
 		var tg = contentManager.viewData.mt.team;
 		var wg = contentManager.viewData.mt.wagon;

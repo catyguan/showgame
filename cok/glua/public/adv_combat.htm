@@ -34,21 +34,22 @@
 					</tr>
 				</table>
 			</td>
-			<td id="chinfo" valign="top">&nbsp;</td>
+			<td valign="top"><button id="btPause" onclick="contentManager.ClickPause()">Pause</button><br><br><div id="chinfo"></div></td>
 		</tr>
 	</table>
 </div>
 <hr>
 <table border="1">
 <tr><td id="ginfo" width="320" valign="top">
-</td><td id="msgdiv" valign="top">
 </td></tr>
 </table>
+<div id="divTips"></div>
 
 <script>
 contentManager = {
 	eid : 0,
 	selected : "",
+	paused : false,
 	messages : [],
 	processing : false,
 	processCommand : null,
@@ -67,6 +68,9 @@ contentManager = {
 		contentManager.UpdateView(viewData);
 	},
 	DoProcess : function() {
+		if(contentManager.paused) {
+			return
+		}
 		if(contentManager.processing) {
 			return
 		}
@@ -84,6 +88,14 @@ contentManager = {
 	},
 	NextProcess : function(cmd) {
 		contentManager.processCommand = cmd;
+	},
+	ClickPause : function() {
+		if(contentManager.paused) {
+			contentManager.paused = false;
+			contentManager.DoProcess();
+		} else {
+			contentManager.paused = true;
+		}
 	},
 	SpellEnable : function(spi) {
 		if(spi.CD>0) {
@@ -200,25 +212,6 @@ contentManager = {
 	UpdateView : function(viewData) {
 
 	},
-	SetColor : function(t, p, c, rc) {
-		var old = contentManager.colors[t-1][p-1];
-		if(rc!="" && old!=rc)return false;
-		contentManager.colors[t-1][p-1] = c;
-		return true;
-	},
-	BuildColors : function() {
-		for (var t = 0; t < 2; t++) {
-			var tc = contentManager.colors[t];
-			for (var p = 0; p < 6; p++) {
-				var c = tc[p];
-				var team = t+1;
-				var pos = p+1;
-				var css = "";
-				if(c!="")css="1px solid "+c;
-				$('#map_'+team+'_'+pos).css('border', css);
-			}
-		}
-	},
 	BuildSpells : function() {
 		var viewData = contentManager.viewData;
 		contentManager.viewData = viewData;		
@@ -227,7 +220,7 @@ contentManager = {
 			var sp = viewData.spells[spid];
 			var spp = contentManager.viewProfile.spells[spid];
 			var en = "";
-			var cd = "";
+			var cd = "";  
 			if(!contentManager.SpellEnable(sp)) {
 				en = "disabled";
 				if(sp.CD>0) {
@@ -287,7 +280,6 @@ contentManager = {
 				focusId = chobj.id;				
 			}
 		}
-		contentManager.BuildColors();
 
 		html = "";
 		if(viewData.turn>0) {
@@ -297,35 +289,6 @@ contentManager = {
 		$( "#ginfo" ).html(html);
 
 		contentManager.FocusOn(focusId, focusId!="");
-
-		if(viewData.events) {
-			for (var i = 0; i < viewData.events.length; i++) {
-				var ev = viewData.events[i];
-				var msg = contentManager.EventText(ev)
-				contentManager.ShowMessage(msg);
-			}			
-		}
-	},
-	ShowMessage : function(msg, iserr) {
-		var mbox = contentManager.messages;
-		mbox.push({t:new Date(), m:msg,err:iserr});
-		if(mbox.length>15) {
-			mbox.shift();
-		}
-		var html = "";
-		for (var i = mbox.length - 1; i >= 0; i--) {
-			var mi = mbox[i];
-			if(html!="") {
-				html += "<br>";
-			}
-			html += mi.t.Format("yyyy-MM-dd hh:mm:ss ");
-			if(mi.err) {
-				html += "<font color=red>"+theText(mi.m)+"</font>";
-			} else {
-				html += theText(mi.m);
-			}
-		};
-		$( "#msgdiv" ).html(html);
 	},
 	Close : function() {
 
@@ -363,9 +326,9 @@ contentManager = {
 			contentManager.InitView(ev.data);				
 			contentManager.EvalEvent([{k: "nextc"}]);
 		} else if(ev.k=="err") {
-			contentManager.ShowMessage(ev.msg, true);
+			alert("ERROR:"+ev.msg);
 		} else if(ev.k=="msg") {
-			contentManager.ShowMessage(ev.msg);
+			alert(ev.msg);
 		} else if(ev.k=="turn") {
 			contentManager.viewData.turn = ev.v;
 			contentManager.BuildView();
@@ -387,74 +350,53 @@ contentManager = {
 			contentManager.viewData.chars[ev.MID] = null;
 			contentManager.BuildView();
 		} else if(ev.k=="end") {
-			contentManager.ShowMessage("end, winner is "+ev.winner, true);
+			alert("end, winner is "+ev.winner);
 		} else if(ev.k=="skill" || ev.k=="usespell") {
 			var msg = "";
 			var skd = {};
 			var clset = [];
-			if(ev.uik=="SkillDef") {
+			if(ev.uik=="hit") {
+				var skp = contentManager.viewProfile.skills[ev.sid];
 				var ch = contentManager.viewData.chars[ev.MID];
-				msg = "::{TITLE}采用防御姿势";
-				skd.TITLE = ch.title;				
-				clset[0] = {team:ch.team, pos:ch.pos, c:"blue"};
-			}
-			if(ev.uik=="SpellHeal") {
-				msg = "::激活恢复法术";
-				for(var cid in contentManager.viewData.chars) {
-					var ch = contentManager.viewData.chars[cid];
-					if(ch.team==1) {
-						clset[clset.length] = {team:ch.team, pos:ch.pos, c:"green"};	
+				clset[0] = {t:ch.team, p:ch.pos, c:"#0000FF", m:theText(skp.title)};
+
+				for (var i = 0; i < ev.info.length; i++) {
+					var tinfo = ev.info[i];
+					var ch2 = contentManager.viewData.chars[tinfo.TID];	
+					if(tinfo.hited) {			
+						clset[clset.length] = {t:ch2.team, p:ch2.pos, c:"#FF0000",m:""+tinfo.damage};
+					} else {
+						clset[clset.length] = {t:ch2.team, p:ch2.pos, c:"#FFFF00",m:"MISS",fc:"#000000"};
 					}
 				}
-			}
-			if(ev.uik=="SkillAttack") {
-				var ch = contentManager.viewData.chars[ev.MID];
-				var ch2 = contentManager.viewData.chars[ev.TID];
-				skd.TITLE = theText(ch.title);
-				skd.TITLE2 = theText(ch2.title);
-				clset[0] = {team:ch.team, pos:ch.pos, c:"blue"};
-				clset[1] = {team:ch2.team, pos:ch2.pos, c:"red"};
-
-				if(ev.info.hited) {
-					msg = "::{TITLE}攻击{TITLE2}，造成{DMG}点伤害";
-					skd.DMG = ev.info.damage;
-				} else {
-					msg = "::{TITLE}攻击{TITLE2}，但未命中";
-				}				
 			}
 			if(ev.uik=="wait") {
 				var ch = contentManager.viewData.chars[ev.MID];
-				msg = "::{TITLE}待机";
 				skd.TITLE = ch.title;
-			}
-			if(clset.length>0) {
-				for (var i = 0; i < clset.length; i++) {
-					var cl = clset[i];
-					if(contentManager.SetColor(cl.team, cl.pos, cl.c, "")) {
-						f = function(cl) {
-							setTimeout(function() {
-								contentManager.SetColor(cl.team, cl.pos, "", cl.c);
-							}, 350);
-						};
-						f(cl);
-					}
-				}
+				msg = contentManager.DescText("::{TITLE}待机", skd);				
+
+				contentManager.PopupMessage(msg, "tab_"+ch.team+"_"+ch.pos, "#00FFFF");
 			}
 			var bdone = false;			
 			if(ev.refresh && ev.refresh.length>0) {
 				for (var i = 0; i < ev.refresh.length; i++) {
-					var rinfo = ev.refresh[i]
-					contentManager.viewData.chars[rinfo.id] = rinfo.data;				
+					var rinfo = ev.refresh[i];
+					contentManager.viewData.chars[rinfo.id] = rinfo.data;
 				};
 				bdone = true;
 				contentManager.BuildView();
 			}
-			if(!bdone && clset.length>0) {
-				contentManager.BuildColors();
+			if(clset.length>0) {
+				for (var i = 0; i < clset.length; i++) {
+					var cl = clset[i];
+					contentManager.PopupMessage(cl.m, "tab_"+cl.t+"_"+cl.p, cl.c, cl.fc);
+				}
 			}
 			if(msg) {
-				contentManager.ShowMessage(contentManager.DescText(msg, skd));
-				return 500;					
+				console.log(contentManager.DescText(msg, skd));
+			}
+			if(clset.length>0) {
+				return 500;
 			}
 		} else {
 			console.log("unknow event", ev);
@@ -485,6 +427,58 @@ contentManager = {
 		} else {
 			cf();
 		}
+	},
+	// popup message
+	_createPopup : function(set, attr)
+	{
+		var obj = document.createElement('div');
+		for(var i in set) { obj.style[i] = set[i]; }
+		for(var i in attr) { obj[i] = attr[i]; }
+		return obj;
+	},
+	tipsId : 1,
+	MoveUpMessagge : function(id, y, idx) {
+		if(idx==10) {
+			contentManager.CloseMessage(id);
+		} else {
+			setTimeout(function(){
+				var t = document.getElementById(id);
+				if(t) {
+					y -= 3;				
+					t.style.top=(y-t.offsetHeight-12)+'px';
+					contentManager.MoveUpMessagge(id,y,idx+1);
+				}
+			}, 100);
+		}
+	},
+	PopupMessage : function(msg, id, color, fcolor)
+	{
+		var target = $('#'+id)[0];
+		id = id + "_tips_" + (contentManager.tipsId++);
+		//设置默认值
+		msg = msg || 'error';
+		color = color || '#ea0000';
+		fcolor = fcolor || '#FFFFFF';
+		width = 80;
+
+		//获取对象坐标信息
+		for(var y=0,x=0; target!=null; y+=target.offsetTop, x+=target.offsetLeft, target=target.offsetParent);
+		x += 20;
+		y += 40+15;
+		var textAlign = 'left', fontSize = '12',fontWeight = 'normal';
+
+		//弹出提示
+		var holder = document.getElementById('divTips');
+		var tipsDiv = this._createPopup({display:'block',position:'absolute',zIndex:'1001',left:(x+1)+'px',padding:'5px',color:fcolor,fontSize:fontSize+'px',backgroundColor:color,textAlign:textAlign,fontWeight:fontWeight,filter:'Alpha(Opacity=50)',opacity:'0.7'}, {id:id, innerHTML:msg});
+		holder.appendChild(tipsDiv);
+		tipsDiv.style.top = (y-tipsDiv.offsetHeight-12)+'px';
+
+		//如果定时关闭
+		contentManager.MoveUpMessagge(id,y,0);		
+	},
+	CloseMessage : function(id) {
+		var t = document.getElementById(id);
+		if(t) { t.parentNode.removeChild(t); }
 	}
 }
 </script>

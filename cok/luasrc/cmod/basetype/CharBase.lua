@@ -14,17 +14,18 @@ function Class.levelUp(prop, lvl, grow)
 	end
 end
 
-function Class.doAI(cbc, cbdata, ch)
-	Class.doRandomSkill(cbc, cbdata, ch)
+function Class.doAI(cbc,cbdata, chc,ch)
+	Class.doRandomSkill(cbc,cbdata, chc,ch)
 end
 
-function Class.doRandomSkill(cbc, cbdata, ch)
+function Class.doRandomSkill(cbc,cbdata, chc,ch)
 	local sklist = {}
 	for _,sk in ipairs(ch.skills) do
 		local skp = class.forName(sk._p)
 		if skp.checkPerform then
-			local info = skp.checkPerform(sk, cbc, cbdata, ch)
+			local info = skp.checkPerform(skp,sk, cbc,cbdata, chc,ch)
 			if info~=nil then
+				info._CLASS = skp
 				info._THIS = sk
 				if not info.p then info.p = 1 end
 				table.insert(sklist, info)
@@ -42,6 +43,7 @@ function Class.doRandomSkill(cbc, cbdata, ch)
 
 	local idx = PRandom(sklist)
 	local sinfo = sklist[idx]
-	local skp = class.forName(sinfo._THIS._p)
-	skp.aiPerform(sinfo._THIS, cbc, cbdata, ch, sinfo)
+	local skc = sinfo._CLASS
+	local sk = sinfo._THIS
+	skc.aiPerform(skc,sk, cbc,cbdata, chc,ch, sinfo)
 end

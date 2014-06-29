@@ -9,7 +9,8 @@ function Class.newChar(lvl)
 		DEF=64,
 		SPD=104,
 		skills = {
-			{ _p = "cmod.pack.base.SkillToxinHit", lvl = 1 }			
+		{ _p = "cmod.pack.base.SkillAttack", lvl = 1 }	
+			-- { _p = "cmod.pack.base.SkillToxinHit", lvl = 1 }			
 		}
 	}
 	Class.levelUp(r, lvl, {

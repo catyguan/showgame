@@ -1,7 +1,7 @@
 -- cmod/pack/base/SkillAttack.lua
 local Class = class.define("cmod.pack.base.SkillAttack",{"cmod.basetype.SkillEAttackOneBase"})
 
-Class.UIK = "SkillAttack"
+Class.UIK = "hit"
 
 function Class.getProfile()
 	return {
@@ -12,6 +12,6 @@ function Class.getProfile()
 	}
 end
 
-function Class.getDamage(cls, sk, cbc, cbdata, mobj)
-	return 1.0*mobj.STR
+function Class.getDamage(skc,sk, cbc,cbdata, tch,ch)
+	return 1.0*ch.STR
 end

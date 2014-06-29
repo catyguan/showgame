@@ -8,6 +8,19 @@ local LTAG = "AdvCombatd"
 local IDS = 1
 local ACT_AP = 500
 
+local DAMAGET = {}
+local DAMAGE_NAME = {"::物理伤害", ""}
+for i,n in ipairs(DAMAGE_NAME) do
+	local info = {
+		id="dmg"..i,
+		idx=i,
+		armor="ARMOR"..i
+	}
+	DAMAGET[i] = info
+	DAMAGET[info.id] = info
+end
+Class.DAMAGE = DAMAGET
+
 function Class.newCombat()
 	local data ={
 		stage = "combatBegin",
@@ -195,21 +208,20 @@ function Class.hasEffect(data, ch, id)
 	return false
 end
 
-function Class.applyEffect(data, ch, eff)
+function Class.applyEffect(data, tch,ch, eff)
 	if not eff.id then eff.id = eff._p end
 	if not ch.effects then ch.effects = {} end
-	local cls = class.forName(eff._p)
 	if eff.unique then
 		for i, old in ipairs(ch.effects) do
 			if old._p == eff._p then
-				cls.remove(Class, data, eff, ch)
+				tch.remove(Class,data, eff, ch)
 				table.remove(ch.effects, i)
 				break
 			end
 		end
 	end
 	table.insert(ch.effects, eff)
-	cls.apply(Class, data, eff, ch)
+	tch.apply(Class, data, eff, ch)
 end
 
 function Class.applyFlag(data, ch, n)
@@ -339,7 +351,7 @@ function Class.buildInit(data, ev)
 	view.chars = {}
 	for k,ch in pairs(data.rt.chars) do
 		local vch = {}
-		Class.copyProp(vch, ch, "view")
+		Class.copyCharView(vch, ch)
 		view.chars[k] = vch
 	end
 
@@ -488,7 +500,7 @@ function Class.charBegin( data )
 		end
 	end
 	local view = {}
-	Class.copyProp(view, ch, "view")
+	Class.copyCharView(view, ch)
 	Class.event(data,
 	{
 		k="char",
@@ -512,7 +524,7 @@ function Class.charBegin( data )
 				aicls = class.forName(ch._p)
 			end
 		end
-		aicls.doAI(Class, data, ch)
+		aicls.doAI(Class, data, aicls, ch)
 	end
 	if data.stage == "charBegin" then
 		data.stage = "charEnd"
@@ -573,7 +585,7 @@ local DMGS = {
 	{"edmge", "EEARMOR"}
 }
 
-function Class.doAttack(data, sch, tch, dmg)
+function Class.doAttack(data, schc,sch, tchc,tch, dmg)
 	if type(dmg)~="table" then
 		dmg = {pdmg=dmg}
 	end
@@ -623,7 +635,7 @@ function Class.doAttack(data, sch, tch, dmg)
 	return r
 end
 
-function Class.doDie(data, ch)
+function Class.doDie(data, chc,ch)
 	-- clear effects
 	-- call skills
 	data.rt.chars[ch.id] = nil

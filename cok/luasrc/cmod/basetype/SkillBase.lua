@@ -46,36 +46,29 @@ function Class.oneTarget(cbc, data, myTeamId, myPos)
 end
 
 
-function Class.doAttack(sk, cbc, cbdata, mobj, tobjList, dmg, uik, hitf)
+function Class.doAttack(skc,sk, cbc,cbdata, mchc,mobj, tobjList, dmg, ev)
 	for _,tobj in ipairs(tobjList) do
-		local info = cbc.doAttack(cbdata, mobj, tobj, dmg)
+		local tchc = class.forName(tobj._p)
+		local info = cbc.doAttack(cbdata, mchc,mobj, tchc,tobj, dmg)
 
 		local refresh
 		if info.hited then
-			if hitf~=nil then
-				hitf(sk, cbc, cbdata, tobj, info)
+			if skc.whenHit~=nil then
+				skc.whenHit(sk, cbc,cbdata, tchc,tobj, info)
 			end
 
 			local tdata = {}
-			cbc.copyProp(tdata, tobj, "view")
-			refresh = {
-				-- {id=mobj.id, data=mdata},
-				{id=tobj.id, data=tdata}
-			}
+			cbc.copyCharView(tdata, tobj)
+			if not ev.refresh then ev.refresh = {} end
+			table.insert(ev.refresh, {id=tobj.id, data=tdata})
 		end
 
-		cbc.event(cbdata, 
-			{
-				k="skill", uik=uik,
-				MID=mobj.id, TID=tobj.id,
-				info=info,
-				refresh = refresh
-			}
-		)
-
+		if not ev.info then ev.info = {} end
+		info.TID = tobj.id
+		table.insert(ev.info, info)
 
 		if tobj.HP==0 then
-			cbc.doDie(cbdata, tobj)
+			cbc.doDie(cbdata, tchc,tobj)
 		end
 	end
 end
