@@ -1,7 +1,8 @@
 {
 	"opts" : {
 		"teamMax": 3,
-		"backupTeam": false
+		"backupTeam": false,
+		"disableSpell": false
 	},
 	"emenyTeam" : {
 		"groups" : [
@@ -39,7 +40,7 @@
 			{
 				"id": "cid2",
 				"_p": "cmod.pack.base.ModSlime",
-				"level": 3,
+				"level": 13,
 				"pos": 2
 			}
 		]
@@ -62,5 +63,11 @@
 				"level": 1
 			}
 		]
-	}
+	},
+	"spells" : [
+		{
+			"_p": "cmod.pack.base.SpellHeal",
+			"num": 2
+		}
+	]
 }

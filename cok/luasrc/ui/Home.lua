@@ -73,6 +73,9 @@ end
 function Class.doTest4(ctx)
 	local ldata = loader("combat_p_test")
 
+	local LM = class.forName("leader.Manager")
+	LM.setSpells(ldata.spells)
+
 	local M = class.forName("adventure.Manager")
 	
 	local opts = ldata.opts

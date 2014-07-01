@@ -73,3 +73,20 @@ function Class.doAttack(skc,sk, cbc,cbdata, mchc,mobj, tobjList, dmg, ev)
 		end
 	end
 end
+
+function Class.doHeal(skc,sk, cbc,cbdata, chc,ch, tobjList, healv, ev)
+	for _,tobj in ipairs(tobjList) do
+		local tchc = class.forName(tobj._p)
+		local ov = tobj.HP
+		local nv = cbc.modifyProp(cbdata, tobj, "HP", healv)
+		local hv = nv - ov
+
+		local tdata = {}
+		cbc.copyCharView(tdata, tobj)
+		if not ev.refresh then ev.refresh = {} end
+		table.insert(ev.refresh, {id=tobj.id, data=tdata})
+
+		if not ev.info then ev.info = {} end
+		table.insert(ev.info, {TID=tobj.id, v=hv})
+	end
+end

@@ -166,10 +166,17 @@ function Class.flowProcess()
 		for _, ch in ipairs(chlist) do
 			cbm.newChar(cb, NC2(ch, 1))
 		end
-		-- local splist = cbjson.spells
-		-- for _,spdata in ipairs(splist) do
-		-- 	cbm.addSpell(cb, spdata)
-		-- end
+		if not ctx.opts.disableSpell then
+			local LM = class.forName("leader.Manager")
+			local splist = w:prop({"leader", "spells"})
+			if splist then			
+				for _,sp in ipairs(splist) do
+					local spdata = {}
+					table.copy(spdata, sp, true)
+					cbm.addSpell(cb, spdata)
+				end
+			end
+		end
 		ctx.stage = "combating"
 		cbm.prepare(cb)
 	elseif ctx.stage=="finish" then
@@ -195,6 +202,11 @@ function Class.endCombat(res)
 	local tres = {}	
 	tres.winner = res.winner
 	ctx.lastResult = tres
+
+	if res.spells then
+		local LM = class.forName("leader.Manager")
+		LM.updateSpells(res.spells)
+	end
 	
 	if res.winner==1 then
 		if ctx.emenyTeam.stage < #ctx.emenyTeam.groups then

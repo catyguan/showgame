@@ -54,14 +54,17 @@ function Class.opTeam(tid)
 	return 1
 end
 
-function Class.listIdByTeam(data, teamId)
+function Class.listByTeam(data, teamId, returnObj)
 	local r = {}
 	for cid,ch in pairs(data.rt.chars) do
-		if ch.team==teamId then table.insert(r, cid) end
+		if ch.pos<=8 and ch.team==teamId then
+			local v = ch
+			if not returnObj then v = ch.id end
+			table.insert(r, v)
+		end
 	end
 	return r
 end
-
 
 local HProfiles = function(data, plist)
 	for _, tmp in ipairs(plist) do
@@ -567,7 +570,14 @@ function Class.getCombatResult(data)
 	local r = {
 		team1 = {},
 		team2 = {},
+		spells = {}
 	}
+	for k,sp in pairs(data.rt.spells) do
+		local o = {}
+		o._p = sp._p
+		o.num = sp.num
+		table.insert(r.spells, o)
+	end
 	for k, cch in pairs(data.rt.chars) do
 		if cch.team==1 then
 			table.insert(r.team1, cch)

@@ -372,11 +372,22 @@ contentManager = {
 			var msg = "";
 			var skd = {};
 			var clset = [];
-			if(ev.uik=="hit") {
-				var skp = contentManager.viewProfile.skills[ev.sid];
-				var ch = contentManager.viewData.chars[ev.MID];
-				clset[0] = {t:ch.team, p:ch.pos, c:"#0000FF", m:theText(skp.title)};
 
+			if(ev.MID!="") {
+				var ch = contentManager.viewData.chars[ev.MID];
+				var title;
+				var clr = "#0000FF";
+				if(ev.uik=="wait") {
+					title = "待机";
+					clr = "#00FFFF";
+				} else {
+					var skp = contentManager.viewProfile.skills[ev.sid];
+					title = theText(skp.title);
+				}
+				clset[0] = {t:ch.team, p:ch.pos, c:clr, m:title};
+			}
+
+			if(ev.uik=="hit") {
 				for (var i = 0; i < ev.info.length; i++) {
 					var tinfo = ev.info[i];
 					var ch2 = contentManager.viewData.chars[tinfo.TID];	
@@ -387,13 +398,14 @@ contentManager = {
 					}
 				}
 			}
-			if(ev.uik=="wait") {
-				var ch = contentManager.viewData.chars[ev.MID];
-				skd.TITLE = ch.title;
-				msg = contentManager.DescText("::{TITLE}待机", skd);				
-
-				contentManager.PopupMessage(msg, "tab_"+ch.team+"_"+ch.pos, "#00FFFF");
+			if(ev.uik=="heal") {
+				for (var i = 0; i < ev.info.length; i++) {
+					var tinfo = ev.info[i];
+					var ch2 = contentManager.viewData.chars[tinfo.TID];	
+					clset[clset.length] = {t:ch2.team, p:ch2.pos, c:"#00FF00",m:""+tinfo.v};
+				}
 			}
+
 			var bdone = false;			
 			if(ev.refresh && ev.refresh.length>0) {
 				for (var i = 0; i < ev.refresh.length; i++) {

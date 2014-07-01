@@ -1,11 +1,21 @@
 --[[
 {	
 	"views" : ..., 	// UIManager use
+	"leader": {
+		"spells" : [
+			{
+				"_p": "cmod.pack.base.SpellHeal",
+				"num": 2
+			}
+		]
+	},
 	"adv" : {		// adventure module
 		"combat" : {
 			"stage" : "prepare",
 			"opts" : {
-				"teamType" : 9
+				"teamMax": 3,
+				"backupTeam": false,
+				"disableSpell": false
 			},
 			"emenyTeam" : {
 				"stage" : 1
@@ -35,6 +45,6 @@
 				charObject ...
 			]
 		}
-	}
+	}	
 }
 ]]
