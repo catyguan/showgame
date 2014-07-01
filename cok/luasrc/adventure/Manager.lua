@@ -1,5 +1,6 @@
 -- adventure/Manager.lua
 require("bma.lang.ext.Table")
+require("world.PDVM")
 
 local Class = class.define("adventure.Manager")
 
@@ -54,7 +55,7 @@ function Class.getWagon()
 end
 
 local KEY_COMBAT = {"adv", "combat"}
-function Class.startCombat(opts, emenyTeam, myGroup, myWagon)
+function Class.startCombat(opts, emenyTeam, myGroup, myWagon, finishPDCall)
 	local w = WORLD
 	local data = w:prop(KEY_COMBAT)
 	if data~=nil then
@@ -78,7 +79,8 @@ function Class.startCombat(opts, emenyTeam, myGroup, myWagon)
 		opts=vopts,
 		emenyTeam=vemenyTeam,
 		team=vmyGroup,
-		wagon=vmyWagon
+		wagon=vmyWagon,
+		onFinish=finishPDCall
 	}
 	w:prop(KEY_COMBAT, data)
 	Class.flowProcess()
@@ -129,8 +131,7 @@ function Class.setupCombat(team)
 		if mch==nil then
 			error(string.format("setupCombat invalid char '%s'", s.id))
 		end
-		if mch.prop==nil then mch.prop = {} end
-		mch.prop.pos = s.pos
+		mch.pos = s.pos
 		table.insert(cb.team.chars, mch)
 	end
 	-- var_dump(cb.team)
@@ -141,8 +142,7 @@ end
 local NC2 = function(ch, team)
 	local tch = {}
 	table.copy(tch, ch, true)
-	if not tch.prop then tch.prop = {} end
-	tch.prop.team = team
+	tch.team = team
 	return tch
 end
 
@@ -153,7 +153,7 @@ function Class.flowProcess()
 		local ui = class.forName("adventure.ui.CombatPrepare")
 		ui.uiEnter()
 	elseif ctx.stage=="combat" then
-		local cbx = w:prop(KEY_COMBAT)
+		local cbx = ctx
 		local cbm = class.forName("adventure.Combatd")
 
 		local cb = cbm.newCombat()		
@@ -172,10 +172,55 @@ function Class.flowProcess()
 		-- end
 		ctx.stage = "combating"
 		cbm.prepare(cb)
+	elseif ctx.stage=="finish" then
+		w:removeProp(KEY_COMBAT)
+		pdcall(ctx.onFinish, ctx.lastResult)
 	end
 	return true
 end
 
-function Class.endCombat()
-	-- body
+--[[
+{
+	winner = 1|2
+	team1 = {},
+	team2 = {}
+}
+]]
+function Class.endCombat(res)
+	local w = WORLD
+	w:closeView("adv_combat")
+
+	local ctx = w:prop(KEY_COMBAT)
+
+	local tres = {}	
+	tres.winner = res.winner
+	ctx.lastResult = tres
+	
+	if res.winner==1 then
+		if ctx.emenyTeam.stage < #ctx.emenyTeam.groups then
+			ctx.emenyTeam.stage = ctx.emenyTeam.stage + 1
+			local tmp = {}
+			for _,ch in ipairs(res.team1) do
+				local hp = ch.HP
+				if hp>ch.BASE_HP then hp=ch.BASE_HP end
+				tmp[ch.id] = hp
+			end
+			local chlist = ctx.team.chars
+			local rlist = {}
+			for i, ch in ipairs(chlist) do
+				local hp = tmp[ch.id]
+				if not hp then
+					table.insert(rlist, 1, i)
+				else
+					ch.HP = hp
+				end
+			end
+			for _,i in ipairs(rlist) do
+				table.remove(chlist, i)
+			end
+			ctx.stage = "combat"
+			return
+		end
+	end
+	ctx.stage = "finish"
 end

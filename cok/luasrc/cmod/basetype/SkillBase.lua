@@ -2,9 +2,10 @@
 local Class = class.define("cmod.basetype.SkillBase")
 
 local POSP = {
-	{1,2,3,4,5,6},
-	{2,1,2,4,3,4},
-	{3,2,1,6,5,4},
+	{1,2,3,4,5,6,7,8},
+	{3,1,2,4,7,5,6,8},
+	{4,2,1,3,8,6,5,7},
+	{4,3,2,1,8,7,6,5},
 }
 
 
@@ -12,7 +13,7 @@ function Class.posTarget(cbc, data, myTeamId, myPos)
 	local tid = cbc.opTeam(myTeamId)
 	local tp = 100
 	local tch1, tch2
-	if myPos>3 then myPos = myPos - 3 end
+	if myPos>4 then myPos = myPos - 4 end
 
 	for _, ch in pairs(data.rt.chars) do
 		if tid==ch.team then

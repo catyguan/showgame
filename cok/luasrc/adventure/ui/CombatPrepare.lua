@@ -44,11 +44,9 @@ local buildCharView = function(ch, ids)
 		vch.id = "c" .. ids
 		ids = ids + 1
 	end	
-	if ch.prop~=nil then
-		for k,v in pairs(ch.prop) do
-			vch[k] = v
-		end
-	end
+	vch.team = ch.team
+	vch.pos = ch.pos
+	vch.fixed = ch.fixed
 	local pro = chc.getProfile()
 	if vch.title==nil then
 		vch.title = pro.title
@@ -77,7 +75,8 @@ function Class.buildView(ctx, wagon)
 		mt = {}
 	}
 	local ids = 1
-	r.opts.teamType = ctx.opts.teamType
+	r.opts.teamMax = V(ctx.opts.teamMax, 5)
+	r.opts.backupTeam = ctx.opts.backupTeam
 	r.et.groups = {}
 	for _,gp in ipairs(ctx.emenyTeam.groups) do
 		local vgp = {}

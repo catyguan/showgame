@@ -24,7 +24,11 @@
 			},
 			"wagon" : {
 				....
-			}
+			},
+			["lastResult"] : {
+				"winner": 1|2
+			},
+			"onFinish": { ...pdcall... }
 		},				
 		"wagon" : {
 			"chars" : [

@@ -16,7 +16,10 @@
 			<td id="divTeamView">
 				
 			</td>
-			<td id="chinfo" valign="top">&nbsp;</td>
+			<td valign="top">
+				出战人数: <span id="divTeamNum"></span>/<span id="divTeamMax"></span><br><br>
+				<div id="chinfo"></div>
+			</td>
 		</tr>
 	</table>
 </div>
@@ -210,6 +213,8 @@ contentManager = {
 	BuildView : function() {
 		var viewData = contentManager.viewData;
 
+		$('#divTeamMax').html(viewData.opts.teamMax)
+
 		var html = "";
 		for(var i=1;i<=viewData.et.groups.length;i++) {			
 			html += "<button onclick='contentManager.BuildGroup(2,"+i+")'>GROUP"+i+"</button> ";
@@ -218,30 +223,32 @@ contentManager = {
 
 		html = "";
 		var tmpf = function(team, posline) {
-			var p1,p2,p3;
-			p1 = (posline-1)*3+1;
-			p2 = (posline-1)*3+2;
-			p3 = (posline-1)*3+3;
+			var p1,p2,p3,p4;
+			p1 = (posline-1)*4+1;
+			p2 = (posline-1)*4+2;
+			p3 = (posline-1)*4+3;
+			p4 = (posline-1)*4+4;
 			var r = "";
 			r += "<tr>";
 			r += "<td width='160' height='65'><div  id='map_"+team+"_"+p1+"'>&nbsp;</div></td>";
 			r += "<td width='160' height='65'><div  id='map_"+team+"_"+p2+"'>&nbsp;</div></td>";
 			r += "<td width='160' height='65'><div  id='map_"+team+"_"+p3+"'>&nbsp;</div></td>";
+			r += "<td width='160' height='65'><div  id='map_"+team+"_"+p4+"'>&nbsp;</div></td>";
 			r += "</tr>";
 			return r;
 		};
 		html += "<table border='1'>";
-		if(viewData.opts.teamType==9) {
+		if(viewData.opts.backupTeam) {
 			html += tmpf(2, 3);
 		}
 		html += tmpf(2, 2);
 		html += tmpf(2, 1);
 		html += "<tr>";
-		html += "<td colspan='3' bgcolor='blue'></td>";
+		html += "<td colspan='4' bgcolor='blue'></td>";
 		html += "</tr>";
 		html += tmpf(1, 1);
 		html += tmpf(1, 2);
-		if(viewData.opts.teamType==9) {
+		if(viewData.opts.backupTeam) {
 			html += tmpf(1, 3);
 		}
 		html += "</table>";
@@ -249,11 +256,10 @@ contentManager = {
 		
 		contentManager.BuildGroup(2, 1);
 		contentManager.BuildGroup(1, 1);
-		if(true)return;
 
 	},
 	BuildGroup : function(team, gp) {
-		var gpdata;
+		var gpdata;		
 		if(team==2) {
 			var glist = contentManager.viewData.et.groups;
 			if(gp-1>=glist.length) {
@@ -263,8 +269,10 @@ contentManager = {
 		} else {
 			gpdata = contentManager.viewData.mt.team;
 		}
+		var tnum = gpdata.chars.length;
 
-		for(var i=1;i<=contentManager.viewData.opts.teamType;i++) {
+		var teamc = contentManager.viewData.opts.backupTeam?12:8;
+		for(var i=1;i<=teamc;i++) {
 			if(team==1) {
 				$('#map_'+team+'_'+i).html("<button onclick='contentManager.DoSet("+i+")'>SET</button>");
 			} else {
@@ -292,26 +300,7 @@ contentManager = {
 			}
 			$( "#map_"+tid+"_"+pos ).html(html);
 		}
-		if(true)return;
-
-		contentManager.BuildColors();
-
-		html = "";
-		if(viewData.turn>0) {
-			html += "行动:<span id='turndiv'>"+viewData.turn+"</span> <span id='spelldiv'>"+contentManager.BuildSpells()+"</span><br>";
-		}
-
-		$( "#ginfo" ).html(html);
-
-		contentManager.FocusOn(focusId, focusId!="");
-
-		if(viewData.events) {
-			for (var i = 0; i < viewData.events.length; i++) {
-				var ev = viewData.events[i];
-				var msg = contentManager.EventText(ev)
-				contentManager.ShowMessage(msg);
-			}			
-		}
+		$( "#divTeamNum" ).html(tnum);
 	},
 	ShowMessage : function(msg, iserr) {
 		var mbox = contentManager.messages;
@@ -353,6 +342,7 @@ contentManager = {
 	},
 	DoUnset : function(cid, pos) {		
 		var ch
+		var tnum = 0;
 		if(true) {
 			var g = contentManager.viewData.mt.team;
 			for(var j=0;j<g.chars.length;j++) {
@@ -363,6 +353,7 @@ contentManager = {
 					break;
 				}			
 			}
+			tnum = g.chars.length;
 		}
 
 		var team = 1;
@@ -375,8 +366,14 @@ contentManager = {
 		}
 
 		$('#map_'+team+'_'+pos).html("<button onclick='contentManager.DoSet("+pos+")'>SET</button>");
+		$('#divTeamNum').html(tnum);
 	},
 	DoSet : function(pos) {
+		var g = contentManager.viewData.mt.team;
+		if(g.chars.length>=contentManager.viewData.opts.teamMax) {
+			alert("Max number");
+			return;
+		}
 		contentManager.setPos = pos;
 		contentManager.ShowPopup();
 	},

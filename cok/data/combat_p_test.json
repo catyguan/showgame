@@ -1,6 +1,7 @@
 {
 	"opts" : {
-		"teamType": 6
+		"teamMax": 3,
+		"backupTeam": false
 	},
 	"emenyTeam" : {
 		"groups" : [
@@ -10,9 +11,7 @@
 					{
 						"_p": "cmod.pack.base.ModTreant",
 						"level": 3,
-						"prop" : {
-							"pos": 2
-						}
+						"pos": 2
 					}
 				]
 			},
@@ -22,9 +21,7 @@
 					{
 						"_p": "cmod.pack.base.ModMushroom",
 						"level": 1,
-						"prop" : {
-							"pos": 3
-						}
+						"pos": 3
 					}
 				]
 			}
@@ -36,18 +33,14 @@
 				"id": "cid1",
 				"_p": "cmod.pack.base.ModSlime",
 				"level": 2,
-				"prop" : {
-					"pos": 5,
-					"fixed": true
-				}
+				"pos": 5,
+				"fixed": true
 			},
 			{
 				"id": "cid2",
 				"_p": "cmod.pack.base.ModSlime",
-				"level": 1,
-				"prop" : {
-					"pos": 2
-				}
+				"level": 3,
+				"pos": 2
 			}
 		]
 	},
@@ -56,23 +49,17 @@
 			{
 				"id": "w1",
 				"_p": "cmod.pack.base.ModSlime",
-				"level": 1,
-				"prop" : {					
-				}
+				"level": 1
 			},
 			{
 				"id": "w2",
 				"_p": "cmod.pack.base.ModMushroom",
-				"level": 1,
-				"prop" : {					
-				}
+				"level": 1
 			},
 			{
 				"id": "w3",
 				"_p": "cmod.pack.base.ModTreant",
-				"level": 1,
-				"prop" : {					
-				}
+				"level": 1
 			}
 		]
 	}

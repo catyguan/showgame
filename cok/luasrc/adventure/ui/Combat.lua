@@ -37,3 +37,15 @@ function Class.callCheckSkill(ctx, param)
 		return {ok=false, err=err}
 	end
 end
+
+-- ui action
+function Class.doNextCombat(ctx)
+	local rs = M.getCombatResult(ctx)
+	if rs==nil then
+		return
+	end
+	
+	local ADV = class.forName("adventure.Manager")
+	ADV.endCombat(rs)
+	ADV.flowProcess()
+end

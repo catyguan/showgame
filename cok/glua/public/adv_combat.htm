@@ -9,32 +9,41 @@
 		<tr>
 			<td>
 				<table border="1">
+					<tr>						
+						<td width="120" height="65"><div id="map_2_5">&nbsp;</div></td>
+						<td width="120" height="65"><div id="map_2_6">&nbsp;</div></td>
+						<td width="120" height="65"><div id="map_2_7">&nbsp;</div></td>
+						<td width="120" height="65"><div id="map_2_8">&nbsp;</div></td>
+					</tr>
 					<tr>
+						<td width="120" height="65"><div id="map_2_1">&nbsp;</div></td>
+						<td width="120" height="65"><div id="map_2_2">&nbsp;</div></td>
+						<td width="120" height="65"><div id="map_2_3">&nbsp;</div></td>
 						<td width="120" height="65"><div id="map_2_4">&nbsp;</div></td>
-						<td width="120" height="65"><div  id="map_2_5">&nbsp;</div></td>
-						<td width="120" height="65"><div  id="map_2_6">&nbsp;</div></td>
 					</tr>
 					<tr>
-						<td width="120" height="65"><div  id="map_2_1">&nbsp;</div></td>
-						<td width="120" height="65"><div  id="map_2_2">&nbsp;</div></td>
-						<td width="120" height="65"><div  id="map_2_3">&nbsp;</div></td>
+						<td colspan="4" bgcolor="blue"></td>
 					</tr>
 					<tr>
-						<td colspan="3" bgcolor="blue"></td>
+						<td width="120" height="65"><div id="map_1_1">&nbsp;</div></td>
+						<td width="120" height="65"><div id="map_1_2">&nbsp;</div></td>
+						<td width="120" height="65"><div id="map_1_3">&nbsp;</div></td>
+						<td width="120" height="65"><div id="map_1_4">&nbsp;</div></td>
 					</tr>
-					<tr>
-						<td width="120" height="65"><div  id="map_1_1">&nbsp;</div></td>
-						<td width="120" height="65"><div  id="map_1_2">&nbsp;</div></td>
-						<td width="120" height="65"><div  id="map_1_3">&nbsp;</div></td>
-					</tr>
-					<tr>
-						<td width="120" height="65"><div  id="map_1_4">&nbsp;</div></td>
-						<td width="120" height="65"><div  id="map_1_5">&nbsp;</div></td>
-						<td width="120" height="65"><div  id="map_1_6">&nbsp;</div></td>
+					<tr>						
+						<td width="120" height="65"><div id="map_1_5">&nbsp;</div></td>
+						<td width="120" height="65"><div id="map_1_6">&nbsp;</div></td>
+						<td width="120" height="65"><div id="map_1_7">&nbsp;</div></td>
+						<td width="120" height="65"><div id="map_1_8">&nbsp;</div></td>
 					</tr>
 				</table>
 			</td>
-			<td valign="top"><button id="btPause" onclick="contentManager.ClickPause()">Pause</button><br><br><div id="chinfo"></div></td>
+			<td valign="top">
+				<button id="btPause" onclick="contentManager.ClickPause()">Pause</button>
+				<button id="btSpeed" onclick="contentManager.ClickSpeed()">Speed x1</button>
+				<br><br>
+				<div id="chinfo"></div>
+			</td>
 		</tr>
 	</table>
 </div>
@@ -50,6 +59,7 @@ contentManager = {
 	eid : 0,
 	selected : "",
 	paused : false,
+	speed : 1,
 	messages : [],
 	processing : false,
 	processCommand : null,
@@ -96,6 +106,17 @@ contentManager = {
 		} else {
 			contentManager.paused = true;
 		}
+		$('#btPause').html(contentManager.paused?"Resume":"Pause")
+	},
+	ClickSpeed : function() {
+		contentManager.speed ++;
+		if(contentManager.speed>3) {
+			contentManager.speed = 1;
+		}
+		$('#btSpeed').html("Speed x"+contentManager.speed)
+	},
+	SP : function(v) {
+		return v/contentManager.speed;
 	},
 	SpellEnable : function(spi) {
 		if(spi.CD>0) {
@@ -307,14 +328,6 @@ contentManager = {
 			contentManager.NextProcess(p);	
 		}		
 	},
-	ReloadChar : function(cid, cb) {
-		doUIInvoke("LoadChar", {id:cid}, function(rs) {
-			if(rs.char) {
-				contentManager.viewData.chars[cid] = rs.char;
-			}
-			cb();
-		});		
-	},
 	EvalEvent : function(elist) {
 		contentManager._evalEvent(elist, 0, 0);
 	},
@@ -350,7 +363,11 @@ contentManager = {
 			contentManager.viewData.chars[ev.MID] = null;
 			contentManager.BuildView();
 		} else if(ev.k=="end") {
-			alert("end, winner is "+ev.winner);
+			if(confirm("winner is "+ev.winner+", end?")) {
+				doUIAction("NextCombat",null, function() {
+					reloadView();
+				});
+			}
 		} else if(ev.k=="skill" || ev.k=="usespell") {
 			var msg = "";
 			var skd = {};
@@ -396,7 +413,7 @@ contentManager = {
 				console.log(contentManager.DescText(msg, skd));
 			}
 			if(clset.length>0) {
-				return 500;
+				return contentManager.SP(500);
 			}
 		} else {
 			console.log("unknow event", ev);
@@ -448,7 +465,7 @@ contentManager = {
 					t.style.top=(y-t.offsetHeight-12)+'px';
 					contentManager.MoveUpMessagge(id,y,idx+1);
 				}
-			}, 100);
+			}, contentManager.SP(100));
 		}
 	},
 	PopupMessage : function(msg, id, color, fcolor)

@@ -25,7 +25,7 @@ function Class:pdprocess()
 		else
 			data = stack.data[stack.index]
 			stack.index = stack.index + 1
-			local r = self:pdexec(stackc, data)
+			local r = self:pdexec(stackc, data, stack.ctx)
 			if r~=nil then				
 				if r==false or r=="return" then
 					table.remove(pds, stackc)
@@ -39,7 +39,7 @@ function Class:pdprocess()
 	end
 end
 
-function Class:pdexec(stackId, data)
+function Class:pdexec(stackId, data, ctx)
 	local p = data["_p"]
 	if _G.PDLookup~=nil then
 		p = _G.PDLookup(p)
@@ -56,7 +56,7 @@ function Class:pdexec(stackId, data)
 	if f==nil or type(f)~="function" then
 		error(string.format("PDCall prototype[%s] invoke invalid", p))
 	end
-	return f(stackId, data)
+	return f(stackId, data, ctx)
 end
 
 function Class:pdresume(stackId)
@@ -69,7 +69,7 @@ function Class:pdresume(stackId)
 	stack.pause = nil
 end
 
-function Class:pdnew(data)
+function Class:pdnew(data, ctx)
 	local pds = self._prop.pdvm
 	if pds==nil then
 		pds = {}
@@ -80,15 +80,16 @@ function Class:pdnew(data)
 	end
 	local stack = {
 		index = 1,
-		data = data
+		data = data,
+		ctx = ctx
 	}
 	table.insert(pds, stack)
 	pds.index = 1
 end
 
-function pdcall( data )
+function pdcall( data, ctx )
 	if data==nil then return end
 	local w = WORLD
-	w:pdnew(data)
+	w:pdnew(data, ctx)
 	return w:pdprocess()
 end

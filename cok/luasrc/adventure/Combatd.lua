@@ -83,14 +83,20 @@ end
 function Class.newChar(data, charObj)
 	local ch = charObj
 	local cls = class.forName(charObj._p)
+
 	ch = cls.newChar(charObj.level)	
 	ch._p = charObj._p
 	ch.level = charObj.level
-	if charObj.prop then
-		for k,v in pairs(charObj.prop) do
-			ch[k] = v
-		end
+	ch.team = charObj.team
+	ch.pos = charObj.pos
+
+	if charObj.id then
+		ch.id =charObj.id
 	end
+	if charObj.HP then
+		ch.TMP_HP = charObj.HP
+	end
+
 	Class.addChar(data, ch)
 end
 
@@ -105,6 +111,10 @@ function Class.addChar(data, charObj)
 	end
 	chkset(charObj, "MAXHP", "HP")
 	chkset(charObj, "BASE_HP", "MAXHP")
+	if charObj.TMP_HP then
+		charObj.HP = charObj.TMP_HP
+		charObj.TMP_HP = nil
+	end
 	chkset(charObj, "BASE_STR", "STR")
 	chkset(charObj, "BASE_SKL", "SKL")
 	chkset(charObj, "BASE_DEF", "DEF")
@@ -551,6 +561,27 @@ function Class.combatEnd( data )
 	end
 	Class.event(data, {k="end", winner=data.winner})
 	return false
+end
+
+function Class.getCombatResult(data)
+	local r = {
+		team1 = {},
+		team2 = {},
+	}
+	for k, cch in pairs(data.rt.chars) do
+		if cch.team==1 then
+			table.insert(r.team1, cch)
+		else
+			table.insert(r.team2, cch)
+		end
+	end
+	if #r.team1>0 and #r.team2>0 then return end
+	if #r.team1==0 then
+		r.winner = 2
+	else
+		r.winner = 1
+	end
+	return r
 end
 
 -- map
