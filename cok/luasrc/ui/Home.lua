@@ -56,14 +56,12 @@ function Class.doTest3(ctx)
 
 	local cbjson = loader("combat_test")	
 	local cb = cbm.newCombat(1)
-	local chlist = cbjson.chars
-	for _, chdata in ipairs(chlist) do
-		cbm.newChar(cb, chdata)
-	end
-	local splist = cbjson.spells
-	for _,spdata in ipairs(splist) do
-		cbm.addSpell(cb, spdata)
-	end
+
+	local mteam = cbjson.eteam
+	cbm.newTeam(cb, 1, mteam)
+
+	local eteam = cbjson.eteam
+	cbm.newTeam(cb, 2, eteam)
 
 	cbm.prepare(cb)
 	-- cbm.process(cb)	
