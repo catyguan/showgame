@@ -73,7 +73,7 @@ end
 function Class.doTest4(ctx)
 	local ldata = loader("combat_p_test")
 
-	local LM = class.forName("leader.Manager")
+	local LM = class.forName("kindom.Manager")
 	LM.setSpells(ldata.spells)
 
 	local M = class.forName("adventure.Manager")
@@ -83,5 +83,16 @@ function Class.doTest4(ctx)
 	local myGroup = ldata.myGroup
 	local myWagon = ldata.myWagon
 	M.startCombat(opts, emenyTeam, myGroup, myWagon)
+	return 0
+end
+
+function Class.doTest5(ctx)
+	local ldata = loader("kindom_test")
+
+	local w = WORLD
+	w:prop({"kindom"}, ldata)
+
+	local UI = class.forName("kindom.ui.Home")
+	UI.enterTown()
 	return 0
 end

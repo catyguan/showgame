@@ -5,6 +5,7 @@
 </head>
 <body>
 [Home] - 
+<button onclick="contentManager.doKindom()">Kindom</button>
 <button onclick="contentManager.doAdv()">ADV</button>
 <button onclick="contentManager.doTestCombatd()">TestCombatd</button>
 <button onclick="contentManager.doTest()">Test</button>
@@ -20,6 +21,13 @@ contentManager = {
 	},
 	Close : function() {
 
+	},
+	doKindom : function() {
+		var cb = function(data) {
+			console.log(data)
+			return true
+		}
+		doUIAction("Test5",[],cb)
 	},
 	doAdv : function() {
 		var cb = function(data) {

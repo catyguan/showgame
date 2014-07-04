@@ -40,7 +40,7 @@
 			{
 				"id": "cid2",
 				"_p": "cmod.pack.base.ModSlime",
-				"level": 13,
+				"level": 2,
 				"pos": 2
 			}
 		]
@@ -50,7 +50,7 @@
 			{
 				"id": "w1",
 				"_p": "cmod.pack.base.ModSlime",
-				"level": 1
+				"level": 3
 			},
 			{
 				"id": "w2",

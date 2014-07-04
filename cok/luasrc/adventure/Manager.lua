@@ -167,8 +167,8 @@ function Class.flowProcess()
 			cbm.newChar(cb, NC2(ch, 1))
 		end
 		if not ctx.opts.disableSpell then
-			local LM = class.forName("leader.Manager")
-			local splist = w:prop({"leader", "spells"})
+			local LM = class.forName("kindom.Manager")
+			local splist = LM.getSpells()
 			if splist then			
 				for _,sp in ipairs(splist) do
 					local spdata = {}
@@ -204,7 +204,7 @@ function Class.endCombat(res)
 	ctx.lastResult = tres
 
 	if res.spells then
-		local LM = class.forName("leader.Manager")
+		local LM = class.forName("kindom.Manager")
 		LM.updateSpells(res.spells)
 	end
 	

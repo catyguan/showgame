@@ -1,7 +1,32 @@
 --[[
 {	
 	"views" : ..., 	// UIManager use
-	"leader": {
+	"kindom": {
+		"info": {
+			"title":xxxx
+			"faction":xxxx
+		}
+		"resources" : [
+			{v,m},
+			...
+		],
+		"buildings" : [
+			{
+				"_p":"xxxxx",
+				"level": 1,
+				...
+			},
+			...
+		],
+		"towns"  : [
+			"id":"xxxx",
+			"title":"xxxx",
+			"capital":false,
+			"income" : {
+				g: {v,m}, ...
+			},
+			"gainTime" : xxxx
+		],
 		"spells" : [
 			{
 				"_p": "cmod.pack.base.SpellHeal",

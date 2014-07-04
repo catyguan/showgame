@@ -1,0 +1,95 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<title>home</title>
+</head>
+<body>
+[<span id="divTitle">Kindom</span>] - <span id="divFaction"></span> -
+<button onclick="contentManager.backHome()">BackHome</button>
+<br>
+<div id="divResources"></div>
+<br>
+<div id="divBuildings"></div>
+<script>
+contentManager = {
+	Init : function(viewData) {
+		contentManager.BuildView(viewData)
+	},
+	Update : function(viewData) {
+		contentManager.BuildView(viewData)	
+	},
+	ResName : function(id) {
+		if(id=="g")return "金币";
+		if(id=="f")return "粮食";
+		if(id=="p")return "物资";
+		if(id=="m")return "魔石";
+		return "???";
+	},
+	BuildInfo : function(viewData) {
+		$('#divTitle').html(viewData.info.title);
+		$('#divFaction').html(theText(viewData.info.faction.title));
+
+		var f = function(resl, k) {
+			var res = resl[k]
+			return contentManager.ResName(k)+":"+res.v+" ";
+		};
+		var html = "";
+		var resl = viewData.info.resources;
+		html += f(resl,"g");
+		html += f(resl,"f");
+		html += f(resl,"p");
+		html += f(resl,"m");
+		
+		$('#divResources').html(html);
+	},
+	BuildingMore : function(b) {
+		var html = "";
+		if(b.id=="tavern") {
+			html += "人员:"+b.num+"<br>";
+			html += "<button>招募</button>";
+			html += "<button>升级</button>"
+			html += "<br>"
+		}
+		return html;
+	},
+	BuildView : function(viewData) {		
+		contentManager.BuildInfo(viewData);
+
+		var html = "";
+		html = "<table>";
+		var bl = viewData.buildings;
+		if(bl) {
+			for (var i = 0; i < bl.length; i++) {
+				var b = bl[i];
+				html += "<tr>";
+				html += "<td>";
+				html += "<img src='images/"+b.pic+".png' width=80 height=60>";
+				html += "</td>";
+				html += "<td valign='top'>";
+				html += b.level+"级 "+theText(b.title)+"<br>";
+				html += contentManager.BuildingMore(b);
+				html += "</td>";
+				html += "</tr>";
+			}
+		}
+		html += "</table>";
+		$('#divBuildings').html(html);
+	},
+	Close : function() {
+
+	},
+	doSelectTown : function(tid) {
+		doUIAction("SelectTown",{"id":tid})
+	},
+	backHome : function() {
+		var cb = function(data) {
+			console.log(data)
+			return true
+		}
+		doUIAction("MenuHome",[],cb)
+	},
+}
+</script>
+
+</body>
+</html>
