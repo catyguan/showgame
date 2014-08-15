@@ -1,0 +1,33 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<title>home</title>
+</head>
+<body>
+[Combat] - 
+<button onclick="contentManager.doTestCombatd()">TestCombatd</button>
+<button onclick="contentManager.doTest()">Test</button>
+<br>
+
+<script>
+contentManager = {
+	Init : function(viewData) {
+		
+	},
+	Update : function(viewData) {
+		
+	},
+	Close : function() {
+
+	},
+	doTest : function() {
+		doUIAction("Test2",[],cb)
+	},
+	doTestCombatd : function() {
+		doUIProcess("Test4",0)
+	},
+}
+</script>
+
+</body>
+</html>

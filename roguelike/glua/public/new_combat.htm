@@ -1,0 +1,32 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<title>home</title>
+</head>
+<body>
+
+<script>
+contentManager = {
+	Init : function(viewData) {
+		loadLib("libui", function() {
+			aCall("testNewCombat", null, "text", function(rs) {
+				console.log( "init new combat: " + rs );
+				if(rs=="OK") {
+					setTimeout(function() {
+						reloadView()
+					}, 1)
+				}
+			})
+		})		
+	},
+	Update : function(viewData) {
+		
+	},
+	Close : function() {
+
+	},
+}
+</script>
+
+</body>
+</html>

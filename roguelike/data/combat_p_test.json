@@ -1,0 +1,73 @@
+{
+	"opts" : {
+		"teamMax": 3,
+		"backupTeam": false,
+		"disableSpell": false
+	},
+	"emenyTeam" : {
+		"groups" : [
+			{
+				"id":"group1",
+				"chars" : [
+					{
+						"_p": "cmod.pack.base.ModTreant",
+						"level": 3,
+						"pos": 2
+					}
+				]
+			},
+			{
+				"id":"group2",
+				"chars" : [
+					{
+						"_p": "cmod.pack.base.ModMushroom",
+						"level": 1,
+						"pos": 3
+					}
+				]
+			}
+		]
+	},
+	"myGroup" : {
+		"chars" : [
+			{
+				"id": "cid1",
+				"_p": "cmod.pack.base.ModSlime",
+				"level": 2,
+				"pos": 5,
+				"fixed": true
+			},
+			{
+				"id": "cid2",
+				"_p": "cmod.pack.base.ModSlime",
+				"level": 2,
+				"pos": 2
+			}
+		]
+	},
+	"myWagon" : {
+		"chars" : [
+			{
+				"id": "w1",
+				"_p": "cmod.pack.base.ModSlime",
+				"level": 3
+			},
+			{
+				"id": "w2",
+				"_p": "cmod.pack.base.ModMushroom",
+				"level": 1
+			},
+			{
+				"id": "w3",
+				"_p": "cmod.pack.base.ModTreant",
+				"level": 1
+			}
+		]
+	},
+	"spells" : [
+		{
+			"_p": "cmod.pack.base.SpellHeal",
+			"num": 2
+		}
+	]
+}

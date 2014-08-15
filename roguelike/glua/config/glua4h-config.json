@@ -1,0 +1,23 @@
+{
+	"global" : {
+		"Debug" : true,
+		"GOMAXPROCS" : 5
+	},
+	"httpPoint" : {
+		"Port" : "1080"
+	},
+	"gluaService" : {
+		"GLua" : {
+			"roguelike" : {
+				"Paths" : ["${CWD}/luasrc", "${CWD}/../luasrc", "${CWD}/../../luasrc", "${CWD}/../../gmodules"],
+				"Preloads" : ["initall"]
+			}
+		}
+	},
+	"gluaMux" : {
+		"DevMode" : true,
+		"Location" : {
+			"/add" : "/g1/add"
+		}
+	}
+}

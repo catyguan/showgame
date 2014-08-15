@@ -1,0 +1,141 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<title>RogueLike</title>
+<script src="jquery-2.1.1.js"></script>
+</head>
+<body>
+<button onclick="doReset()">Reset</button>
+<button onclick="loadContent('new_combat')">NewCombat</button>
+<span id="mbox"></span>
+<hr>
+
+<div id="gcontent"></div>
+
+<!-- JavaScript for interactivity. -->
+<script type="text/javascript">
+Date.prototype.Format = function(fmt)
+{ //author: meizz
+	var o = {
+		"M+" : this.getMonth()+1,                 //月份
+		"d+" : this.getDate(),                    //日
+		"h+" : this.getHours(),                   //小时
+		"m+" : this.getMinutes(),                 //分
+		"s+" : this.getSeconds(),                 //秒
+		"q+" : Math.floor((this.getMonth()+3)/3), //季度
+		"S"  : this.getMilliseconds()             //毫秒
+	};
+	if(/(y+)/.test(fmt))
+		fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+	for(var k in o) {
+		if(new RegExp("("+ k +")").test(fmt)) {
+  			fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+		}
+	}
+	return fmt;
+}
+</script>
+<script>
+var appId = "roguelike";
+var sURL = "/i/";
+var aURL = sURL+appId+"/";
+var worldId = "test";
+var userId = "tester";
+
+function showMessage(msg) {
+	var nowf = (new Date()).Format("yyyy-MM-dd hh:mm:ss.S");
+	$( "#mbox" ).text(nowf + " >> " + msg );
+}
+
+var contentManager;
+var LIBS = {}
+var contentId = "";
+function loadContent(cid, viewData) {
+	if(contentManager!=null) {
+		contentManager.Close();
+		contentManager = null;
+	}
+	contentId = cid;
+	var msg = "loading content '"+cid+"'";
+	$( "#gcontent" ).text(msg);	
+	var cb = function(responseText,status, jqXHR ) {
+ 		if ( status != "error" ) {
+ 			showMessage("load content '"+cid+"' done");
+			if(contentManager!=null) {
+				contentManager.Init(viewData);
+			}
+		}
+	};
+	$( "#gcontent" ).load(cid+".htm", {tm:Math.random()}, cb);
+}
+function loadLib(lid, callback) {
+	var linfo = LIBS[lid];
+	if(linfo) {
+		if(linfo.done) {
+			callback();
+		} else {
+			linfo.cb[linfo.cb.length] = callback;
+		}
+		return;
+	}
+	LIBS[lid] = {
+		"done": false,
+		"cb": [callback]
+	};
+	$.getScript(lid+".js", function() {
+		var linfo = LIBS[lid];
+		linfo.done = true;
+		for (var i = 0; i < linfo.cb.length; i++) {
+			var callback = linfo.cb[i];
+			callback();
+		}
+	});
+}
+//////////////////////////
+function sCall(action, data, resultType, cb) {
+	$.ajax({
+		url: sURL+action,
+		data: data,
+		type: "GET",
+		dataType : resultType?resultType:"text",
+		success: function( rs ) {
+			if(cb) {
+				cb(rs)
+			}
+		}
+	});
+}
+function aCall(action, data, resultType, cb) {
+	if(!data) {
+		data = {}
+	}
+	data.id = worldId
+	$.ajax({
+		url: aURL+action,
+		data: data,
+		type: "GET",
+		dataType : resultType?resultType:"json",
+		success: function( rs ) {
+			if(cb) {
+				cb(rs)
+			}
+		}
+	});
+}
+//////////////////////////
+function doReset() {
+	sCall("reset", {g:appId},"text", function( rs ) {
+		showMessage(rs);
+	})	
+}
+//////////////////////////
+$(document).ready(function(){
+	$( document ).ajaxError(function(ev, xhr, status, errorThrown) {
+		alert( "Sorry, there was a problem!\n" + errorThrown );
+		console.log( "Error: " + errorThrown );
+		console.log( "Status: " + status );
+	});
+});
+</script>
+</body>
+</html>
