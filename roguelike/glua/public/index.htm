@@ -6,7 +6,10 @@
 </head>
 <body>
 <button onclick="doReset()">Reset</button>
+<button onclick="doNewWorld()">NewWorld</button>
+<button onclick="doSaveWorld()">SaveWorld</button>
 <button onclick="loadContent('new_combat')">NewCombat</button>
+<button onclick="loadContent('new_dungelot')">NewDungelot</button>
 <span id="mbox"></span>
 <hr>
 
@@ -125,6 +128,21 @@ function aCall(action, data, resultType, cb) {
 //////////////////////////
 function doReset() {
 	sCall("reset", {g:appId},"text", function( rs ) {
+		showMessage(rs);
+	})	
+}
+function doNewWorld() {
+	aCall("init", {},"text", function( rs ) {
+		showMessage(rs);
+		loadLib("libui", function() {
+			setTimeout(function() {
+				reloadView()
+			}, 1)
+		})
+	})	
+}
+function doSaveWorld() {
+	aCall("save", {},"text", function( rs ) {
 		showMessage(rs);
 	})	
 }

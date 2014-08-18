@@ -1,4 +1,6 @@
 -- roguelike/world/World.lua
+require("bma.lang.Class")
+
 local Class = class.define("roguelike.world.World", {"ui.UIManager", "service.PDVM"})
 
 local LDEBUG = LOG:debugEnabled()
@@ -27,10 +29,26 @@ function Class:loadWorld(callback)
 	local ss = class.instance("service.StoreService")
 	local wid = self.id
 	local cb = function(done, data)
-		self._prop = data
+		if done then
+			class.deserializeObject(self._prop, data)
+		end
 		callback(done, wid)
 	end
 	ss:load("world", wid, cb)
+end
+
+function Class:saveWorld(callback)
+	if callback==nil then
+		callback = function(done, wid)
+		end
+	end
+	local ss = class.instance("service.StoreService")
+	local wid = self.id
+	local data = class.serializeValue(self._prop)
+	local cb = function(done)
+		callback(done)
+	end
+	ss:save("world", wid, data, cb)
 end
 
 function Class:close()

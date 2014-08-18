@@ -1,0 +1,21 @@
+{
+	"default" : {
+			"_p" : "Empty"
+		},
+	"cells" : [	
+		{
+			"x" : 3, "y" : 1,
+			"_p" : "Entrance"
+		},
+		{
+			"x" : 3, "y" : 2,
+			"_p" : "Monster",
+			"mt" : 1
+		},
+		{
+			"x" : 5, "y" : 2,
+			"_p" : "Monster",
+			"mt" : 1
+		}
+	]
+}

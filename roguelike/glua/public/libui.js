@@ -57,7 +57,6 @@ function doUIAction(cmd, p, callback) {
 					return
 				}
 			}
-			updateView(rs)			
 		}
 	});
 }
@@ -72,33 +71,13 @@ function doUIProcess(sid, p, callback) {
 		type: "GET",
 		dataType : "json",
 		success: function( rs ) {
-			console.log(rs);
+			console.log("doUIProcess --> ", rs);
 			if(callback!=null) {
 				if(!callback(rs)) {
 					return
 				}
 			}
 			updateView(rs);
-		}
-	});
-}
-function doUIInvoke(cmd, p, callback) {
-	$.ajax({
-		url: aURL+"invoke",		
-		data: {
-			id : worldId,
-			cmd : cmd,
-			p : JSON.stringify(p)
-		},		
-		type: "GET",
-		dataType : "json",
-		success: function( rs ) {
-			console.log(rs);
-			if(callback!=null) {
-				if(!callback(rs.result)) {
-					return
-				}
-			}
 		}
 	});
 }

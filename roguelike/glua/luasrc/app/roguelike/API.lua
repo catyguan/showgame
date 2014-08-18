@@ -22,24 +22,27 @@ function new_world(wid)
 	o:loadWorld()
 
 	if o:getView(-1)==nil then
-		o:createView("home", {}, "roguelike.ui.Home")
+		local vo = class.new("roguelike.ui.Home")
+		o:createView("home", vo)
 	end
 	return o
 end
 
 function service_init(ctx, res)
 	local wid = glua_getString(ctx, "id")
-	-- local wm = WORLD_MANAGER
-	-- wm:closeWorld(wid)
+	local o = new_world(wid)
+	glua_setString(res, "Content", "new world "..o.id)
+	return true
+end
 
-	-- local o = wm:newWorld(wid)
-	-- o:loadWorld()
-
-	-- if o:getView(-1)==nil then
-	-- 	o:createView("home", {}, "ui.Home")
-	-- end
-
-	glua_setString(res, "Content", ""..o.id)
+function service_save(ctx, res)
+	local wid = glua_getString(ctx, "id")
+	local wm = WORLD_MANAGER
+	local o = wm:getWorld(wid)
+	if o~=nil then
+		o:saveWorld()
+	end
+	glua_setString(res, "Content", "save done")
 	return true
 end
 
@@ -58,8 +61,8 @@ function service_viewinfo( ctx, res )
 		if vo==nil then
 			r.name = "home"
 		else
-			r.name = vo.name
-			r.data = vo.data
+			r.name = vo:name()
+			r.data = vo:getViewData(o, 0)
 		end
 		glua_setString(res, "Content", table.json(r))
 		-- glua_setString(res, "Content", r)
@@ -100,8 +103,8 @@ function service_process( ctx, res )
 		if vo==nil then
 			r.name = "home"
 		else
-			r.name = vo.name
-			r.data = vo.data
+			r.name = vo:name()
+			r.data = vo:getViewData(o, sid)
 		end
 		-- var_dump(o._prop)
 		glua_setString(res, "Content", table.json(r))
@@ -129,18 +132,9 @@ function service_action( ctx, res )
 		local r = {}
 		o:begin()
 		local resp = o:uiAction(cmd, param)
-		o:pdprocess()
 		o:finish()
 		r.result = resp
 
-		local vo = o:getView(-1)
-		if vo==nil then
-			r.name = "home"
-		else
-			r.name = vo.name
-			r.data = vo.data
-		end
-		-- var_dump(o._prop)
 		glua_setString(res, "Content", table.json(r))
 	else
 		glua_setString(res, "Content", "InvalidWorld")
@@ -148,31 +142,21 @@ function service_action( ctx, res )
 	return true
 end
 
-function service_invoke( ctx, res )	
+function service_testNewDungelot( ctx, res )	
 	local wid = glua_getString(ctx, "id")
-	local cmd = glua_getString(ctx, "cmd")
-	local p = glua_getString(ctx, "p")
-	LOG:debug("API", "invoke(%s, %s, %s)", wid, cmd, p)
-	local param = {}
-	if p~=nil and p~="" then
-		local data = string.json(p)
-		if type(data)=="table" then
-			param = data
-		end
+	local o = WORLD_MANAGER:getWorld(wid)
+	if o==nil then
+		o = new_world(wid)
 	end
 
-	local o = WORLD_MANAGER:getWorld(wid)
-	if o~=nil then
-		local r = {}
-		o:begin()
-		local resp = o:uiInvoke(cmd, param)
-		o:finish()
-		r.result = resp
-
-		glua_setString(res, "Content", table.json(r))
-	else
-		glua_setString(res, "Content", "InvalidWorld")
-	end	
+	local dm = class.forName("dungelot.Manager")
+	local dg = dm.newDungeon()
+	dg:newLevel(5,6, function(w, cb)
+		local l = class.forName("dungelot.LevelLoader")
+		l.load("test", dg, cb)
+	end)
+	dg:run(o)
+	glua_setString(res, "Content", "OK")	
 	return true
 end
 
@@ -188,7 +172,7 @@ function service_testNewCombat( ctx, res )
 	o:prop("combat", cb)
 
 	cbd.prepare(cb)
-	cbd.
+	-- cbd.
 
 	-- o:createView("home", {}, "ui.Home")		
 	glua_setString(res, "Content", "OK")	

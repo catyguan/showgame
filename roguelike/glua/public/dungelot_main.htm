@@ -1,0 +1,96 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<title>home</title>
+</head>
+<body>
+[Dungelot Main] - 
+<button onclick="reloadView()">ReloadView</button>
+<br>
+
+<div id="map">
+</div>
+
+<script>
+contentManager = {
+	Init : function(viewData) {
+		this.InitView(viewData);
+		this.UpdateView(viewData);
+	},
+	Update : function(viewData) {
+		console.log("doUpdate!!!!")
+		console.log(viewData)
+		this.UpdateView(viewData);
+	},
+	Close : function() {
+
+	},
+	CellId : function(x,y) {
+		return "c_"+x+"_"+y;
+	},
+	InitView : function(viewData) {
+		var w = viewData.w;
+		var h = viewData.h;
+		var html = "";
+		html += "<table>";
+		for (var y = 0; y < h; y++) {
+			html += "<tr>";
+			for (var x = 0; x < w; x++) {
+				html += "<td id='"+this.CellId(x+1,y+1)+"' width=64 height=64>abc</td>";
+			}
+			html += "</tr>";
+		}
+		html += "</table>";
+		$('#map').html(html)
+	},
+	UpdateView : function(viewData) {
+		this.sid = viewData.sid;
+		var map = viewData.map;
+		if(map)	{
+			for (var i = 0; i < map.length; i++) {
+				var cell = map[i];
+				var x = cell.x;
+				var y = cell.y;
+				var html = "";
+				var img = "hide_1";
+				var clickable = cell.c?cell.c==1:false;
+				var light = cell.l && cell.l==1;
+				if(cell.h>0) {
+					img = "hide_"+cell.h;
+					if(light) {
+						clickable = cell.h!=2;
+					}
+				} else {
+					img = "cell_"+cell.t;
+					if(cell.t=="mo") {
+						img = img + "_" + cell.mt;
+					}
+				}				
+				if(clickable) {
+					html += "<a href='#' onclick='return contentManager.doClick("+x+","+y+")'>";
+				}
+				html += "<img src='images/"+img+".png' border=0/>";
+				if(clickable) {
+					html += "</a>";
+				}
+				var co = $('#'+this.CellId(x,y));
+				co.html(html);	
+				co.css("opacity", light?1:0.6);
+			}
+		}
+	},
+	doClick : function(x, y) {
+		var cb = function(data) {
+			// console.log("here");
+			return true;
+		}
+		var p = {cmd:"click", x:x, y:y};
+		doUIProcess(this.sid, p, cb);
+		return false;
+	},
+	ISEnd : false
+}
+</script>
+
+</body>
+</html>
