@@ -187,3 +187,4 @@ function Class:uiProcess(sid, param)
 	end
 	return vo:onProcess(self, sid, param)
 end
+

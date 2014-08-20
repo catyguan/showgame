@@ -36,7 +36,7 @@ contentManager = {
 		for (var y = 0; y < h; y++) {
 			html += "<tr>";
 			for (var x = 0; x < w; x++) {
-				html += "<td id='"+this.CellId(x+1,y+1)+"' width=64 height=64>abc</td>";
+				html += "<td id='"+this.CellId(x+1,y+1)+"' width=64 height=64 align='center' valign='middle'></td>";
 			}
 			html += "</tr>";
 		}
@@ -44,8 +44,14 @@ contentManager = {
 		$('#map').html(html)
 	},
 	UpdateView : function(viewData) {
+		var th = this
 		this.sid = viewData.sid;
 		var map = viewData.map;
+		processEvents(viewData.events, this.handleEvents, function() {
+			th.BuildMap(map);
+		});		
+	},
+	BuildMap : function(map) {
 		if(map)	{
 			for (var i = 0; i < map.length; i++) {
 				var cell = map[i];
@@ -54,6 +60,7 @@ contentManager = {
 				var html = "";
 				var img = "hide_1";
 				var clickable = cell.c?cell.c==1:false;
+				var block = cell.b && cell.b>0;
 				var light = cell.l && cell.l==1;
 				if(cell.h>0) {
 					img = "hide_"+cell.h;
@@ -65,19 +72,33 @@ contentManager = {
 					if(cell.t=="mo") {
 						img = img + "_" + cell.mt;
 					}
-				}				
-				if(clickable) {
-					html += "<a href='#' onclick='return contentManager.doClick("+x+","+y+")'>";
 				}
-				html += "<img src='images/"+img+".png' border=0/>";
+				var css = "";
+				var border = 0;
 				if(clickable) {
+					if(block) {
+						css = "style='border-color:#FF0000'";
+						border = 3;
+					} else {
+						html += "<a href='#' onclick='return contentManager.doClick("+x+","+y+")'>";
+					}
+				}
+				var size = 64-2*border;
+				html += "<img src='images/"+img+".png' width="+size+" height="+size+" border="+border+" "+css+"/>";
+				if(clickable && !block) {
 					html += "</a>";
 				}
 				var co = $('#'+this.CellId(x,y));
-				co.html(html);	
+				co.html(html);
 				co.css("opacity", light?1:0.6);
 			}
 		}
+	},
+	handleEvents : function(ev, nextf) {
+		if(ev.t=="msg") {
+			alert(ev.text);
+		}
+		nextf();
 	},
 	doClick : function(x, y) {
 		var cb = function(data) {

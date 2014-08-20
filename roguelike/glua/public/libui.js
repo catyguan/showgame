@@ -81,3 +81,28 @@ function doUIProcess(sid, p, callback) {
 		}
 	});
 }
+/**
+handlef : function(ev, nextf:function(stopNow:bool))
+endf : function()
+*/
+function processEventsI(evlist, idx, handlef, endf) {
+	if(evlist && idx<evlist.length) {
+		console.log("process event ", idx);
+		var ev = evlist[idx];
+		var f = function(stopNow) {
+			if(stopNow) {
+				if(endf)endf();
+				return;
+			}
+			setTimeout(function() {
+				processEventsI(evlist, idx+1, handlef, endf);
+			},1);
+		}
+		handlef(ev, f);		
+	}
+	console.log("process event end");
+	if(endf)endf();
+}
+function processEvents(evlist, handlef, endf) {
+	processEventsI(evlist, 0, handlef, endf);
+}
