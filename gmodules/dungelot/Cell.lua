@@ -8,13 +8,11 @@ function Class:getViewData()
 	local vo
 	if self:prop("v")~=1 then
 		local h = 1
-		if V(self:prop("b"),0) > 0 then
-			h = 2
-		end
 		vo = {h=h}
 	else
 		vo = self:makeViewData()
 	end
+	vo.b = self:prop("b")
 	vo.l = self:prop("l")
 	return vo
 end

@@ -23,5 +23,6 @@ function Class:onVisible(dg, x, y)
 end
 
 function Class:handleClick(dg, x, y)
-	dg:onMonsterGone(x, y)
+	dg:uiEvent({t="msg", text="You Kill It"})
+	dg:somethingGone(x, y)
 end

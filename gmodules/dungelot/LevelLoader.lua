@@ -1,6 +1,11 @@
 -- dungelot/ui/LevelLoader.lua
 local Class = class.define("dungelot.LevelLoader")
 
+function Class.newCell(data)
+	local cls = class.forName("dungelot.Cell"..data._p)
+	return cls.newCell(data)
+end
+
 function Class.load(name, dg, callback)
 	if callback==nil then
 		callback = function(done)
@@ -11,8 +16,7 @@ function Class.load(name, dg, callback)
 		if done then			
 			if data.cells then
 				for _,c in ipairs(data.cells) do
-					local cls = class.forName("dungelot.Cell"..c._p)
-					local co = cls.newCell(c)
+					local co = Class.newCell(c)
 					dg:setCell(c.x, c.y, co)
 				end
 			end

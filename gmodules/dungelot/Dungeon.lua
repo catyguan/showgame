@@ -1,7 +1,7 @@
 -- dungelot/Dungeon.lua
 require("bma.lang.Class")
 
-local Class = class.define("dungelot.Dungeon", {"bma.lang.StdObject"})
+local Class = class.define("dungelot.Dungeon", {"bma.lang.StdObject", "ui.UIEvents"})
 
 local LDEBUG = LOG:debugEnabled()
 local LTAG = "Dungeon"
@@ -48,20 +48,28 @@ function Class:run(w)
 	w:createView("dungelot_main", vo)
 end
 
+function Class:walk(f)
+	local map = self:prop("map")
+	if map==nil then return end
+
+	for x,xl in ipairs(map) do
+		for y,c in ipairs(xl) do
+			if f(x, y, c) then return end
+		end
+	end
+end
+
 function Class:fillDefault(cell)
 	local w = self:prop("w")
 	local h = self:prop("h")
 	local map = self:prop("map")
 
-	for x=1,w do
-		for y=1,h do			
-			local c = map[x][y]
-			if c==1 then
-				local co = cell.newCell({})
-				map[x][y] = co
-			end
+	self:walk(function(x,y,c)
+		if c==1 then
+			local co = cell.newCell({})
+			map[x][y] = co
 		end
-	end
+	end)
 end
 
 function Class:setCell(x, y, cell)
@@ -82,24 +90,18 @@ function Class:normalize()
 	local h = self:prop("h")
 	local map = self:prop("map")
 
-	local efunc = function( ... )
-		for x=1,w do
-			for y=1,h do			
-				local c = map[x][y]
-				if c.ENTRANCE then
-					self:onVisible(x, y)
-					return
-				end
-			end
-		end	
-	end
-	efunc()
-	var_dump(map)
+	self:walk(function(x, y, c)
+		if c.ENTRANCE then
+			self:onVisible(x, y)
+			return true
+		end
+	end)
 end
 
 local ROUND = {
 	{-1,0},{0,-1},{1,0},{0,1}
 }
+
 local WALK_ROUND = function(self, x, y, f)
 	for _,pos in ipairs(ROUND) do
 		local c = self:getCell(x+pos[1], y+pos[2])
@@ -122,6 +124,8 @@ function Class:onMonsterShow(x, y)
 
 	local sid = self:prop("sid")
 	WALK_ROUND(self, x, y, function(c)
+		if c.MONSTER then return end
+
 		local b = V(c:prop("b"), 0)
 		if c:prop("v")~=1 then
 			c:prop("sid", sid)
@@ -143,6 +147,22 @@ function Class:onMonsterGone(x, y)
 			end			
 		end
 	end)
+end
+
+function Class:somethingGone(x, y)
+	local c = self:getCell(x, y)
+	if c~=nil and not c.EMPTY then
+		local nc = class.forName("dungelot.CellEmpty").newCell()		
+		nc:prop("sid", self:prop("sid"))
+		nc:prop("l", c:prop("l"))
+		nc:prop("v", c:prop("v"))
+		nc:prop("b", c:prop("b"))		
+
+		self:setCell(x, y , nc)
+		if c.MONSTER then
+			self:onMonsterGone(x, y)
+		end
+	end
 end
 
 function Class:doClick(x, y)

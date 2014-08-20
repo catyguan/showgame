@@ -17,22 +17,27 @@ function Class:getViewData(w, sid)
 
 	local view = {}
 	view.sid = dg:prop("sid")
-	
 	view.w = w
 	view.h = h
-	local vmap = {}
-	for x,xl in ipairs(map) do
-		for y,c in ipairs(xl) do
-			local csid = c:prop("sid")
-			if not csid then csid = 0 end
-			if sid==0 or sid<csid then			
-				local vc = c:getViewData()
-				vc.x = x
-				vc.y = y
-				table.insert(vmap, vc)
-			end
+
+	if sid>0 then
+		local evs = dg:uiPopEvent(sid)
+		if #evs>0 then
+			view.events = evs
 		end
 	end
+	
+	local vmap = {}
+	dg:walk(function(x, y, c)
+		local csid = c:prop("sid")
+		if not csid then csid = 0 end
+		if sid==0 or sid<csid then			
+			local vc = c:getViewData()
+			vc.x = x
+			vc.y = y
+			table.insert(vmap, vc)
+		end
+	end)
 	view.map = vmap
 	
 	return view
