@@ -71,7 +71,10 @@ contentManager = {
 		var html = "";
 		html += "地牢:"+info.level+"/"+info.maxlevel;
 		html += "<br>";
-		html += "力量:"+info.Power+";";
+		html += "血量:"+info.HP+"/"+info.MAXHP+"; ";
+		html += "力量:"+info.POWER+"; ";
+		html += "防盾:"+info.DEF+"; ";
+		html += "金币:"+info.MONEY+"; ";
 		$('#info').html(html)
 	},
 	BuildMap : function(map) {

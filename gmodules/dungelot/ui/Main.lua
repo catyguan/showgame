@@ -20,12 +20,12 @@ function Class:getViewData(w, sid)
 	view.w = w
 	view.h = h
 
-	local asid = dg:prop("asid")
-	if sid<asid then
+	local hsid = dg:prop("hsid")
+	if sid<hsid then
 		view.a = {}
 		view.a.level = dg:prop("level")		
 		view.a.maxlevel = dg:prop("maxlevel")
-		local a = dg:prop("a")
+		local a = dg:prop("hero")
 		if a then
 			for k,v in pairs(a) do
 				view.a[k] = v

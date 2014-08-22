@@ -29,25 +29,29 @@ local propcp = function(t1, t2)
 	end
 end
 
-function Class:run(w, name, hero)
-	local cb = function(done, data)
+function Class:loadRun(w, name, hero)
+	local cb = function(done, data)	
 		if done then			
-			self:prop("data", data)
-			self:prop("level", 1)
-			self:prop("maxlevel", #data.levels)
-			self:prop("asid", self:prop("sid"))
-			local a = {}
-			propcp(a, data.attr)
-			propcp(a, hero)
-			self:prop("a", a)
-			self:startLevel()
+			self:run(w, data, hero)
 		end
 	end
+	Class.load(name, cb)	
+end
 
-	Class.load(name, cb)
-	
+function Class:run(w, data, hero)
+	self:prop("data", data)
+	self:prop("level", 1)
+	self:prop("maxlevel", #data.levels)
+	self:prop("hsid", self:prop("sid"))
+	local a = {}
+	propcp(a, data.attr)
+	propcp(a, hero)
+	self:prop("hero", a)	
+
 	w:prop(PROP, self)
 	self:prop("wid", w.id)
+
+	self:startLevel()
 
 	local vo = class.new("dungelot.ui.Main")
 	w:createView("dungelot_main", vo)
@@ -312,6 +316,27 @@ function Class:somethingGone(x, y)
 	end
 end
 
+function Class:setHeroProp(n, v)
+	local h = self:prop("hero")
+	if n=="HP" then
+		local v0 = h.MAXHP
+		if v>v0 then v = v0 end
+		if v<0 then v = 0 end
+	end
+	h[n] = v
+	return v
+end
+
+function Class:changeHeroProp(n, v)
+	local h = self:prop("hero")
+	local ov = h[n]
+	local nv = v
+	if ov~=nil then
+		nv = ov + v
+	end
+	return self:setHeroProp(n, nv)
+end
+
 function Class:doClick(x, y)
 	local cell = self:getCell(x, y)
 	if cell==nil then return end
@@ -332,5 +357,7 @@ function Class:invokeNext(pd)
 	local lvl = self:prop("level")
 	lvl = lvl + 1
 	self:prop("level", lvl)
+	self:prop("hsid", self:prop("sid"))
+
 	self:startLevel();
 end

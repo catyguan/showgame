@@ -151,7 +151,7 @@ function service_testNewDungelot( ctx, res )
 
 	local dm = class.forName("dungelot.Manager")
 	local dg = dm.newDungeon()	
-	dg:run(o, "test")
+	dg:loadRun(o, "test")
 	glua_setString(res, "Content", "OK")	
 	return true
 end

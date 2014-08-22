@@ -1,6 +1,10 @@
 {
 	"attr" : {
-		"Power" : 5
+		"HP" : 20,
+		"MAXHP" : 20,
+		"POWER" : 5,
+		"DEF" : 0,
+		"MONEY" : 0
 	},
 	"levels" : [
 		{
