@@ -7,7 +7,7 @@
 [Dungelot Main] - 
 <button onclick="reloadView()">ReloadView</button>
 <br>
-
+<div id="info"></div>
 <div id="map">
 </div>
 
@@ -45,11 +45,34 @@ contentManager = {
 	},
 	UpdateView : function(viewData) {
 		var th = this
-		this.sid = viewData.sid;
-		var map = viewData.map;
+		this.sid = viewData.sid;		
 		processEvents(viewData.events, this.handleEvents, function() {
-			th.BuildMap(map);
+			th.BuildInfo(viewData.a);
+			th.BuildMap(viewData.map);
 		});		
+	},
+	GetTips : function(cell) {		
+		if(cell.t=="et") {
+			return "入口。从这里出发探索地牢吧";
+		}
+		if(cell.t=="ro") {
+			return "碍事的石头";
+		}
+		if(cell.t=="out") {
+			return "进入下一个地牢的通道";
+		}
+		if(cell.t=="lock") {
+			return "关闭的通道大门。去寻找钥匙吧";
+		}
+		return "";
+	},
+	BuildInfo : function(info) {
+		if(!info)return;
+		var html = "";
+		html += "地牢:"+info.level+"/"+info.maxlevel;
+		html += "<br>";
+		html += "力量:"+info.Power+";";
+		$('#info').html(html)
 	},
 	BuildMap : function(map) {
 		if(map)	{
@@ -62,10 +85,12 @@ contentManager = {
 				var clickable = cell.c?cell.c==1:false;
 				var block = cell.b && cell.b>0;
 				var light = cell.l && cell.l==1;
+				var alt = "";
 				if(cell.h>0) {
 					img = "hide_"+cell.h;
 					if(light) {
 						clickable = cell.h!=2;
+						alt = "点击探索";		
 					}
 				} else {
 					img = "cell_"+cell.t;
@@ -84,7 +109,9 @@ contentManager = {
 					}
 				}
 				var size = 64-2*border;
-				html += "<img src='images/"+img+".png' width="+size+" height="+size+" border="+border+" "+css+"/>";
+				if(alt=="")alt = this.GetTips(cell);
+				if(alt!="")alt = " title = '"+alt+"'";
+				html += "<img src='images/"+img+".png' width="+size+" height="+size+" border="+border+" "+css+alt+"/>";
 				if(clickable && !block) {
 					html += "</a>";
 				}

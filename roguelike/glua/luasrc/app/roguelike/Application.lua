@@ -26,3 +26,5 @@ function echo(...)
 end
 
 require("app.roguelike.API")
+
+math.randomseed( tonumber(tostring(os.time()):reverse():sub(1,6)) )

@@ -20,6 +20,19 @@ function Class:getViewData(w, sid)
 	view.w = w
 	view.h = h
 
+	local asid = dg:prop("asid")
+	if sid<asid then
+		view.a = {}
+		view.a.level = dg:prop("level")		
+		view.a.maxlevel = dg:prop("maxlevel")
+		local a = dg:prop("a")
+		if a then
+			for k,v in pairs(a) do
+				view.a[k] = v
+			end
+		end
+	end
+
 	if sid>0 then
 		local evs = dg:uiPopEvent(sid)
 		if #evs>0 then

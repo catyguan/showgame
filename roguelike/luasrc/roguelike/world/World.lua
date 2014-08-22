@@ -1,7 +1,7 @@
 -- roguelike/world/World.lua
 require("bma.lang.Class")
 
-local Class = class.define("roguelike.world.World", {"ui.UIManager", "service.PDVM"})
+local Class = class.define("roguelike.world.World", {"ui.UIManager"})
 
 local LDEBUG = LOG:debugEnabled()
 local LTAG = "World"

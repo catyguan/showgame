@@ -1,6 +1,8 @@
 -- dungelot/CellRock.lua
 local Class = class.define("dungelot.CellRock", {"dungelot.Cell"})
 
+Class.ROCK = true
+
 function Class.newCell(data)
 	local o = Class.new()
 	return o

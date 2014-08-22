@@ -1,30 +1,40 @@
 {
-	"default" : {
-			"_p" : "Empty"
-		},
-	"cells" : [	
+	"attr" : {
+		"Power" : 5
+	},
+	"levels" : [
 		{
-			"x" : 3, "y" : 1,
-			"_p" : "Entrance"
+			"cells" : [	
+				{
+					"x":1,"y":1,
+					"_p" : "@Entrance"					
+				},
+				{
+					"x":1,"y":2,
+					"_p" : "@Exit",
+					"lock" : false,
+					"onExit" : {
+						"cmd": "Next"
+					}
+				},
+				{
+					"_p" : "@Monster",
+					"mt" : 1,
+					"num" : 5
+				},
+				{
+					"_p" : "@Rock",
+					"num" : 4
+				}				
+			]
 		},
 		{
-			"x" : 3, "y" : 2,
-			"_p" : "Monster",
-			"mt" : 1
-		},
-		{
-			"x" : 5, "y" : 2,
-			"_p" : "Monster",
-			"mt" : 1
-		},
-		{
-			"x" : 3, "y" : 3,
-			"_p" : "Rock"
-		},
-		{
-			"x" : 2, "y" : 3,
-			"_p" : "Exit",
-			"lock" : true
+			"cells" : [	
+				{
+					"x":1,"y":1,
+					"_p" : "@Entrance"					
+				}					
+			]
 		}
-	]
+	]	
 }
