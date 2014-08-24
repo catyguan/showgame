@@ -1,7 +1,7 @@
 -- dungelot/Dungeon.lua
 require("bma.lang.Class")
 
-local Class = class.define("dungelot.Dungeon", {"bma.lang.StdObject", "ui.UIEvents"})
+local Class = class.define("dungelot.Dungeon", {"bma.lang.StdObject", "ui.UIEvents", "ui.UITips"})
 
 local LDEBUG = LOG:debugEnabled()
 local LTAG = "Dungeon"
@@ -20,33 +20,23 @@ function Class:SID()
 	return sid
 end
 
-local propcp = function(t1, t2)
-	if not t2 then return end
-	for k,v in pairs(t2) do
-		if not t1[k] then
-			t1[k] = v
-		end
-	end
+function Class:world()
+	local wid = self:prop("wid")
+	local wm = WORLD_MANAGER
+	return wm:getWorld(wid)
 end
 
-function Class:loadRun(w, name, hero)
-	local cb = function(done, data)	
-		if done then			
-			self:run(w, data, hero)
-		end
-	end
-	Class.load(name, cb)	
-end
-
-function Class:run(w, data, hero)
+function Class:run(w, data)
 	self:prop("data", data)
 	self:prop("level", 1)
 	self:prop("maxlevel", #data.levels)
 	self:prop("hsid", self:prop("sid"))
-	local a = {}
-	propcp(a, data.attr)
-	propcp(a, hero)
-	self:prop("hero", a)	
+
+	local a = data.attr
+	local mod = class.forName("dungelot.Mod").new(a)
+	mod:prop("MONEY", V(a.MONEY))
+	mod:prop("sid", self:prop("sid"))
+	self:prop("hero", mod)
 
 	w:prop(PROP, self)
 	self:prop("wid", w.id)
@@ -61,6 +51,15 @@ function Class:startLevel()
 	local data = self:prop("data")
 	local lvl = self:prop("level")
 	local ldata = data.levels[lvl]
+
+	local tips = ldata.tips
+	print("level tips", tips)
+	if tips then
+		ldata.tips = nil
+		for _,t in ipairs(tips) do
+			self:uiTips(t)
+		end
+	end
 	
 	local w = V(ldata.w, 5)
 	local h = V(ldata.h, 6)
@@ -96,12 +95,28 @@ function Class:walk(f)
 	end
 end
 
-local ROUND = {
+local ROUND4 = {
 	{-1,0},{0,-1},{1,0},{0,1}
 }
 
-function Class:walkRound(x, y, f)
-	for _,pos in ipairs(ROUND) do
+function Class:walkRound4(x, y, f)
+	for _,pos in ipairs(ROUND4) do
+		local x1 = x+pos[1]
+		local y1 = y+pos[2]
+		local c = self:getCell(x1, y1)
+		if c~=nil then
+			if f(x1, y1, c) then return end
+		end
+	end
+end
+
+local ROUND8 = {
+	{-1,0},{0,-1},{1,0},{0,1},
+	{-1,-1},{1,-1},{1,1},{-1,1}
+}
+
+function Class:walkRound8(x, y, f)
+	for _,pos in ipairs(ROUND8) do
 		local x1 = x+pos[1]
 		local y1 = y+pos[2]
 		local c = self:getCell(x1, y1)
@@ -112,21 +127,6 @@ function Class:walkRound(x, y, f)
 end
 
 -- builder
-function Class.load(name, callback)
-	if callback==nil then
-		callback = function(done)
-		end
-	end
-	local ss = class.instance("service.StoreService")
-	local cb = function(done, data)
-		if done then			
-			Class.build(dg, data)
-		end
-		callback(done)
-	end
-	ss:load("dungelot", name, callback)
-end
-
 local CCLS = function(p)
 	if p:sub(1,1)=="@" then p = "dungelot.Cell"..p:sub(2) end
 	return class.forName(p)
@@ -134,7 +134,7 @@ end
 
 function Class.newCell(data)
 	local cls = CCLS(data._p)
-	return cls.newCell(data)
+	return cls.new(data)
 end
 
 function Class:buildCell(c)
@@ -166,14 +166,14 @@ function Class:buildLevel(data)
 	self:fillDefault(cls)
 end
 
-function Class:fillDefault(cell)
+function Class:fillDefault(cellcls)
 	local w = self:prop("w")
 	local h = self:prop("h")
 	local map = self:prop("map")
 
 	self:walk(function(x,y,c)
 		if c==1 then
-			local co = cell.newCell({})
+			local co = cellcls:new({})
 			map[x][y] = co
 		end
 	end)
@@ -206,8 +206,9 @@ function Class:rsetCell(cell)
 		local ok = true
 		
 		if cell.ROCK then			
-			self:walkRound(x, y, function(x, y, ce)
-				if ce~=1 and ce.ROCK then
+			self:walkRound8(x, y, function(x, y, ce)
+				if ce==1 then return end
+				if ce.ROCK then
 					ok = false
 					idx = idx + 1
 					if idx>c then idx = 1 end
@@ -221,6 +222,8 @@ function Class:rsetCell(cell)
 			map[x][y] = cell
 			table.remove(frees, idx)
 			return true, x, y
+		else
+			-- print("skip", x, y, " next ", idx)
 		end
 	end
 	return false
@@ -258,7 +261,7 @@ end
 -- helper
 function Class:onVisible(x, y)
 	local sid = self:prop("sid")
-	self:walkRound(x, y, function(x,y,c)
+	self:walkRound4(x, y, function(x,y,c)
 		if c:prop("l")~=1 then
 			c:prop("sid", sid)
 			c:prop("l", 1)
@@ -270,15 +273,9 @@ function Class:onMonsterShow(x, y)
 	self:onVisible(x, y)
 
 	local sid = self:prop("sid")
-	self:walkRound(x, y, function(x,y,c)
-		if c.MONSTER then
-			if self:prop("v")==1 then
-				return
-			end
-		end
-
-		local b = V(c:prop("b"), 0)
+	self:walkRound4(x, y, function(x,y,c)
 		if c:prop("v")~=1 then
+			local b = V(c:prop("b"), 0)
 			c:prop("sid", sid)
 			c:prop("b", b + 1)
 		end
@@ -287,7 +284,7 @@ end
 
 function Class:onMonsterGone(x, y)
 	local sid = self:prop("sid")
-	self:walkRound(x, y, function(x,y,c)
+	self:walkRound4(x, y, function(x,y,c)
 		local b = V(c:prop("b"), 0)
 		if b>0 then
 			c:prop("sid", sid)
@@ -300,10 +297,12 @@ function Class:onMonsterGone(x, y)
 	end)
 end
 
-function Class:somethingGone(x, y)
+function Class:somethingGone(x, y, nc)
 	local c = self:getCell(x, y)
 	if c~=nil and not c.EMPTY then
-		local nc = class.forName("dungelot.CellEmpty").newCell()		
+		if nc==nil then 
+			nc = class.forName("dungelot.CellEmpty").new({})
+		end		
 		nc:prop("sid", self:prop("sid"))
 		nc:prop("l", c:prop("l"))
 		nc:prop("v", c:prop("v"))
@@ -316,25 +315,8 @@ function Class:somethingGone(x, y)
 	end
 end
 
-function Class:setHeroProp(n, v)
-	local h = self:prop("hero")
-	if n=="HP" then
-		local v0 = h.MAXHP
-		if v>v0 then v = v0 end
-		if v<0 then v = 0 end
-	end
-	h[n] = v
-	return v
-end
-
-function Class:changeHeroProp(n, v)
-	local h = self:prop("hero")
-	local ov = h[n]
-	local nv = v
-	if ov~=nil then
-		nv = ov + v
-	end
-	return self:setHeroProp(n, nv)
+function Class:hero()
+	return self:prop("hero")
 end
 
 function Class:doClick(x, y)
@@ -356,8 +338,9 @@ function Class:invokeNext(pd)
 	self:endLevel();
 	local lvl = self:prop("level")
 	lvl = lvl + 1
+	local hero = self:hero()
 	self:prop("level", lvl)
-	self:prop("hsid", self:prop("sid"))
+	hero:prop("sid", self:prop("sid"))
 
 	self:startLevel();
 end

@@ -8,15 +8,13 @@
 	},
 	"levels" : [
 		{
+			"tips" : [
+				{"text":"hello"}
+			],
 			"cells" : [	
 				{
-					"x":1,"y":1,
-					"_p" : "@Entrance"					
-				},
-				{
-					"x":1,"y":2,
 					"_p" : "@Exit",
-					"lock" : false,
+					"lock" : true,
 					"onExit" : {
 						"cmd": "Next"
 					}
@@ -24,12 +22,42 @@
 				{
 					"_p" : "@Monster",
 					"mt" : 1,
+					"POWER" : 1,
 					"num" : 5
+				},
+				{
+					"_p" : "@Monster",
+					"mt" : 2,
+					"HP" : 8,
+					"POWER" : 3,
+					"haskey" : true
 				},
 				{
 					"_p" : "@Rock",
 					"num" : 4
-				}				
+				},
+				{
+					"_p" : "@Gift",
+					"t" : "gold",
+					"n" : "MONEY",
+					"v" : 2
+				},
+				{
+					"_p" : "@Gift",
+					"t" : "def",
+					"n" : "DEF",
+					"v" : 1
+				},
+				{
+					"_p" : "@Gift",
+					"t" : "pow",
+					"n" : "POWER",
+					"v" : 1
+				},
+				{
+					"x":1,"y":1,
+					"_p" : "@Entrance"					
+				}
 			]
 		},
 		{

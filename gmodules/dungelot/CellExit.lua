@@ -3,11 +3,11 @@ require("service.PDCall")
 
 local Class = class.define("dungelot.CellExit", {"dungelot.Cell"})
 
-function Class.newCell(data)
-	local o = Class.new()
-	o:prop("lock", data.lock)
-	o:prop("onExit", data.onExit)
-	return o
+Class.EXIT = true
+
+function Class:ctor(data)
+	self:prop("lock", data.lock)
+	self:prop("onExit", data.onExit)
 end
 
 function Class:makeViewData()

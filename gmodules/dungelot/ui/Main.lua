@@ -20,17 +20,20 @@ function Class:getViewData(w, sid)
 	view.w = w
 	view.h = h
 
-	local hsid = dg:prop("hsid")
-	if sid<hsid then
+	local hero = dg:hero()
+	if sid<V(hero:prop("sid"), 0) then
 		view.a = {}
 		view.a.level = dg:prop("level")		
 		view.a.maxlevel = dg:prop("maxlevel")
-		local a = dg:prop("hero")
-		if a then
-			for k,v in pairs(a) do
-				view.a[k] = v
-			end
+		for k,v in pairs(hero._prop) do
+			view.a[k] = v
 		end
+	end
+
+	local tips = dg:uiGetTips()
+	-- print("tips", tips)
+	if tips~=nil then
+		view.tips = tips
 	end
 
 	if sid>0 then
@@ -66,6 +69,8 @@ function Class:onProcess(w, sid, param)
 
 	if cmd=="click" then
 		dg:doClick(x, y)
+	elseif cmd=="tips" then
+		dg:uiEndTips()
 	end
 	return 0
 end

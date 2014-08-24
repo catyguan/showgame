@@ -3,11 +3,9 @@ local Class = class.define("dungelot.CellEntrance", {"dungelot.Cell"})
 
 Class.ENTRANCE = true
 
-function Class.newCell(data)
-	local o = Class.new()
-	o:prop("v", 1)
-	o:prop("l", 1)
-	return o
+function Class:ctor(data)
+	self:prop("v", 1)
+	self:prop("l", 1)
 end
 
 function Class:makeViewData()

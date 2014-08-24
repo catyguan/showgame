@@ -3,9 +3,7 @@ local Class = class.define("dungelot.CellEmpty", {"dungelot.Cell"})
 
 class.EMPTY = true
 
-function Class.newCell(data)
-	local o = Class.new()
-	return o
+function Class:ctor(data)
 end
 
 function Class:makeViewData()

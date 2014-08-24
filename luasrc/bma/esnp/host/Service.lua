@@ -25,7 +25,7 @@ function Class:send(msg, callback, timeout)
 	return esnp:send(msg, callback, timeout)
 end
 
-function Class:invoke(sname, mname, hs, vals, callback, timeout)
+function Class:invoke(sname, mname, hs, vals, callback, timeout, tag)
 	local msg = {
 		type=3,
 		service=sname,
@@ -33,13 +33,16 @@ function Class:invoke(sname, mname, hs, vals, callback, timeout)
 		headers=hs,
 		values=vals
 	}
-	return esnp:send(msg, callback, timeout)
+	return esnp:send(msg, callback, timeout, tag)
 end
 
 function Class:cancel(reqid)
 	local r = esnp:cancel(reqid)
-	self:sendEvent({type="running", status=self:isRunning()})
 	return r
+end
+
+function Class:cancelTag(tag)
+	esnp:cancelTag(tag)
 end
 
 function Class:isRunning()

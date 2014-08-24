@@ -7,8 +7,11 @@ v:visible, t:type, b:block, l:light, c:clickable
 function Class:getViewData()
 	local vo
 	if self:prop("v")~=1 then
-		local h = 1
-		vo = {h=h}
+		if self:prop("l")~=1 then
+			vo = {t="b"}
+		else
+			vo = {h=1}
+		end
 	else
 		vo = self:makeViewData()
 	end

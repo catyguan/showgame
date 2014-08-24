@@ -144,14 +144,19 @@ end
 
 function service_testNewDungelot( ctx, res )	
 	local wid = glua_getString(ctx, "id")
+	local did = glua_getString(ctx, "did")
 	local o = WORLD_MANAGER:getWorld(wid)
 	if o==nil then
 		o = new_world(wid)
 	end
+	if V(did,"")=="" then did="samples.Sample1" end
 
 	local dm = class.forName("dungelot.Manager")
-	local dg = dm.newDungeon()	
-	dg:loadRun(o, "test")
+	local dg = dm.newDungeon()
+	local builder = class.forName("roguelike.dungelot."..did)
+	local hero = {}
+	local data = builder.build(w, hero)
+	dg:run(o, data)
 	glua_setString(res, "Content", "OK")	
 	return true
 end
