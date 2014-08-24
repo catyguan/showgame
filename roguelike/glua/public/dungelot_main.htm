@@ -47,29 +47,30 @@ contentManager = {
 		this.sid = viewData.sid;
 		this.tips = viewData.tips;
 		var th = this;
-		if(this.tips) {
-			loadLib("libtips", function() {
-				var html = "";
-				html += "<table>";
-				html += "<tr><td>"+th.tips.text+"</td></tr>";
-				html += "<tr><td><button onclick='contentManager.doTips()'>知道了</button></td></tr>";
-				html += "</table>";
-
-				var x = 3;
-				var y = 3;
-				if(th.tips.pos) {
-					x = th.tips.pos.x;
-					y = th.tips.pos.y;
-				}
-				var tid = th.CellId(x, y);
-				var id = showTips(html,tid);
-				th.tips.id = id;
-			});	
-		}
 		processEvents(viewData.events, this.handleEvents, function() {
 			th.BuildInfo(viewData.a);
 			th.BuildMap(viewData.map);
-		});		
+
+			if(th.tips) {
+				loadLib("libtips", function() {
+					var html = "";
+					html += "<table>";
+					html += "<tr><td>"+th.tips.text+"</td></tr>";
+					html += "<tr><td><button onclick='contentManager.doTips()'>知道了</button></td></tr>";
+					html += "</table>";
+
+					var x = 3;
+					var y = 3;
+					if(th.tips.pos) {
+						x = th.tips.pos.x;
+						y = th.tips.pos.y;
+					}
+					var tid = th.CellId(x, y);
+					var id = showTips(html,tid, "#FFFFFF", "#000000");
+					th.tips.id = id;
+				});	
+			}
+		});
 	},
 	GetTips : function(cell) {		
 		if(cell.t=="et") {

@@ -9,7 +9,8 @@
 	"levels" : [
 		{
 			"tips" : [
-				{"text":"hello"}
+				{"text":"hello"},
+				{"text":"hello world"}
 			],
 			"cells" : [	
 				{
