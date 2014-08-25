@@ -98,7 +98,8 @@ function processEventsI(evlist, idx, handlef, endf) {
 				processEventsI(evlist, idx+1, handlef, endf);
 			},1);
 		}
-		handlef(ev, f);		
+		handlef(ev, f);
+		return;
 	}
 	console.log("process event end");
 	if(endf)endf();

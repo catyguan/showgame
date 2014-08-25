@@ -55,8 +55,9 @@ function Class:doAttack(who, dg)
 		who:changeProp("DEF", -1, dg)
 		return
 	end
-	who:changeProp("HP", -pow, dg)
+	who:changeProp("HP", -pow, dg)	
 	-- print("afterAttack", who:prop("HP"))
+	return pow	
 end
 
 function Class:isDie()

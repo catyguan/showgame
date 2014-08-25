@@ -22,6 +22,9 @@ end
 
 function Class:onVisible(dg, x, y)
 	dg:onMonsterShow(x, y)
+	if self.doShow then
+		self:doShow(dg, x, y)
+	end
 end
 
 function Class:handleClick(dg, x, y)
@@ -30,23 +33,30 @@ end
 
 function Class:doBattle(dg, x, y)
 	local hero = dg:hero()
-	self:doAttack(hero, dg)
-	hero:doAttack(self, dg)
+	local d1 = self:doAttack(hero, dg)
+	local d2 = hero:doAttack(self, dg)
 
 	if hero:isDie() then
 		-- end
-		dg:uiEvent({t="msg", text="YOU DIE!"})
+		dg:heroDie()		
 		return
+	else
+		dg:uiEvent({t="losehp", v=d1})
 	end
 
 	if self:isDie() then
 		self:onDie(dg, x, y)
+	else
+		self:onHit(dg, x, y, d2)
 	end
+end
 
+function Class:onHit(dg, x, y, d2)
+	dg:uiEvent({t="hit", x=x, y=y, v=d2})
 end
 
 function Class:onDie(dg, x, y)
-	dg:uiEvent({t="msg", text="You Kill It"})
+	dg:uiEvent({t="die", x=x, y=y})
 	local cell = nil
 	if self:prop("haskey") then
 		local data = {

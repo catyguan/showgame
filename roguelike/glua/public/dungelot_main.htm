@@ -76,6 +76,9 @@ contentManager = {
 		if(cell.t=="et") {
 			return "入口。从这里出发探索地牢吧";
 		}
+		if(cell.t=="tr") {
+			return "陷阱!!!";
+		}
 		if(cell.t=="ro") {
 			return "碍事的石头";
 		}
@@ -155,6 +158,17 @@ contentManager = {
 	handleEvents : function(ev, nextf) {
 		if(ev.t=="msg") {
 			alert(ev.text);
+		}else if(ev.t=="die") {
+			var id = contentManager.CellId(ev.x, ev.y);
+			$("#"+id+" img").fadeOut(250, nextf);
+			return;
+		}else if(ev.t=="hit") {
+			var id = contentManager.CellId(ev.x, ev.y);
+			var o = $("#"+id+" img");
+			o.fadeOut(100, function() {
+				o.fadeIn(100, nextf);
+			});
+			return;
 		}
 		nextf();
 	},

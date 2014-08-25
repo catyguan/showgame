@@ -319,6 +319,10 @@ function Class:hero()
 	return self:prop("hero")
 end
 
+function Class:heroDie()
+	dg:uiEvent({t="msg", text="YOU DIE!"})
+end
+
 function Class:doClick(x, y)
 	local cell = self:getCell(x, y)
 	if cell==nil then return end

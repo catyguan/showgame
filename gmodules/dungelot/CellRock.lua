@@ -12,5 +12,5 @@ function Class:makeViewData()
 	}
 end
 
-function Class:onVisible(x, y)	
+function Class:onVisible(dg, x, y)	
 end
