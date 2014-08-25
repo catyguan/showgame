@@ -2,13 +2,13 @@
 	"attr" : {
 		"HP" : 20,
 		"MAXHP" : 20,
-		"POWER" : 5,
+		"POWER" : 3,
 		"DEF" : 0,
 		"MONEY" : 0
 	},
 	"levels" : [
 		{
-			"tips2" : [
+			"tips" : [
 				{"text":"hello"},
 				{"text":"hello world"}
 			],
@@ -54,12 +54,6 @@
 					"t" : "pow",
 					"n" : "POWER",
 					"v" : 1
-				},
-				{
-					"_p" : "@Gift",
-					"t" : "hp",
-					"n" : "HP",
-					"v" : 2
 				},
 				{
 					"x":1,"y":1,

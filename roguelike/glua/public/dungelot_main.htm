@@ -18,7 +18,7 @@ contentManager = {
 		this.UpdateView(viewData);
 	},
 	Update : function(viewData) {
-		console.log("doUpdate!!!!")
+		// console.log("doUpdate!!!!")
 		console.log(viewData)
 		this.UpdateView(viewData);
 	},
@@ -87,11 +87,10 @@ contentManager = {
 		}
 		if(cell.t=="mo") {
 			var str = "敌人 - ";
-			str += "血量:"+cell.hp+";";
+			str += "体力:"+cell.hp+";";
 			str += "力量:"+cell.power+";";
 			str += "防盾:"+cell.def+";";
 			return str;
-
 		}
 		return "";
 	},
@@ -100,7 +99,7 @@ contentManager = {
 		var html = "";
 		html += "地牢:"+info.level+"/"+info.maxlevel;
 		html += "<br>";
-		html += "血量:"+info.HP+"/"+info.MAXHP+"; ";
+		html += "体力:"+info.HP+"/"+info.MAXHP+"; ";
 		html += "力量:"+info.POWER+"; ";
 		html += "防盾:"+info.DEF+"; ";
 		html += "金币:"+info.MONEY+"; ";

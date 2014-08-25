@@ -9,7 +9,18 @@
 <button onclick="doNewWorld()">NewWorld</button>
 <button onclick="doSaveWorld()">SaveWorld</button>
 <button onclick="loadContent('new_combat')">NewCombat</button>
-<button onclick="loadContent('new_dungelot')">NewDungelot</button>
+<select id="dungelotId">
+<option value="samples.Sample1" selected>开发范例</option>
+<option value="guide.Guide1">教程1</option>
+</select>
+<button onclick="doNewDungelot()">Enter</button>
+<script>
+function doNewDungelot() {
+	var ctx = {};
+	ctx.did = $('#dungelotId').val();
+	loadContent('new_dungelot', ctx);
+}
+</script>
 <span id="mbox"></span>
 <hr>
 
