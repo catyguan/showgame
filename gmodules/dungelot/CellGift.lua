@@ -4,7 +4,7 @@ local Class = class.define("dungelot.CellGift", {"dungelot.Cell"})
 function Class:ctor(data)
 	self:prop("type", data.t)
 	self:prop("propn", data.n)
-	self:prop("val", data.v)
+	self:prop("val", data.val)
 end
 
 function Class:makeViewData()

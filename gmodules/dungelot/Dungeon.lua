@@ -134,7 +134,17 @@ end
 
 function Class.newCell(data)
 	local cls = CCLS(data._p)
-	return cls.new(data)
+	local o = cls.new(data)
+	if data.l then
+		o:prop("l", data.l)
+	end
+	if data.v then
+		o:prop("v", data.v)
+	end
+	if data.b then
+		o:prop("b", data.b)	
+	end
+	return o
 end
 
 function Class:buildCell(c)
@@ -162,18 +172,17 @@ function Class:buildLevel(data)
 	if dc==nil then
 		dc = { _p = "@Empty" }
 	end
-	local cls = CCLS(dc._p)
-	self:fillDefault(cls)
+	self:fillDefault(dc)	
 end
 
-function Class:fillDefault(cellcls)
+function Class:fillDefault(celldata)
 	local w = self:prop("w")
 	local h = self:prop("h")
 	local map = self:prop("map")
 
 	self:walk(function(x,y,c)
 		if c==1 then
-			local co = cellcls:new({})
+			local co = Class.newCell(celldata)
 			map[x][y] = co
 		end
 	end)
@@ -251,7 +260,7 @@ function Class:normalize()
 
 	self:walk(function(x, y, c)
 		c:prop("sid", sid)
-		if c.ENTRANCE then
+		if c.ENTRANCE or V(c:prop("v"),0)==1 then
 			self:onVisible(x, y)
 		end
 	end)
@@ -339,12 +348,16 @@ function Class:doCall(pd)
 end
 
 function Class:invokeNext(pd)
-	self:endLevel();
+	self:endLevel()
 	local lvl = self:prop("level")
 	lvl = lvl + 1
 	local hero = self:hero()
 	self:prop("level", lvl)
 	hero:prop("sid", self:prop("sid"))
 
-	self:startLevel();
+	self:startLevel()
+end
+
+function Class:invokeEnd(pd)
+	self:uiEvent({t="msg", text="The Dungeon is END"})
 end

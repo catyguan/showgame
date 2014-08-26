@@ -8,16 +8,193 @@
 	},
 	"levels" : [
 		{
+			"lvl" : 1,
 			"tips" : [
-				{"text":"hello"},
-				{"text":"hello world"}
+				{
+					"text":"这里是入口\n每层地牢你都是从这里出发开始冒险的",
+					"pos":{"x":3, "y":5}
+				},
+				{
+					"text":"这里是出口\n点击出口就进入下一层地牢了",
+					"pos":{"x":3, "y":2}
+				}
 			],
+			"default" : {
+				"_p" : "@Empty",
+				"v" : 1, "l": 1
+			},
 			"cells" : [	
 				{
+					"x":3,"y":2,
+					"_p" : "@Exit",
+					"lock" : false,
+					"onExit" : {
+						"cmd": "Next"
+					},
+					"v" : 1
+				},
+				{
+					"x" : 3, "y" : 5,					
+					"_p" : "@Entrance"
+				}
+			]
+		},
+		{
+			"lvl" : 2,
+			"tips" : [
+				{
+					"text":"点击探索地牢，直到找到出口",
+					"pos":{"x":3, "y":3}
+				}
+			],
+			"default" : {
+				"_p" : "@Empty",
+				"v" : 1, "l": 1
+			},
+			"cells" : [	
+				{
+					"x":3,"y":2,
+					"_p" : "@Exit",
+					"lock" : false,
+					"onExit" : {
+						"cmd": "Next"
+					}
+				},
+				{
+					"_p" : "@Empty",
+					"x" : 2, "y": 1
+				},
+				{
+					"_p" : "@Empty",
+					"x" : 2, "y": 2
+				},
+				{
+					"_p" : "@Empty",
+					"x" : 2, "y": 3
+				},
+				{
+					"_p" : "@Empty",
+					"x" : 3, "y": 1
+				},
+				{
+					"_p" : "@Empty",
+					"x" : 3, "y": 3
+				},
+				{
+					"_p" : "@Empty",
+					"x" : 4, "y": 1
+				},
+				{
+					"_p" : "@Empty",
+					"x" : 4, "y": 2
+				},
+				{
+					"_p" : "@Empty",
+					"x" : 4, "y": 3
+				},
+				{
+					"x" : 3, "y" : 5,					
+					"_p" : "@Entrance"
+				}
+			]
+		},
+		{
+			"lvl" : 3,
+			"tips" : [
+				{
+					"text":"地牢里到处都有宝物哦，记得收集起来",
+					"pos":{"x":2, "y":3}
+				},
+				{
+					"text":"出口锁上了，需要先找到钥匙",
+					"pos":{"x":3, "y":2}
+				}				
+			],
+			"default" : {
+				"_p" : "@Empty",
+				"v" : 1, "l": 1
+			},
+			"cells" : [	
+				{
+					"x":3,"y":2,
 					"_p" : "@Exit",
 					"lock" : true,
 					"onExit" : {
 						"cmd": "Next"
+					},
+					"v" : 1
+				},
+				{
+					"_p" : "@Gift",
+					"t" : "gold",
+					"n" : "MONEY",
+					"val" : 2,
+					"x" : 2, "y": 3,
+					"v" : 1
+				},
+				{
+					"_p" : "@Key",
+					"x" : 4, "y": 3
+				},
+				{
+					"x" : 3, "y" : 5,					
+					"_p" : "@Entrance"
+				}
+			]
+		},
+		{
+			"lvl" : 4,
+			"tips" : [
+				{
+					"text":"当然还有怪物，它们会阻挡你的道路\n点击消灭它！注意体力，体力为零就会结束冒险",
+					"pos":{"x":3, "y":3}
+				}
+			],
+			"default" : {
+				"_p" : "@Empty",
+				"v" : 1, "l": 1
+			},
+			"cells" : [	
+				{
+					"x":3,"y":2,
+					"_p" : "@Exit",
+					"lock" : true,
+					"onExit" : {
+						"cmd": "Next"
+					},
+					"b" : 1
+				},
+				{
+					"_p" : "@Monster",
+					"mt" : 1,
+					"POWER" : 2,
+					"haskey" : true,
+					"x" : 3, "y": 3,
+					"v" : 1
+				},
+				{
+					"x" : 3, "y" : 5,					
+					"_p" : "@Entrance"
+				}
+			]
+		},
+		{
+			"lvl" : 5,
+			"tips" : [
+				{
+					"text":"不断的前进，寻找传说中的宝藏吧\n"
+				}
+			],
+			"cells" : [	
+				{
+					"x" : 3, "y" : 5,					
+					"_p" : "@Entrance"
+				},
+				{
+					"_p" : "@Exit",
+					"lock" : true,
+					"onExit" : {
+						"cmd": "End"
 					}
 				},
 				{
@@ -27,13 +204,6 @@
 					"num" : 5
 				},
 				{
-					"_p" : "@Monster",
-					"mt" : 2,
-					"HP" : 8,
-					"POWER" : 3,
-					"haskey" : true
-				},
-				{
 					"_p" : "@Rock",
 					"num" : 4
 				},
@@ -41,32 +211,12 @@
 					"_p" : "@Gift",
 					"t" : "gold",
 					"n" : "MONEY",
-					"v" : 2
+					"val" : 2,
+					"num" : 3
 				},
 				{
-					"_p" : "@Gift",
-					"t" : "def",
-					"n" : "DEF",
-					"v" : 1
-				},
-				{
-					"_p" : "@Gift",
-					"t" : "pow",
-					"n" : "POWER",
-					"v" : 1
-				},
-				{
-					"x":1,"y":1,
-					"_p" : "@Entrance"					
+					"_p" : "@Key"
 				}
-			]
-		},
-		{
-			"cells" : [	
-				{
-					"x":1,"y":1,
-					"_p" : "@Entrance"					
-				}					
 			]
 		}
 	]	

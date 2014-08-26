@@ -11,7 +11,7 @@
 			"tips2" : [
 				{"text":"hello"},
 				{"text":"hello world"}
-			],
+			],			
 			"cells" : [	
 				{
 					"_p" : "@Exit",
@@ -41,25 +41,25 @@
 					"_p" : "@Gift",
 					"t" : "gold",
 					"n" : "MONEY",
-					"v" : 2
+					"val" : 2
 				},
 				{
 					"_p" : "@Gift",
 					"t" : "def",
 					"n" : "DEF",
-					"v" : 1
+					"val" : 1
 				},
 				{
 					"_p" : "@Gift",
 					"t" : "pow",
 					"n" : "POWER",
-					"v" : 1
+					"val" : 1
 				},
 				{
 					"_p" : "@Gift",
 					"t" : "hp",
 					"n" : "HP",
-					"v" : 2
+					"val" : 2
 				},
 				{
 					"_p" : "@Trap",

@@ -53,9 +53,11 @@ contentManager = {
 
 			if(th.tips) {
 				loadLib("libtips", function() {
+					var text = th.tips.text;
+					text = text.replace("\n", "<br/>");
 					var html = "";
 					html += "<table>";
-					html += "<tr><td>"+th.tips.text+"</td></tr>";
+					html += "<tr><td>"+text+"</td></tr>";
 					html += "<tr><td><button onclick='contentManager.doTips()'>知道了</button></td></tr>";
 					html += "</table>";
 
@@ -83,7 +85,7 @@ contentManager = {
 			return "碍事的石头";
 		}
 		if(cell.t=="out") {
-			return "进入下一个地牢的通道";
+			return "进入下一层地牢的通道";
 		}
 		if(cell.t=="lock") {
 			return "关闭的通道大门。去寻找钥匙吧";
