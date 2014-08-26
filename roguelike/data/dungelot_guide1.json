@@ -161,8 +161,7 @@
 					"lock" : true,
 					"onExit" : {
 						"cmd": "Next"
-					},
-					"b" : 1
+					}
 				},
 				{
 					"_p" : "@Monster",
@@ -194,7 +193,8 @@
 					"_p" : "@Exit",
 					"lock" : true,
 					"onExit" : {
-						"cmd": "End"
+						"cmd": "End",
+						"_p" : "roguelike.dungelot.guide.Guide1"
 					}
 				},
 				{

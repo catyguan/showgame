@@ -1,5 +1,6 @@
 -- dungelot/Dungeon.lua
 require("bma.lang.Class")
+require("service.PDCall")
 
 local Class = class.define("dungelot.Dungeon", {"bma.lang.StdObject", "ui.UIEvents", "ui.UITips"})
 
@@ -26,11 +27,14 @@ function Class:world()
 	return wm:getWorld(wid)
 end
 
+function Class.toDungeon(w)
+	return w:prop(PROP)
+end
+
 function Class:run(w, data)
 	self:prop("data", data)
 	self:prop("level", 1)
 	self:prop("maxlevel", #data.levels)
-	self:prop("hsid", self:prop("sid"))
 
 	local a = data.attr
 	local mod = class.forName("dungelot.Mod").new(a)
@@ -261,7 +265,7 @@ function Class:normalize()
 	self:walk(function(x, y, c)
 		c:prop("sid", sid)
 		if c.ENTRANCE or V(c:prop("v"),0)==1 then
-			self:onVisible(x, y)
+			c:doVisible(self, x, y)			
 		end
 	end)
 end
@@ -344,7 +348,7 @@ end
 
 function Class:doCall(pd)
 	local f = self["invoke"..pd.cmd]
-	return f(self, dg)
+	return f(self, pd)
 end
 
 function Class:invokeNext(pd)
@@ -359,5 +363,6 @@ function Class:invokeNext(pd)
 end
 
 function Class:invokeEnd(pd)
-	self:uiEvent({t="msg", text="The Dungeon is END"})
+	self:endLevel()
+	PDCall(pd, self)	
 end

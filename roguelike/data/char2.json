@@ -1,7 +1,0 @@
-{
-	"objectClass" : "arena.Creature",
-	"id" : "testObjB1",
-	"pos" : {"g":"B", "x":1, "y":1},
-	"HP" : 100,
-	"PATK": 101, "SATK": 102, "PDEF":103, "SDEF":104
-}

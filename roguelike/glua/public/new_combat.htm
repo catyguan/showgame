@@ -1,15 +1,17 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>home</title>
+<title>NewCombat</title>
 </head>
 <body>
 
 <script>
 contentManager = {
-	Init : function(viewData) {
+	Init : function(ctx) {
 		loadLib("libui", function() {
-			aCall("testNewCombat", null, "text", function(rs) {
+			var param = {};
+			param.cid = ctx.cid;
+			aCall("testNewCombat", param, "text", function(rs) {
 				console.log( "init new combat: " + rs );
 				if(rs=="OK") {
 					setTimeout(function() {

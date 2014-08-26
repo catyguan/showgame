@@ -20,14 +20,18 @@ function Class:getViewData()
 	return vo
 end
 
+function Class:doVisible(dg, x, y)
+	self:prop("v", 1)
+	if self.onVisible then
+		self:onVisible(dg, x, y)
+	else
+		dg:onVisible(x, y)
+	end
+end
+
 function Class:doClick(dg, x, y)
 	if not self:prop("v") then
-		self:prop("v", 1)
-		if self.onVisible then
-			self:onVisible(dg, x, y)
-		else
-			dg:onVisible(x, y)
-		end
+		self:doVisible(dg, x, y)
 		return true
 	end
 

@@ -2,10 +2,10 @@
 local Class = class.define("dungelot.ui.Main", {"ui.UIControl"})
 
 local LTAG = "UI.dungelot"
+local DM = class.forName("dungelot.Dungeon")
 
-local PROP = {"dungelot"}
 local dgf = function(w)
-	return w:prop(PROP)
+	return DM.toDungeon(w)
 end
 
 function Class:getViewData(w, sid)

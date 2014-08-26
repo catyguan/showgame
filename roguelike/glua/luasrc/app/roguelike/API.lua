@@ -163,19 +163,17 @@ end
 
 function service_testNewCombat( ctx, res )	
 	local wid = glua_getString(ctx, "id")
+	local cid = glua_getString(ctx, "cid")
 	local o = WORLD_MANAGER:getWorld(wid)
 	if o==nil then
 		o = new_world(wid)
 	end
+	if V(did,"")=="" then did="test" end
 
-	local cbd = class.forName("roguelike.combat.Combatd")
-	local cb = cbd.newCombat()
-	o:prop("combat", cb)
-
-	cbd.prepare(cb)
-	-- cbd.
-
-	-- o:createView("home", {}, "ui.Home")		
+	local m = class.forName("ascension.Manager")
+	local cbd = m.newCombatd()
+	local data = loader("combat_"..cid)
+	cbd:run(o, data)
 	glua_setString(res, "Content", "OK")	
 	return true
 end

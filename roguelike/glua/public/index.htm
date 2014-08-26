@@ -8,7 +8,19 @@
 <button onclick="doReset()">Reset</button>
 <button onclick="doNewWorld()">NewWorld</button>
 <button onclick="doSaveWorld()">SaveWorld</button>
-<button onclick="loadContent('new_combat')">NewCombat</button>
+
+<select id="combatId">
+<option value="test" selected>开发范例</option>
+</select>
+<button onclick="doNewCombat()">Combat</button>
+<script>
+function doNewCombat() {
+	var ctx = {};
+	ctx.cid = $('#combatId').val();
+	loadContent('new_combat', ctx);
+}
+</script>
+
 <select id="dungelotId">
 <option value="samples.Sample1" selected>开发范例</option>
 <option value="guide.Guide1">教程1</option>
