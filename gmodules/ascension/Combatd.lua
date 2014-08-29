@@ -26,14 +26,26 @@ end
 function Class:nextId(pre)
 	local ids = self:prop("idSeq")
 	local r = pre .. ids
-	self:prop("idSeq", ids)
+	self:prop("idSeq", ids+1)
 	return r
+end
+
+function Class.toCombatd(w)
+	return w:prop(PROP)
 end
 
 function Class:world()
 	local wid = self:prop("wid")
 	local wm = WORLD_MANAGER
 	return wm:getWorld(wid)
+end
+
+function Class:player(pid)
+	if pid==Class.ME then
+		return self:prop("me")
+	else
+		return self:prop("enemy")
+	end
 end
 
 function Class:run(w, data)
@@ -49,10 +61,6 @@ function Class:run(w, data)
 end
 
 --------------------------
-local chkset = function(obj, n1, n2)
-	if obj[n1]==nil then obj[n1] = obj[n2] end
-end
-
 function Class.opTeam(tid)
 	if tid==1 then return 2 end
 	return 1
@@ -89,9 +97,15 @@ function Class:handleUserCommand(cmd)
 end
 
 ---------------------------
+function Class.cardClass(p)
+	if p:sub(1,1)=="@" then p = "ascension.card."..p:sub(2) end
+	return class.forName(p)
+end
 function Class:newCard(cdata)
-	local ccls = class.forName(cdata._p)
-	return ccls.new(cdata)
+	local ccls = Class.cardClass(cdata._p)
+	local o = ccls.new(cdata)
+	o:prop("id", self:nextId("c"))
+	return o
 end
 
 -- inner flow
@@ -101,8 +115,11 @@ local newMod = function(self, data)
 	local ddata = data.desk
 	local desk = {}
 	for _,cdata in ipairs(ddata) do
-		local card = self:newCard(cdata)
-		table.insert(desk, card)
+		local num = V(cdata.num, 1)
+		for i=1,num do
+			local card = self:newCard(cdata)
+			table.insert(desk, card)
+		end		
 	end
 	local sets = {}
 	sets[Class.SET_DESK] = desk
@@ -117,8 +134,10 @@ end
 function Class:start()
 	local data = self:prop("data")
 	local mobj = newMod(self, data.me)
+	mobj:prop("who", "Me")
 	self:prop("me", mobj)
 	local eobj = newMod(self, data.enemy)
+	eobj:prop("who", "Enemy")
 	self:prop("enemy", eobj)
 
 	mobj:onCombatInit(self)	
@@ -129,7 +148,12 @@ function Class:start()
 		local desk = obj:getSet(Class.SET_DESK)		
 		CSET.shuffle(desk)
 		obj:doDrawHand(self)
-	end	
+
+		local hand = obj:getSet(Class.SET_HAND)
+		local c1 = hand[1]
+		local play = obj:getSet(Class.SET_PLAY)
+		table.insert(play, c1)		
+	end
 
 	self:prop("stage", "turnBeginStage")
 	self:prop("turn", 1)

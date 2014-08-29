@@ -9,3 +9,4 @@ Class.SET_HAND = 2
 Class.SET_PLAY = 3
 Class.SET_SIDE = 4
 Class.SET_DISCARD = 5
+Class.SET_MAX = 5

@@ -2,11 +2,18 @@
 	"me" : {
 		"_p": "ascension.Mod",
 		"desk" : [
+			{
+				"_p" : "@Attack"
+			}
 		]
 	},
 	"enemy" : {
 		"_p": "ascension.Mod",
 		"desk" : [
+			{
+				"_p" : "@Attack",
+				"num" : 8
+			}
 		]
 	}
 }

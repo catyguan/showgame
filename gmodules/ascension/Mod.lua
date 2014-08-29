@@ -12,7 +12,7 @@ function Class:ctor(data)
 end
 
 function Class:ToString()
-	return "Mod"
+	return self:prop("who").."[Mod]"
 end
 
 function Class:addMaxHP(v, dg)

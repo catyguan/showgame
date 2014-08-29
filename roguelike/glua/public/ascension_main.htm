@@ -7,10 +7,40 @@
 [Ascension Combat Main] - 
 <button onclick="reloadView()">ReloadView</button>
 <br>
-<div id="info"></div>
-<div id="map">
+<div id="div_2">
+敌人 -- HP[<span id="hp_2"></span>] 
+牌库[<span id="desk_2"></span>]
+弃牌[<span id="discard_2"></span>]
+手牌[<span id="hand_2"></span>] 
 </div>
-
+<hr/>
+<table height="128">
+	<tr>
+		<td height="128" width="512">
+			<div id="div_play_2"></div>
+		</td>
+		<td height="128" width="128">
+			<div id="div_size_2"></div>
+		</td>
+	</tr>
+</table>
+<table height="128">
+	<tr>
+		<td height="128" width="512">
+			<div id="div_play_1"></div>
+		</td>
+		<td height="128" width="128">
+			<div id="div_size_1"></div>
+		</td>
+	</tr>
+</table>
+<hr/>
+<div id="div_1">
+　你 -- HP[<span id="hp_1"></span>] 
+牌库[<span id="desk_1"></span>]
+弃牌[<span id="discard_1"></span>]
+<div id="div_hand_1"></div>
+</div>
 <script>
 contentManager = {
 	Init : function(viewData) {
@@ -29,27 +59,18 @@ contentManager = {
 		return "c_"+x+"_"+y;
 	},
 	InitView : function(viewData) {
-		var w = viewData.w;
-		var h = viewData.h;
-		var html = "";
-		html += "<table>";
-		for (var y = 0; y < h; y++) {
-			html += "<tr>";
-			for (var x = 0; x < w; x++) {
-				html += "<td id='"+this.CellId(x+1,y+1)+"' width=64 height=64 align='center' valign='middle'></td>";
-			}
-			html += "</tr>";
-		}
-		html += "</table>";
-		$('#map').html(html)
+		this.cards = {};		
 	},
 	UpdateView : function(viewData) {
 		this.sid = viewData.sid;
 		this.tips = viewData.tips;
 		var th = this;
-		processEvents(viewData.events, this.handleEvents, function() {
-			th.BuildInfo(viewData.a);
-			th.BuildMap(viewData.map);
+		if(viewData.cards) {
+			this.InitCards(viewData.cards);
+		}
+		processEvents(viewData.events, this.handleEvents, function() {			
+			th.BuildInfo(viewData.players);
+			// th.BuildMap(viewData.map);
 
 			if(th.tips) {
 				loadLib("libtips", function() {
@@ -99,16 +120,63 @@ contentManager = {
 		}
 		return "";
 	},
-	BuildInfo : function(info) {
-		if(!info)return;
+	CSet : function(cset) {
+		if(cset=="empty")return [];
+		return cset;
+	},
+	ShowCard : function(c, sz) {
+		if(!sz)sz=100;
 		var html = "";
-		html += "地牢:"+info.level+"/"+info.maxlevel;
-		html += "<br>";
-		html += "体力:"+info.HP+"/"+info.MAXHP+"; ";
-		html += "力量:"+info.POWER+"; ";
-		html += "防盾:"+info.DEF+"; ";
-		html += "金币:"+info.MONEY+"; ";
-		$('#info').html(html)
+		html += "<img src='images/card_"+c.t+".png' height="+sz+" border=1>";
+		return html;
+	},
+	BuildInfo : function(players) {		
+		if(!players)return;		
+		this.players = players;
+		for (var i = 0; i < players.length; i++) {
+			var pl = players[i];
+			var pid = i + 1;
+			$("#hp_"+pid).html(pl.HP+"/"+pl.MAXHP);
+			var sets = pl.sets;
+			if(!sets)continue;
+
+			for (var j = 0; j < sets.length; j++) {
+				var cset = this.CSet(sets[j]);
+				var csid = j + 1;
+				if(csid==1) {
+					$("#desk_"+pid).html(cset);
+				} else if(csid==2) {
+					if(pid==2) {
+						$("#hand_"+pid).html(cset);
+					}
+				} else if(csid==3) {
+					console.log(cset);
+					var html = "";
+					for (var k = 0; k < cset.length; k++) {
+						var cid = cset[k];
+						var c = this.cards[cid];
+						console.log(cid, c);
+						if(c==null) {
+							console.log("ERROR: card["+cid+"] is null");
+							continue;
+						}
+						html += this.ShowCard(c);
+					}
+					$('#div_play_'+pid).html(html);
+				} else if(csid==5) {
+					var html = "";
+					html = "<button >"+cset.length+"</button>"
+					$("#discard_"+pid).html(html);
+				}
+			}
+		}
+	},
+	InitCards : function(cards) {
+		this.cards = {};
+		for (var i = 0; i < cards.length; i++) {
+			var c = cards[i];
+			this.cards[c.id] = c;
+		}
 	},
 	BuildMap : function(map) {
 		if(map)	{
